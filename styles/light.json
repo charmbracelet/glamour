@@ -18,7 +18,6 @@
     "bold": true
   },
   "h2": {
-    "block_prefix": "\n",
     "prefix": "## "
   },
   "h3": {
@@ -84,7 +83,7 @@
   },
   "block_quote": {
     "indent": 1,
-    "indent_token": "> "
+    "indent_token": "│ "
   },
   "definition_list": {},
   "definition_term": {},
