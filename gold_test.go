@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/charmbracelet/gold/ansi"
+	"github.com/charmbracelet/glamour/ansi"
 )
 
 const (
