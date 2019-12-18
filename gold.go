@@ -15,8 +15,8 @@ import (
 	"github.com/yuin/goldmark/renderer"
 	"github.com/yuin/goldmark/util"
 
-	"github.com/charmbracelet/gold/ansi"
-	_ "github.com/charmbracelet/gold/statik"
+	"github.com/charmbracelet/glamour/ansi"
+	_ "github.com/charmbracelet/glamour/statik"
 )
 
 type TermRenderer struct {
