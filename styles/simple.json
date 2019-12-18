@@ -8,7 +8,6 @@
     "prefix": "# "
   },
   "h2": {
-    "block_prefix": "\n",
     "prefix": "## "
   },
   "h3": {
