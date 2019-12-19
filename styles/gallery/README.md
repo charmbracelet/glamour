@@ -1,21 +1,15 @@
-# Gold Styles Gallery
+# Glamour Styles Gallery
 
 ## Dark
 
-`gold -s dark`
-
-![Gold Dark Style](https://github.com/charmbracelet/gold/raw/master/styles/gallery/dark.png)
+![Glamour Dark Style](https://github.com/charmbracelet/glamour/raw/master/styles/gallery/dark.png)
 
 ## Light
 
-`gold -s light`
-
-![Gold Light Style](https://github.com/charmbracelet/gold/raw/master/styles/gallery/light.png)
+![Glamour Light Style](https://github.com/charmbracelet/glamour/raw/master/styles/gallery/light.png)
 
 ## NoTTY
 
 Pronounced _naughty_.
 
-`gold -s notty`
-
-![Gold NoTTY Style](https://github.com/charmbracelet/gold/raw/master/styles/gallery/notty.png)
+![Glamour NoTTY Style](https://github.com/charmbracelet/glamour/raw/master/styles/gallery/notty.png)

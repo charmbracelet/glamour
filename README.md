@@ -1,4 +1,4 @@
-# Gold
+# Glamour
 
 Render markdown on the CLI, with _pizzazz_!
 
@@ -13,17 +13,13 @@ Available as a library and on the CLI.
 
 ## Example Output
 
-![Gold Dark Style](https://github.com/charmbracelet/gold/raw/master/styles/gallery/dark.png)
+![Glamour Dark Style](https://github.com/charmbracelet/glamour/raw/master/styles/gallery/dark.png)
 
-Check out the [Gold Style Gallery](https://github.com/charmbracelet/gold/blob/master/styles/gallery/README.md)!
-
-## CLI Usage
-
-See [cmd/gold](cmd/gold/).
+Check out the [Glamour Style Gallery](https://github.com/charmbracelet/glamour/blob/master/styles/gallery/README.md)!
 
 ## Colors
 
-Currently `gold` uses the [Aurora ANSI colors](https://godoc.org/github.com/logrusorgru/aurora#Index).
+Currently `glamour` uses the [Aurora ANSI colors](https://godoc.org/github.com/logrusorgru/aurora#Index).
 
 ## Development
 
