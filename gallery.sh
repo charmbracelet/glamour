@@ -10,7 +10,7 @@ for style in ./styles/*.json; do
     fi
 
     # take screenshot
-    ./termshot ${light} -o ./styles/gallery/ -f "$filename" ./cmd/gold/gold -s ${style} ./cmd/gold
+    ./termshot ${light} -o ./styles/gallery/ -f "$filename" glow -s ${style}
 
     # add border
     convert -bordercolor black -border 16x16 "./styles/gallery/$filename" "./styles/gallery/$filename"

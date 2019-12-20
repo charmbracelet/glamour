@@ -9,7 +9,7 @@ for element in ./styles/examples/*.md; do
     filename="${basename}.png"
 
     # take screenshot
-    ./termshot -o ./styles/examples/ -f "$filename" ./cmd/gold/gold -s ./styles/examples/${stylename} ${element}
+    ./termshot -o ./styles/examples/ -f "$filename" glow -s ./styles/examples/${stylename} ${element}
 
     # add border
     convert -bordercolor black -border 16x16 "./styles/examples/$filename" "./styles/examples/$filename"
