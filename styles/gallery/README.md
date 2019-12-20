@@ -1,4 +1,4 @@
-# Glamour Styles Gallery
+# Glamour Style Section
 
 ## Dark
 

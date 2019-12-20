@@ -1,4 +1,4 @@
-# Glamour Style Reference
+# Glamour Style Guide
 
 ## Block Elements
 
