@@ -1,7 +1,5 @@
                                                                                 
-    +--------+-------+                                                          
-    | LABEL  | VALUE |                                                          
-    +--------+-------+                                                          
-    | First  | foo   |                                                          
-    | Second | bar   |                                                          
-    +--------+-------+                                                          
+      LABEL  | VALUE                                                            
+    ---------+--------                                                          
+      First  | foo                                                              
+      Second | bar                                                              
