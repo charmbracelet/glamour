@@ -38,7 +38,7 @@
   "link_text": {},
   "link": {},
   "image_text": {
-    "format": "Image: {{.text}} -> "
+    "format": "Image: {{.text}} →"
   },
   "image": {},
   "table": {
@@ -47,8 +47,8 @@
     "row_separator": "─"
   },
   "task": {
-    "unticked": "✗ ",
-    "ticked": "✓ "
+    "unticked": "[ ] ",
+    "ticked": "[✓] "
   },
   "strikethrough": {
     "block_prefix": "~~",
