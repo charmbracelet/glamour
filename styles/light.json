@@ -79,7 +79,7 @@
   },
   "hr": {
     "format": "\n--------\n",
-    "color": "240"
+    "color": "249"
   },
   "block_quote": {
     "indent": 1,
