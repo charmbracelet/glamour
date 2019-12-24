@@ -125,11 +125,14 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		}
 
 		post := "\n"
-		if node.LastChild().Kind() == ast.KindList || node.NextSibling() == nil {
+		if (node.LastChild() != nil && node.LastChild().Kind() == ast.KindList) ||
+			node.NextSibling() == nil {
 			post = ""
 		}
 
-		if node.FirstChild().FirstChild().Kind() == astext.KindTaskCheckBox {
+		if node.FirstChild() != nil &&
+			node.FirstChild().FirstChild() != nil &&
+			node.FirstChild().FirstChild().Kind() == astext.KindTaskCheckBox {
 			nc := node.FirstChild().FirstChild().(*astext.TaskCheckBox)
 
 			return Element{
