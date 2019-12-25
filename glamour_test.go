@@ -14,7 +14,7 @@ const (
 	testFile = "testdata/readme.test"
 )
 
-func TestTermRenderer(t *testing.T) {
+func TestTermRendererWriter(t *testing.T) {
 	r, err := NewTermRenderer("styles/dark.json", ansi.Options{
 		WordWrap: 80,
 	})
@@ -57,6 +57,36 @@ func TestTermRenderer(t *testing.T) {
 	}
 
 	if !bytes.Equal(td, b) {
+		t.Errorf("Rendered output doesn't match!\nExpected: `\n%s`\nGot: `\n%s`\n",
+			string(td), b)
+	}
+}
+
+func TestTermRenderer(t *testing.T) {
+	r, err := NewTermRenderer("styles/dark.json", ansi.Options{
+		WordWrap: 80,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	in, err := ioutil.ReadFile(markdown)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	b, err := r.Render(string(in))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// verify
+	td, err := ioutil.ReadFile(testFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !bytes.Equal(td, []byte(b)) {
 		t.Errorf("Rendered output doesn't match!\nExpected: `\n%s`\nGot: `\n%s`\n",
 			string(td), b)
 	}
