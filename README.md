@@ -42,7 +42,6 @@ r, _ := glamour.NewTermRenderer("dark", ansi.Options{
 
 out, _ := r.Render(in)
 fmt.Print(out)
-}
 ```
 
 
