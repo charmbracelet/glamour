@@ -16,9 +16,11 @@ import (
 	"github.com/yuin/goldmark/util"
 
 	"github.com/charmbracelet/glamour/ansi"
-	_ "github.com/charmbracelet/glamour/statik"
+	_ "github.com/charmbracelet/glamour/statik" // pre-generated styles
 )
 
+// TermRenderer can be used to render markdown content, posing a depth of
+// customization and styles to fit your needs.
 type TermRenderer struct {
 	md        goldmark.Markdown
 	buf       bytes.Buffer
@@ -94,6 +96,8 @@ func (tr *TermRenderer) Write(b []byte) (int, error) {
 	return tr.buf.Write(b)
 }
 
+// Close must be called after writing to TermRenderer. You can then retrieve
+// the rendered markdown by calling Read.
 func (tr *TermRenderer) Close() error {
 	err := tr.md.Convert(tr.buf.Bytes(), &tr.renderBuf)
 	if err != nil {
