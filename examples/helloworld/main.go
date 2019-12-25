@@ -16,5 +16,5 @@ Bye!
 `
 
 	out, _ := glamour.Render(in, "dark")
-	fmt.Printf(out)
+	fmt.Print(out)
 }

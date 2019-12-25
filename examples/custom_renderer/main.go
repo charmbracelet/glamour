@@ -22,5 +22,5 @@ Bye!
 	})
 
 	out, _ := r.Render(in)
-	fmt.Printf("%s", out)
+	fmt.Print(out)
 }
