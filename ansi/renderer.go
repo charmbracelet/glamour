@@ -18,11 +18,12 @@ type Options struct {
 	Styles   StyleConfig
 }
 
+// ANSIRenderer renders markdown content as ANSI escaped sequences.
 type ANSIRenderer struct {
 	context RenderContext
 }
 
-// NewANSIRenderer returns a new ANSIRenderer with style and options set.
+// NewRenderer returns a new ANSIRenderer with style and options set.
 func NewRenderer(options Options) *ANSIRenderer {
 	return &ANSIRenderer{
 		context: NewRenderContext(options),

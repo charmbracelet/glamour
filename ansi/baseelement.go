@@ -13,6 +13,7 @@ import (
 	"github.com/lucasb-eyer/go-colorful"
 )
 
+// BaseElement renders a styled primitive element.
 type BaseElement struct {
 	Token  string
 	Prefix string

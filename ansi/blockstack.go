@@ -4,6 +4,8 @@ import (
 	"bytes"
 )
 
+// BlockStack is a stack of block elements, used to calculate the current
+// indentation & margin level during the rendering process.
 type BlockStack []BlockElement
 
 func (s *BlockStack) Len() int {

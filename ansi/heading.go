@@ -9,6 +9,7 @@ import (
 	"github.com/muesli/reflow/wordwrap"
 )
 
+// HeadingElements are used to render headings.
 type HeadingElement struct {
 	Level int
 	First bool

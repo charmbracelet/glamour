@@ -7,6 +7,9 @@ import (
 	"github.com/muesli/reflow/wordwrap"
 )
 
+// BlockElement provides a render buffer for children of a block element.
+// After all children have been rendered into it, it applies indentation and
+// margins around them and writes everything to the parent rendering buffer.
 type BlockElement struct {
 	Block   *bytes.Buffer
 	Style   StyleBlock

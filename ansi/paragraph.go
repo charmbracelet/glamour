@@ -8,6 +8,7 @@ import (
 	"github.com/muesli/reflow/wordwrap"
 )
 
+// ParagraphElements are used to render individual paragraphs.
 type ParagraphElement struct {
 	First bool
 }

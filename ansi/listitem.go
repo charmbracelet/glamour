@@ -5,6 +5,7 @@ import (
 	"strconv"
 )
 
+// ItemElements are used to render items inside a list.
 type ItemElement struct {
 	Enumeration uint
 }

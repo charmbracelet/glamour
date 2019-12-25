@@ -10,14 +10,18 @@ import (
 	astext "github.com/yuin/goldmark/extension/ast"
 )
 
+// ElementRenderer is called when entering a markdown node.
 type ElementRenderer interface {
 	Render(w io.Writer, ctx RenderContext) error
 }
 
+// ElementFinisher is called when leaving a markdown node.
 type ElementFinisher interface {
 	Finish(w io.Writer, ctx RenderContext) error
 }
 
+// Elements are used to instruct glamour how to render individual markdown
+// nodes.
 type Element struct {
 	Entering string
 	Exiting  string
@@ -25,6 +29,7 @@ type Element struct {
 	Finisher ElementFinisher
 }
 
+// NewElement returns the appropriate render Element for a given node.
 func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 	ctx := tr.context
 	// fmt.Print(strings.Repeat("  ", ctx.blockStack.Len()), node.Type(), node.Kind())

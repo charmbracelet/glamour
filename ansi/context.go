@@ -7,6 +7,7 @@ import (
 	"github.com/microcosm-cc/bluemonday"
 )
 
+// RenderContext holds the current rendering options and state.
 type RenderContext struct {
 	options Options
 
@@ -16,6 +17,7 @@ type RenderContext struct {
 	stripper *bluemonday.Policy
 }
 
+// NewRenderContext returns a new RenderContext.
 func NewRenderContext(options Options) RenderContext {
 	return RenderContext{
 		options:    options,
@@ -25,6 +27,7 @@ func NewRenderContext(options Options) RenderContext {
 	}
 }
 
+// SanitizeHTML sanitizes HTML content.
 func (ctx RenderContext) SanitizeHTML(s string, trimSpaces bool) string {
 	s = ctx.stripper.Sanitize(s)
 	if trimSpaces {

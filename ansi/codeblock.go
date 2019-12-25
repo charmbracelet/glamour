@@ -10,6 +10,7 @@ import (
 	"github.com/muesli/reflow/indent"
 )
 
+// CodeBlockElements are used to render code blocks.
 type CodeBlockElement struct {
 	Code     string
 	Language string

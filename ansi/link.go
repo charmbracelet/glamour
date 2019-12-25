@@ -4,6 +4,7 @@ import (
 	"io"
 )
 
+// LinkElements are used to render hyperlinks.
 type LinkElement struct {
 	Text    string
 	BaseURL string

@@ -8,6 +8,7 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
+// TableElements are used to render tables.
 type TableElement struct {
 	writer      *tablewriter.Table
 	styleWriter *StyleWriter
