@@ -17,7 +17,7 @@ import "github.com/charmbracelet/glamour"
 in := `# Hello World
 
 This is a simple example of glamour!
-Check out the other [other examples](https://github.com/charmbracelet/glamour/tree/master/examples).
+Check out the [other examples](https://github.com/charmbracelet/glamour/tree/master/examples).
 
 Bye!
 `
