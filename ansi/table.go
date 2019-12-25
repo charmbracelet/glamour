@@ -16,12 +16,15 @@ type TableElement struct {
 	cell        []string
 }
 
+// A TableRowElement is used to render a single row in a table.
 type TableRowElement struct {
 }
 
+// A TableHeadElement is used to render a table's head element.
 type TableHeadElement struct {
 }
 
+// A TableCellElement is used to render a single cell in a row.
 type TableCellElement struct {
 	Text string
 	Head bool

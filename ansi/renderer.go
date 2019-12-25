@@ -12,6 +12,7 @@ import (
 	"github.com/yuin/goldmark/util"
 )
 
+// Options is used to configure an ANSIRenderer.
 type Options struct {
 	BaseURL  string
 	WordWrap int
@@ -79,17 +80,17 @@ func (r *ANSIRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegisterer) {
 	reg.Register(astext.KindStrikethrough, r.renderNode)
 }
 
-func (tr *ANSIRenderer) renderNode(w util.BufWriter, source []byte, node ast.Node, entering bool) (ast.WalkStatus, error) {
+func (r *ANSIRenderer) renderNode(w util.BufWriter, source []byte, node ast.Node, entering bool) (ast.WalkStatus, error) {
 	// _, _ = w.Write([]byte(node.Type.String()))
 	writeTo := io.Writer(w)
-	bs := tr.context.blockStack
+	bs := r.context.blockStack
 
 	// children get rendered by their parent
 	if isChild(node) {
 		return ast.WalkContinue, nil
 	}
 
-	e := tr.NewElement(node, source)
+	e := r.NewElement(node, source)
 	if entering {
 		// everything below the Document element gets rendered into a block buffer
 		if bs.Len() > 0 {
@@ -98,7 +99,7 @@ func (tr *ANSIRenderer) renderNode(w util.BufWriter, source []byte, node ast.Nod
 
 		_, _ = writeTo.Write([]byte(e.Entering))
 		if e.Renderer != nil {
-			err := e.Renderer.Render(writeTo, tr.context)
+			err := e.Renderer.Render(writeTo, r.context)
 			if err != nil {
 				return ast.WalkStop, err
 			}
@@ -116,7 +117,7 @@ func (tr *ANSIRenderer) renderNode(w util.BufWriter, source []byte, node ast.Nod
 		}
 
 		if e.Finisher != nil {
-			err := e.Finisher.Finish(writeTo, tr.context)
+			err := e.Finisher.Finish(writeTo, r.context)
 			if err != nil {
 				return ast.WalkStop, err
 			}

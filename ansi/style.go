@@ -4,6 +4,7 @@ import (
 	"github.com/lucasb-eyer/go-colorful"
 )
 
+// StylePrimitive holds all the basic style settings.
 type StylePrimitive struct {
 	BlockPrefix     string  `json:"block_prefix"`
 	BlockSuffix     string  `json:"block_suffix"`
@@ -23,12 +24,14 @@ type StylePrimitive struct {
 	Format          string  `json:"format"`
 }
 
+// StyleTask holds the style settings for a task item.
 type StyleTask struct {
 	StylePrimitive
 	Ticked   string `json:"ticked"`
 	Unticked string `json:"unticked"`
 }
 
+// StyleBlock holds the basic style settings for block elements.
 type StyleBlock struct {
 	StylePrimitive
 	Indent      *uint   `json:"indent"`
@@ -36,6 +39,7 @@ type StyleBlock struct {
 	Margin      *uint   `json:"margin"`
 }
 
+// StyleCodeBlock holds the style settings for a code block.
 type StyleCodeBlock struct {
 	StyleBlock
 	Theme  string `json:"theme"`
@@ -74,11 +78,13 @@ type StyleCodeBlock struct {
 	} `json:"chroma"`
 }
 
+// StyleList holds the style settings for a list.
 type StyleList struct {
 	StyleBlock
 	LevelIndent uint `json:"level_indent"`
 }
 
+// StyleTable holds the style settings for a table.
 type StyleTable struct {
 	StyleBlock
 	CenterSeparator *string `json:"center_separator"`
@@ -86,6 +92,7 @@ type StyleTable struct {
 	RowSeparator    *string `json:"row_separator"`
 }
 
+// StyleConfig is used to configure the styling behavior of an ANSIRenderer.
 type StyleConfig struct {
 	Document   StyleBlock `json:"document"`
 	BlockQuote StyleBlock `json:"block_quote"`

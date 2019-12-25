@@ -20,7 +20,7 @@ type ElementFinisher interface {
 	Finish(w io.Writer, ctx RenderContext) error
 }
 
-// Elements are used to instruct glamour how to render individual markdown
+// An Element is used to instruct the renderer how to handle individual markdown
 // nodes.
 type Element struct {
 	Entering string

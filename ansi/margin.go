@@ -8,12 +8,15 @@ import (
 	"github.com/muesli/reflow/padding"
 )
 
+// MarginWriter is a Writer that applies indentation and padding around
+// whatever you write to it.
 type MarginWriter struct {
 	w  io.Writer
 	pw *padding.Writer
 	iw *indent.Writer
 }
 
+// NewMarginWriter returns a new MarginWriter.
 func NewMarginWriter(ctx RenderContext, w io.Writer, rules StyleBlock) *MarginWriter {
 	bs := ctx.blockStack
 
