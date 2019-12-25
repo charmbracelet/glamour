@@ -26,6 +26,8 @@ out, _ := glamour.Render(in, "dark")
 fmt.Printf(out)
 ```
 
+![HelloWorld Example](https://github.com/charmbracelet/glamour/raw/master/examples/helloworld/helloworld.png)
+
 
 ## Glamourous Projects
 
