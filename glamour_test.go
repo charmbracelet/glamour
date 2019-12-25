@@ -61,3 +61,26 @@ func TestTermRenderer(t *testing.T) {
 			string(td), b)
 	}
 }
+
+func TestRenderHelpers(t *testing.T) {
+	in, err := ioutil.ReadFile(markdown)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	b, err := Render(string(in), "dark")
+	if err != nil {
+		t.Error(err)
+	}
+
+	// verify
+	td, err := ioutil.ReadFile(testFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if b != string(td) {
+		t.Errorf("Rendered output doesn't match!\nExpected: `\n%s`\nGot: `\n%s`\n",
+			string(td), b)
+	}
+}
