@@ -4,7 +4,7 @@ import (
 	"io"
 )
 
-// TaskElements are used to render tasks inside a todo-list.
+// A TaskElement is used to render tasks inside a todo-list.
 type TaskElement struct {
 	Checked bool
 }

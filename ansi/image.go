@@ -4,7 +4,7 @@ import (
 	"io"
 )
 
-// ImageElements are used to render images elements.
+// An ImageElement is used to render images elements.
 type ImageElement struct {
 	Text    string
 	BaseURL string
