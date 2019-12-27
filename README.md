@@ -2,7 +2,7 @@
 
 [![GoDoc](https://godoc.org/github.com/golang/gddo?status.svg)](https://godoc.org/github.com/charmbracelet/glamour) [![Build Status](https://travis-ci.org/charmbracelet/glamour.svg?branch=master)](https://travis-ci.org/charmbracelet/glamour) [![Coverage Status](https://coveralls.io/repos/github/charmbracelet/glamour/badge.svg?branch=master)](https://coveralls.io/github/charmbracelet/glamour?branch=master) [![Go ReportCard](http://goreportcard.com/badge/charmbracelet/glamour)](http://goreportcard.com/report/charmbracelet/glamour)
 
-Write beautiful command-line tools with *glamour*!
+Write gorgeous command-line tools with *glamour*!
 
 `glamour` lets you use [markdown](https://en.wikipedia.org/wiki/Markdown)
 templates to render user-friendly & stylish output on [ANSI](https://en.wikipedia.org/wiki/ANSI_escape_code)
