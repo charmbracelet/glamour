@@ -2,6 +2,7 @@ package ansi
 
 import (
 	"io"
+	"net/url"
 )
 
 // A LinkElement is used to render hyperlinks.
@@ -14,8 +15,7 @@ type LinkElement struct {
 
 func (e *LinkElement) Render(w io.Writer, ctx RenderContext) error {
 	var textRendered bool
-	if len(e.Text) > 0 &&
-		e.Text != e.URL {
+	if len(e.Text) > 0 && e.Text != e.URL {
 		textRendered = true
 
 		el := &BaseElement{
@@ -52,7 +52,9 @@ func (e *LinkElement) Render(w io.Writer, ctx RenderContext) error {
 		}
 	*/
 
-	if len(e.URL) > 0 {
+	u, err := url.Parse(e.URL)
+	if err == nil &&
+		"#"+u.Fragment != e.URL { // if the URL only consists of an anchor, ignore it
 		pre := " "
 		style := ctx.options.Styles.Link
 		if !textRendered {
