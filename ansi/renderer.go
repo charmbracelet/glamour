@@ -129,17 +129,15 @@ func (r *ANSIRenderer) renderNode(w util.BufWriter, source []byte, node ast.Node
 }
 
 func isChild(node ast.Node) bool {
-	if node.Parent() == nil {
-		return false
+	for n := node.Parent(); n != nil; n = n.Parent() {
+		// These types are already rendered by their parent
+		switch n.Kind() {
+		case ast.KindLink, ast.KindImage, ast.KindEmphasis, astext.KindStrikethrough, ast.KindBlockquote, astext.KindTableCell:
+			return true
+		}
 	}
 
-	// These types are already rendered by their parent
-	switch node.Parent().Kind() {
-	case ast.KindLink, ast.KindImage, ast.KindEmphasis, astext.KindStrikethrough, ast.KindBlockquote, astext.KindTableCell:
-		return true
-	default:
-		return false
-	}
+	return false
 }
 
 func resolveRelativeURL(baseURL string, rel string) string {
