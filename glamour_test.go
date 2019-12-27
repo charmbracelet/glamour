@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"io/ioutil"
 	"testing"
-
-	"github.com/charmbracelet/glamour/ansi"
 )
 
 const (
@@ -15,9 +13,9 @@ const (
 )
 
 func TestTermRendererWriter(t *testing.T) {
-	r, err := NewTermRenderer("styles/dark.json", ansi.Options{
-		WordWrap: 80,
-	})
+	r, err := NewTermRenderer(
+		WithStandardStyle("dark"),
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -63,9 +61,9 @@ func TestTermRendererWriter(t *testing.T) {
 }
 
 func TestTermRenderer(t *testing.T) {
-	r, err := NewTermRenderer("styles/dark.json", ansi.Options{
-		WordWrap: 80,
-	})
+	r, err := NewTermRenderer(
+		WithStandardStyle("dark"),
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
