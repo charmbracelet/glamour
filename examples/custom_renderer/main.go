@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/glamour"
-	"github.com/charmbracelet/glamour/ansi"
 )
 
 func main() {
@@ -17,9 +16,10 @@ line.
 Bye!
 `
 
-	r, _ := glamour.NewTermRenderer("dark", ansi.Options{
-		WordWrap: int(40),
-	})
+	r, _ := glamour.NewTermRenderer(
+		glamour.WithStandardStyle("dark"),
+		glamour.WithWordWrap(40),
+	)
 
 	out, _ := r.Render(in)
 	fmt.Print(out)
