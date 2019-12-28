@@ -36,7 +36,7 @@ import "github.com/charmbracelet/glamour"
 r, _ := glamour.NewTermRenderer(
 	glamour.WithStandardStyle("dark"),
 	glamour.WithWordWrap(40),
-})
+)
 
 out, _ := r.Render(in)
 fmt.Print(out)
