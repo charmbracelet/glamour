@@ -108,7 +108,7 @@ type StyleConfig struct {
 	H6      StyleBlock `json:"h6"`
 
 	Text           StylePrimitive `json:"text"`
-	Strikethrough  StylePrimitive `json:"strike_through"`
+	Strikethrough  StylePrimitive `json:"strikethrough"`
 	Emph           StylePrimitive `json:"emph"`
 	Strong         StylePrimitive `json:"strong"`
 	HorizontalRule StylePrimitive `json:"hr"`
