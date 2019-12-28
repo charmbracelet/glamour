@@ -31,10 +31,7 @@ fmt.Print(out)
 ### Custom Renderer
 
 ```go
-import (
-	"github.com/charmbracelet/glamour"
-	"github.com/charmbracelet/glamour/ansi"
-)
+import "github.com/charmbracelet/glamour"
 
 r, _ := glamour.NewTermRenderer(
 	glamour.WithStandardStyle("dark"),
