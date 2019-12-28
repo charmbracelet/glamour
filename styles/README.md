@@ -510,6 +510,32 @@ Output:
 
 ---
 
+### strikethrough
+
+The `strikethrough` element represents strikethrough text.
+
+#### Example
+
+Markdown:
+
+```markdown
+~~Scratch this~~.
+```
+
+Style:
+
+```json
+"strikethrough": {
+    "crossed_out": true
+}
+```
+
+Output:
+
+![Strikethrough Example](https://github.com/charmbracelet/glamour/raw/master/styles/examples/strikethrough.png)
+
+---
+
 ### hr
 
 The `hr` element represents a horizontal rule.
