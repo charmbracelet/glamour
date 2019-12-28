@@ -3,6 +3,7 @@ package ansi
 import (
 	"bytes"
 	"fmt"
+	"html"
 	"io"
 	"strings"
 
@@ -165,7 +166,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		}
 		return Element{
 			Renderer: &BaseElement{
-				Token: ctx.SanitizeHTML(s, false),
+				Token: html.UnescapeString(s),
 				Style: ctx.options.Styles.Text,
 			},
 		}
@@ -180,7 +181,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 
 		return Element{
 			Renderer: &BaseElement{
-				Token: ctx.SanitizeHTML(s, false),
+				Token: html.UnescapeString(s),
 				Style: style,
 			},
 		}
@@ -192,7 +193,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 
 		return Element{
 			Renderer: &BaseElement{
-				Token: ctx.SanitizeHTML(s, false),
+				Token: html.UnescapeString(s),
 				Style: style,
 			},
 		}
