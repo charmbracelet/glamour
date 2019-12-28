@@ -16,8 +16,10 @@ import (
 )
 
 const (
-	generate    = false
-	examplesDir = "../styles/examples/"
+	generateExamples = false
+	generateIssues   = false
+	examplesDir      = "../styles/examples/"
+	issuesDir        = "../testdata/issues/"
 )
 
 func TestRenderer(t *testing.T) {
@@ -70,7 +72,77 @@ func TestRenderer(t *testing.T) {
 		}
 
 		// generate
-		if generate {
+		if generateExamples {
+			err = ioutil.WriteFile(tn, buf.Bytes(), 0644)
+			if err != nil {
+				t.Fatal(err)
+			}
+			continue
+		}
+
+		// verify
+		td, err := ioutil.ReadFile(tn)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if !bytes.Equal(td, buf.Bytes()) {
+			t.Errorf("Rendered output for %s doesn't match!\nExpected: `\n%s`\nGot: `\n%s`\n",
+				bn, string(td), buf.String())
+		}
+	}
+}
+
+func TestRendererIssues(t *testing.T) {
+	files, err := filepath.Glob(issuesDir + "*.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, f := range files {
+		bn := strings.TrimSuffix(filepath.Base(f), ".md")
+		tn := filepath.Join(issuesDir, bn+".test")
+
+		in, err := ioutil.ReadFile(f)
+		if err != nil {
+			t.Fatal(err)
+		}
+		b, err := ioutil.ReadFile("../styles/dark.json")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		options := Options{
+			WordWrap: 80,
+		}
+		err = json.Unmarshal(b, &options.Styles)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		md := goldmark.New(
+			goldmark.WithExtensions(
+				extension.GFM,
+				extension.DefinitionList,
+			),
+			goldmark.WithParserOptions(
+				parser.WithAutoHeadingID(),
+			),
+		)
+
+		ar := NewRenderer(options)
+		md.SetRenderer(
+			renderer.NewRenderer(
+				renderer.WithNodeRenderers(util.Prioritized(ar, 1000))))
+
+		var buf bytes.Buffer
+		err = md.Convert(in, &buf)
+		if err != nil {
+			t.Error(err)
+		}
+
+		// generate
+		if generateIssues {
 			err = ioutil.WriteFile(tn, buf.Bytes(), 0644)
 			if err != nil {
 				t.Fatal(err)
