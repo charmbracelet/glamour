@@ -334,7 +334,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		n := node.(*ast.RawHTML)
 		return Element{
 			Renderer: &BaseElement{
-				Token: ctx.SanitizeHTML(string(n.Text(source)), true) + "\n",
+				Token: ctx.SanitizeHTML(string(n.Text(source)), true),
 				Style: ctx.options.Styles.HTMLSpan.StylePrimitive,
 			},
 		}
