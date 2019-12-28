@@ -21,17 +21,17 @@ func (e *HeadingElement) Render(w io.Writer, ctx RenderContext) error {
 
 	switch e.Level {
 	case 1:
-		rules = cascadeStyles(false, rules, ctx.options.Styles.H1)
+		rules = cascadeStyles(true, rules, ctx.options.Styles.H1)
 	case 2:
-		rules = cascadeStyles(false, rules, ctx.options.Styles.H2)
+		rules = cascadeStyles(true, rules, ctx.options.Styles.H2)
 	case 3:
-		rules = cascadeStyles(false, rules, ctx.options.Styles.H3)
+		rules = cascadeStyles(true, rules, ctx.options.Styles.H3)
 	case 4:
-		rules = cascadeStyles(false, rules, ctx.options.Styles.H4)
+		rules = cascadeStyles(true, rules, ctx.options.Styles.H4)
 	case 5:
-		rules = cascadeStyles(false, rules, ctx.options.Styles.H5)
+		rules = cascadeStyles(true, rules, ctx.options.Styles.H5)
 	case 6:
-		rules = cascadeStyles(false, rules, ctx.options.Styles.H6)
+		rules = cascadeStyles(true, rules, ctx.options.Styles.H6)
 	}
 
 	if !e.First {
@@ -40,7 +40,7 @@ func (e *HeadingElement) Render(w io.Writer, ctx RenderContext) error {
 
 	be := BlockElement{
 		Block: &bytes.Buffer{},
-		Style: cascadeStyle(bs.Current().Style, rules, true),
+		Style: cascadeStyle(bs.Current().Style, rules, false),
 	}
 	bs.Push(be)
 

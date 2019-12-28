@@ -91,5 +91,5 @@ func (s BlockStack) Current() BlockElement {
 func (s BlockStack) With(child StylePrimitive) StylePrimitive {
 	sb := StyleBlock{}
 	sb.StylePrimitive = child
-	return cascadeStyle(s.Current().Style, sb, true).StylePrimitive
+	return cascadeStyle(s.Current().Style, sb, false).StylePrimitive
 }

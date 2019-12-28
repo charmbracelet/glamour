@@ -136,38 +136,37 @@ type StyleConfig struct {
 	HTMLSpan  StyleBlock `json:"html_span"`
 }
 
-func cascadeStyles(onlyColors bool, s ...StyleBlock) StyleBlock {
+func cascadeStyles(toBlock bool, s ...StyleBlock) StyleBlock {
 	var r StyleBlock
 
 	for _, v := range s {
-		r = cascadeStyle(r, v, onlyColors)
+		r = cascadeStyle(r, v, toBlock)
 	}
 	return r
 }
 
-func cascadeStyle(parent StyleBlock, child StyleBlock, onlyColors bool) StyleBlock {
+func cascadeStyle(parent StyleBlock, child StyleBlock, toBlock bool) StyleBlock {
 	s := child
 
 	s.Color = parent.Color
 	s.BackgroundColor = parent.BackgroundColor
+	s.Underline = parent.Underline
+	s.Bold = parent.Bold
+	s.Italic = parent.Italic
+	s.CrossedOut = parent.CrossedOut
+	s.Faint = parent.Faint
+	s.Conceal = parent.Conceal
+	s.Overlined = parent.Overlined
+	s.Inverse = parent.Inverse
+	s.Blink = parent.Blink
 
-	if !onlyColors {
+	if toBlock {
 		s.Indent = parent.Indent
 		s.Margin = parent.Margin
-		s.Underline = parent.Underline
-		s.Bold = parent.Bold
-		s.Italic = parent.Italic
-		s.CrossedOut = parent.CrossedOut
-		s.Faint = parent.Faint
-		s.Conceal = parent.Conceal
-		s.Overlined = parent.Overlined
-		s.Inverse = parent.Inverse
-		s.Blink = parent.Blink
 		s.BlockPrefix = parent.BlockPrefix
 		s.BlockSuffix = parent.BlockSuffix
 		s.Prefix = parent.Prefix
 		s.Suffix = parent.Suffix
-		s.Format = parent.Format
 	}
 
 	if child.Color != nil {

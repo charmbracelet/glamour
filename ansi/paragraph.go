@@ -22,7 +22,7 @@ func (e *ParagraphElement) Render(w io.Writer, ctx RenderContext) error {
 	}
 	be := BlockElement{
 		Block: &bytes.Buffer{},
-		Style: cascadeStyle(bs.Current().Style, rules, true),
+		Style: cascadeStyle(bs.Current().Style, rules, false),
 	}
 	bs.Push(be)
 

@@ -78,7 +78,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 	case ast.KindBlockquote:
 		e := &BlockElement{
 			Block:   &bytes.Buffer{},
-			Style:   cascadeStyle(ctx.blockStack.Current().Style, ctx.options.Styles.BlockQuote, true),
+			Style:   cascadeStyle(ctx.blockStack.Current().Style, ctx.options.Styles.BlockQuote, false),
 			Margin:  true,
 			Newline: true,
 		}
@@ -107,7 +107,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 
 		e := &BlockElement{
 			Block:   &bytes.Buffer{},
-			Style:   cascadeStyle(ctx.blockStack.Current().Style, s, true),
+			Style:   cascadeStyle(ctx.blockStack.Current().Style, s, false),
 			Margin:  true,
 			Newline: true,
 		}
@@ -281,7 +281,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		// n := node.(*ast.CodeSpan)
 		e := &BlockElement{
 			Block: &bytes.Buffer{},
-			Style: cascadeStyle(ctx.blockStack.Current().Style, ctx.options.Styles.Code, true),
+			Style: cascadeStyle(ctx.blockStack.Current().Style, ctx.options.Styles.Code, false),
 		}
 		return Element{
 			Renderer: e,
@@ -344,7 +344,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 	case astext.KindDefinitionList:
 		e := &BlockElement{
 			Block:   &bytes.Buffer{},
-			Style:   cascadeStyle(ctx.blockStack.Current().Style, ctx.options.Styles.DefinitionList, true),
+			Style:   cascadeStyle(ctx.blockStack.Current().Style, ctx.options.Styles.DefinitionList, false),
 			Margin:  true,
 			Newline: true,
 		}
