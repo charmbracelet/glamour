@@ -209,10 +209,9 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 	// Links
 	case ast.KindLink:
 		n := node.(*ast.Link)
-		text := string(n.Text(source))
 		return Element{
 			Renderer: &LinkElement{
-				Text:    text,
+				Text:    textFromChildren(node, source),
 				BaseURL: ctx.options.BaseURL,
 				URL:     string(n.Destination),
 			},
@@ -380,4 +379,22 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		fmt.Println("Warning: unhandled element", node.Kind().String())
 		return Element{}
 	}
+}
+
+func textFromChildren(node ast.Node, source []byte) string {
+	var s string
+	for c := node.FirstChild(); c != nil; c = c.NextSibling() {
+		if c.Kind() == ast.KindText {
+			cn := c.(*ast.Text)
+			s += string(cn.Segment.Value(source))
+
+			if cn.HardLineBreak() || (cn.SoftLineBreak()) {
+				s += "\n"
+			}
+		} else {
+			s += string(c.Text(source))
+		}
+	}
+
+	return s
 }
