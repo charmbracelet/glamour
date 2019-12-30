@@ -2,7 +2,6 @@ package ansi
 
 import (
 	"io"
-	"log"
 	"net/url"
 	"strings"
 
@@ -147,7 +146,7 @@ func isChild(node ast.Node) bool {
 func resolveRelativeURL(baseURL string, rel string) string {
 	u, err := url.Parse(rel)
 	if err != nil {
-		log.Fatal(err)
+		return rel
 	}
 	if u.IsAbs() {
 		return rel
