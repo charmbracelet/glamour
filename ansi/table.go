@@ -85,12 +85,20 @@ func (e *TableElement) Finish(w io.Writer, ctx RenderContext) error {
 }
 
 func (e *TableRowElement) Finish(w io.Writer, ctx RenderContext) error {
+	if ctx.table.writer == nil {
+		return nil
+	}
+
 	ctx.table.writer.Append(ctx.table.cell)
 	ctx.table.cell = []string{}
 	return nil
 }
 
 func (e *TableHeadElement) Finish(w io.Writer, ctx RenderContext) error {
+	if ctx.table.writer == nil {
+		return nil
+	}
+
 	ctx.table.writer.SetHeader(ctx.table.header)
 	ctx.table.header = []string{}
 	return nil
