@@ -1,0 +1,41 @@
+name: build
+on: [push, pull_request]
+jobs:
+  test:
+    strategy:
+      matrix:
+        go-version: [1.11.x, 1.12.x, 1.13.x]
+        platform: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.platform }}
+    steps:
+
+    - name: Install Go
+      uses: actions/setup-go@v1
+      with:
+        go-version: ${{ matrix.go-version }}
+
+    - name: Install dependencies
+      run: go get github.com/axw/gocov/gocov github.com/modocache/gover github.com/mattn/goveralls
+      if: matrix.go-version == '1.13.x' && matrix.os == 'ubuntu-latest'
+
+    - name: Checkout code
+      uses: actions/checkout@v1
+
+    - name: Download Go modules
+      env:
+        GO111MODULE: "on"
+      run: go mod download
+
+    - name: Build
+      env:
+        GO111MODULE: "on"
+      run: go build -v ./...
+
+    - name: Test
+      env:
+        GO111MODULE: "on"
+      run: go test ./...
+
+    - name: Coverage
+      run: $GOPATH/bin/goveralls -service=travis-ci
+      if: matrix.go-version == '1.13.x' && matrix.os == 'ubuntu-latest'
