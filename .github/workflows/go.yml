@@ -27,6 +27,7 @@ jobs:
 
     - name: Test
       run: go test ./...
+      if: matrix.platform != 'windows-latest'
 
     - name: Coverage
       env:
