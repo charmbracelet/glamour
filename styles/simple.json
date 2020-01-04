@@ -1,5 +1,13 @@
 {
   "document": {},
+  "block_quote": {
+    "indent": 1,
+    "indent_token": "\u003e "
+  },
+  "paragraph": {},
+  "list": {
+    "level_indent": 4
+  },
   "heading": {
     "block_suffix": "\n"
   },
@@ -23,27 +31,6 @@
     "prefix": "###### "
   },
   "text": {},
-  "list": {
-    "level_indent": 4
-  },
-  "item": {
-    "block_prefix": "- "
-  },
-  "enumeration": {
-    "block_prefix": ". "
-  },
-  "link_text": {},
-  "link": {},
-  "image_text": {
-    "format": "Image: {{.text}} => "
-  },
-  "image": {},
-  "code": {
-    "block_prefix": "`",
-    "block_suffix": "`"
-  },
-  "code_block": {},
-  "table": {},
   "strikethrough": {
     "block_prefix": "~~",
     "block_suffix": "~~"
@@ -59,10 +46,25 @@
   "hr": {
     "format": "\n--------\n"
   },
-  "block_quote": {
-    "indent": 1,
-    "indent_token": "> "
+  "item": {
+    "block_prefix": "- "
   },
+  "enumeration": {
+    "block_prefix": ". "
+  },
+  "task": {},
+  "link": {},
+  "link_text": {},
+  "image": {},
+  "image_text": {
+    "format": "Image: {{.text}} =\u003e "
+  },
+  "code": {
+    "block_prefix": "`",
+    "block_suffix": "`"
+  },
+  "code_block": {},
+  "table": {},
   "definition_list": {},
   "definition_term": {},
   "definition_description": {
