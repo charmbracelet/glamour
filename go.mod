@@ -9,6 +9,5 @@ require (
 	github.com/microcosm-cc/bluemonday v1.0.2
 	github.com/muesli/reflow v0.0.0-20191216070243-e5efeac4e302
 	github.com/olekukonko/tablewriter v0.0.4
-	github.com/rakyll/statik v0.1.6
 	github.com/yuin/goldmark v1.1.19
 )

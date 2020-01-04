@@ -3,11 +3,10 @@ package glamour
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
-	"net/http"
 	"os"
 
-	"github.com/rakyll/statik/fs"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
@@ -15,10 +14,7 @@ import (
 	"github.com/yuin/goldmark/util"
 
 	"github.com/charmbracelet/glamour/ansi"
-	_ "github.com/charmbracelet/glamour/statik" // pre-generated styles
 )
-
-var statikFS http.FileSystem
 
 // A TermRendererOption sets an option on a TermRenderer.
 type TermRendererOption func(*TermRenderer) error
@@ -30,14 +26,6 @@ type TermRenderer struct {
 	ansiOptions ansi.Options
 	buf         bytes.Buffer
 	renderBuf   bytes.Buffer
-}
-
-func init() {
-	var err error
-	statikFS, err = fs.New()
-	if err != nil {
-		panic(err)
-	}
 }
 
 // Render initializes a new TermRenderer and renders a markdown with a specific
@@ -103,11 +91,12 @@ func WithBaseURL(baseURL string) TermRendererOption {
 // style.
 func WithStandardStyle(style string) TermRendererOption {
 	return func(tr *TermRenderer) error {
-		jsonBytes, err := fs.ReadFile(statikFS, "/"+style+".json")
+		styles, err := getDefaultStyle(style)
 		if err != nil {
 			return err
 		}
-		return json.Unmarshal(jsonBytes, &tr.ansiOptions.Styles)
+		tr.ansiOptions.Styles = *styles
+		return nil
 	}
 }
 
@@ -117,13 +106,19 @@ func WithStandardStyle(style string) TermRendererOption {
 func WithStylePath(stylePath string) TermRendererOption {
 	return func(tr *TermRenderer) error {
 		jsonBytes, err := ioutil.ReadFile(stylePath)
-		if os.IsNotExist(err) {
-			jsonBytes, err = fs.ReadFile(statikFS, "/"+stylePath+".json")
-		}
-		if err != nil {
+		switch {
+		case err == nil:
+			return json.Unmarshal(jsonBytes, &tr.ansiOptions.Styles)
+		case os.IsNotExist(err):
+			styles, err := getDefaultStyle(stylePath)
+			if err != nil {
+				return err
+			}
+			tr.ansiOptions.Styles = *styles
+			return nil
+		default:
 			return err
 		}
-		return json.Unmarshal(jsonBytes, &tr.ansiOptions.Styles)
 	}
 }
 
@@ -193,4 +188,12 @@ func (tr *TermRenderer) RenderBytes(in []byte) ([]byte, error) {
 	var buf bytes.Buffer
 	err := tr.md.Convert(in, &buf)
 	return buf.Bytes(), err
+}
+
+func getDefaultStyle(style string) (*ansi.StyleConfig, error) {
+	styles, ok := DefaultStyles[style]
+	if !ok {
+		return nil, fmt.Errorf("%s: style not found", style)
+	}
+	return styles, nil
 }
