@@ -1,5 +1,10 @@
 # Glamour Style Guide
 
+The JSON files in this directory are generated from the default styles. To
+re-generate them, run:
+
+    go run ./internal/generate-style-json
+
 ## Block Elements
 
 Block elements contain other elements and are rendered around them. All block
