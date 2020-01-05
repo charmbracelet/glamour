@@ -3,7 +3,7 @@
 The JSON files in this directory are generated from the default styles. To
 re-generate them, run:
 
-    go run ./internal/generate-style-json
+    go generate ..
 
 ## Block Elements
 
