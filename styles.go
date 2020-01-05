@@ -1,5 +1,7 @@
 package glamour
 
+//go:generate go run ./internal/generate-style-json
+
 import (
 	"github.com/charmbracelet/glamour/ansi"
 )
