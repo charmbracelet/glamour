@@ -646,98 +646,12 @@ var (
 		},
 	}
 
-	// SimpleStyleConfig is the default simple style.
-	SimpleStyleConfig = ansi.StyleConfig{
-		BlockQuote: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{},
-			Indent:         uintPtr(1),
-			IndentToken:    stringPtr("> "),
-		},
-		List: ansi.StyleList{
-			LevelIndent: 4,
-		},
-		Heading: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
-				BlockSuffix: "\n",
-			},
-		},
-		H1: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
-				BlockSuffix: "\n\n",
-				Prefix:      "# ",
-			},
-		},
-		H2: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
-				Prefix: "## ",
-			},
-		},
-		H3: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
-				Prefix: "### ",
-			},
-		},
-		H4: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
-				Prefix: "#### ",
-			},
-		},
-		H5: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
-				Prefix: "##### ",
-			},
-		},
-		H6: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
-				Prefix: "###### ",
-			},
-		},
-		Text: ansi.StylePrimitive{},
-		Strikethrough: ansi.StylePrimitive{
-			BlockPrefix: "~~",
-			BlockSuffix: "~~",
-		},
-		Emph: ansi.StylePrimitive{
-			BlockPrefix: "*",
-			BlockSuffix: "*",
-		},
-		Strong: ansi.StylePrimitive{
-			BlockPrefix: "**",
-			BlockSuffix: "**",
-		},
-		HorizontalRule: ansi.StylePrimitive{
-			Format: "\n--------\n",
-		},
-		Item: ansi.StylePrimitive{
-			BlockPrefix: "- ",
-		},
-		Enumeration: ansi.StylePrimitive{
-			BlockPrefix: ". ",
-		},
-		Task: ansi.StyleTask{
-			StylePrimitive: ansi.StylePrimitive{},
-		},
-		ImageText: ansi.StylePrimitive{
-			Format: "Image: {{.text}} => ",
-		},
-		Code: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
-				BlockPrefix: "`",
-				BlockSuffix: "`",
-			},
-		},
-		DefinitionDescription: ansi.StylePrimitive{
-			BlockPrefix: "\n: ",
-		},
-	}
-
 	// DefaultStyles are the default styles.
 	DefaultStyles = map[string]*ansi.StyleConfig{
-		"ascii":  &ASCIIStyleConfig,
-		"dark":   &DarkStyleConfig,
-		"light":  &LightStyleConfig,
-		"notty":  &NoTTYStyleConfig,
-		"simple": &SimpleStyleConfig,
+		"ascii": &ASCIIStyleConfig,
+		"dark":  &DarkStyleConfig,
+		"light": &LightStyleConfig,
+		"notty": &NoTTYStyleConfig,
 	}
 )
 
