@@ -29,6 +29,12 @@ jobs:
       run: go test ./...
       if: matrix.platform != 'windows-latest'
 
+    - name: Linter
+      run: |
+        curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v1.22.2
+        $(go env GOPATH)/bin/golangci-lint run
+      if: matrix.go-version == '1.13.x' && matrix.platform == 'ubuntu-latest'
+
     - name: Coverage
       env:
         COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
