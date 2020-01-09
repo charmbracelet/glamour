@@ -29,6 +29,13 @@ jobs:
       run: go test ./...
       if: matrix.platform != 'windows-latest'
 
+    - name: Linter
+      uses: reviewdog/action-golangci-lint@v1.1.5
+      with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          golangci_lint_flags: "--enable-all --exclude-use-default=false"
+      if: matrix.go-version == '1.13.x' && matrix.platform == 'ubuntu-latest'
+
     - name: Coverage
       env:
         COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
