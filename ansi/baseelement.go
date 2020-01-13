@@ -2,15 +2,10 @@ package ansi
 
 import (
 	"bytes"
-	"errors"
-	"fmt"
 	"io"
-	"os"
-	"strconv"
 	"text/template"
 
-	"github.com/logrusorgru/aurora"
-	"github.com/lucasb-eyer/go-colorful"
+	"github.com/muesli/termenv"
 )
 
 // BaseElement renders a styled primitive element.
@@ -19,50 +14,6 @@ type BaseElement struct {
 	Prefix string
 	Suffix string
 	Style  StylePrimitive
-}
-
-func color(c *string) (uint8, error) {
-	if c == nil || len(*c) == 0 {
-		return 0, errors.New("invalid color")
-	}
-	if (*c)[0] == '#' {
-		i, err := hexToANSIColor(*c)
-		return uint8(i), err
-	}
-	i, err := strconv.Atoi(*c)
-	return uint8(i), err
-}
-
-func colorSeq(fg *string, bg *string) (string, error) {
-	fc := ""
-	bc := ""
-	if fg != nil {
-		fc = *fg
-	}
-	if bg != nil {
-		bc = *bg
-	}
-
-	fs := ""
-	bs := ""
-	f, err := colorful.Hex(fc)
-	if err == nil {
-		fs = fmt.Sprintf("38;2;%d;%d;%d", uint8(f.R*255), uint8(f.G*255), uint8(f.B*255))
-	}
-	b, err := colorful.Hex(bc)
-	if err == nil {
-		bs = fmt.Sprintf("48;2;%d;%d;%d", uint8(b.R*255), uint8(b.G*255), uint8(b.B*255))
-	}
-
-	if len(fs) > 0 || len(bs) > 0 {
-		seq := "\x1b[" + fs
-		if len(fs) > 0 {
-			seq += ";"
-		}
-		return seq + bs + "m", nil
-	}
-
-	return "", errors.New("invalid color")
 }
 
 func formatToken(format string, token string) (string, error) {
@@ -85,33 +36,16 @@ func renderText(w io.Writer, rules StylePrimitive, s string) {
 		return
 	}
 
-	truecolor := os.Getenv("COLORTERM") == "truecolor"
-	// FIXME: ugly true-color ANSI support hack
-	if truecolor {
-		seq, err := colorSeq(rules.Color, rules.BackgroundColor)
-		if err == nil {
-			s = seq + s
-		} else {
-			truecolor = false
-		}
+	p := termenv.SupportedColorProfile()
+	out := termenv.String(s)
+
+	if rules.Color != nil {
+		out = out.Foreground(p.Color(*rules.Color))
+	}
+	if rules.BackgroundColor != nil {
+		out = out.Background(p.Color(*rules.BackgroundColor))
 	}
 
-	out := aurora.Reset(s)
-
-	if !truecolor {
-		if rules.Color != nil {
-			i, err := color(rules.Color)
-			if err == nil {
-				out = out.Index(i)
-			}
-		}
-		if rules.BackgroundColor != nil {
-			i, err := color(rules.BackgroundColor)
-			if err == nil {
-				out = out.BgIndex(i)
-			}
-		}
-	}
 	if rules.Underline != nil && *rules.Underline {
 		out = out.Underline()
 	}
@@ -122,10 +56,10 @@ func renderText(w io.Writer, rules StylePrimitive, s string) {
 		out = out.Italic()
 	}
 	if rules.CrossedOut != nil && *rules.CrossedOut {
-		out = out.CrossedOut()
+		out = out.CrossOut()
 	}
 	if rules.Overlined != nil && *rules.Overlined {
-		out = out.Overlined()
+		out = out.Overline()
 	}
 	if rules.Inverse != nil && *rules.Inverse {
 		out = out.Reverse()
