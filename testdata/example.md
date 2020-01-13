@@ -1,7 +1,7 @@
 Glow
 ====
 
-A casual introduction.
+A casual introduction. 你好世界!
 
 ## Let’s talk about artichokes
 
