@@ -3,10 +3,16 @@ package glamour
 //go:generate go run ./internal/generate-style-json
 
 import (
+	"github.com/muesli/termenv"
+
 	"github.com/charmbracelet/glamour/ansi"
 )
 
 var (
+	// AutoStyleConfig is either pointing to DarkStyleConfig or LightStyleConfig
+	// depending on the background color of the terminal glamour is run in
+	AutoStyleConfig *ansi.StyleConfig
+
 	// ASCIIStyleConfig uses only ASCII characters.
 	ASCIIStyleConfig = ansi.StyleConfig{
 		Document: ansi.StyleBlock{
@@ -658,3 +664,12 @@ var (
 func boolPtr(b bool) *bool       { return &b }
 func stringPtr(s string) *string { return &s }
 func uintPtr(u uint) *uint       { return &u }
+
+func init() {
+	AutoStyleConfig = &LightStyleConfig
+	if termenv.HasDarkBackground() {
+		AutoStyleConfig = &DarkStyleConfig
+	}
+
+	DefaultStyles["auto"] = AutoStyleConfig
+}

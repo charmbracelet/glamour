@@ -90,6 +90,15 @@ func TestTermRenderer(t *testing.T) {
 	}
 }
 
+func TestStyles(t *testing.T) {
+	_, err := NewTermRenderer(
+		WithStandardStyle("auto"),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestRenderHelpers(t *testing.T) {
 	in, err := ioutil.ReadFile(markdown)
 	if err != nil {

@@ -36,7 +36,7 @@ func renderText(w io.Writer, rules StylePrimitive, s string) {
 		return
 	}
 
-	p := termenv.SupportedColorProfile()
+	p := termenv.ColorProfile()
 	out := termenv.String(s)
 
 	if rules.Color != nil {

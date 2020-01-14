@@ -40,8 +40,8 @@ github.com/microcosm-cc/bluemonday v1.0.2/go.mod h1:iVP4YcDBq+n/5fb23BhYFvIMq/le
 github.com/mitchellh/mapstructure v1.1.2/go.mod h1:FVVH3fgwuzCH5S8UJGiWEs2h04kUh9fWfEaFds41c1Y=
 github.com/muesli/reflow v0.0.0-20191216070243-e5efeac4e302 h1:jOh3Kh03uOFkRPV3PI4Am5tqACv2aELgbPgr7YgNX00=
 github.com/muesli/reflow v0.0.0-20191216070243-e5efeac4e302/go.mod h1:I9bWAt7QTg/que/qmUCJBGlj7wEq8OAFBjPNjc6xK4I=
-github.com/muesli/termenv v0.0.0-20200113040742-787d65c2d855 h1:9LXLBqvMQNRbUDWEvv16RF31WtWbO3S6ZA6Wrt+gBak=
-github.com/muesli/termenv v0.0.0-20200113040742-787d65c2d855/go.mod h1:QAW21ZWi5eDIAoYsevV52sibdVVCl44P+TvI0C0VKEU=
+github.com/muesli/termenv v0.0.0-20200114005430-a7aeffd54956 h1:OZIYilqRi/+iIIY/9SfuRpZIujheG5Stml2tI1PpAkM=
+github.com/muesli/termenv v0.0.0-20200114005430-a7aeffd54956/go.mod h1:QAW21ZWi5eDIAoYsevV52sibdVVCl44P+TvI0C0VKEU=
 github.com/nkovacs/streamquote v0.0.0-20170412213628-49af9bddb229/go.mod h1:0aYXnNPJ8l7uZxf45rWW1a/uME32OF0rhiYGNQ2oF2E=
 github.com/olekukonko/tablewriter v0.0.4 h1:vHD/YYe1Wolo78koG299f7V/VAS08c6IpCLn+Ejf/w8=
 github.com/olekukonko/tablewriter v0.0.4/go.mod h1:zq6QwlOf5SlnkVbMSr5EoBv3636FWnp+qbPhuoO21uA=
