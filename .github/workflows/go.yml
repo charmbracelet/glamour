@@ -9,6 +9,8 @@ jobs:
     runs-on: ${{ matrix.platform }}
     env:
       GO111MODULE: "on"
+      COLORTERM: "truecolor"
+      TERM: "xterm-256color"
     steps:
 
     - name: Install Go
