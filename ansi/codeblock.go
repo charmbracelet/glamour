@@ -105,7 +105,7 @@ func (e *CodeBlockElement) Render(w io.Writer, ctx RenderContext) error {
 	iw := &indent.Writer{
 		Indent: indentation + margin,
 		IndentFunc: func(wr io.Writer) {
-			renderText(w, bs.Current().Style.StylePrimitive, " ")
+			renderText(w, ctx.colorProfile, bs.Current().Style.StylePrimitive, " ")
 		},
 		Forward: &ansi.Writer{
 			Forward: w,
@@ -113,9 +113,9 @@ func (e *CodeBlockElement) Render(w io.Writer, ctx RenderContext) error {
 	}
 
 	if len(theme) > 0 {
-		renderText(iw, bs.Current().Style.StylePrimitive, rules.BlockPrefix)
+		renderText(iw, ctx.colorProfile, bs.Current().Style.StylePrimitive, rules.BlockPrefix)
 		err := quick.Highlight(iw, e.Code, e.Language, "terminal256", theme)
-		renderText(iw, bs.Current().Style.StylePrimitive, rules.BlockSuffix)
+		renderText(iw, ctx.colorProfile, bs.Current().Style.StylePrimitive, rules.BlockSuffix)
 		return err
 	}
 

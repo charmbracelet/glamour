@@ -35,7 +35,7 @@ func (e *HeadingElement) Render(w io.Writer, ctx RenderContext) error {
 	}
 
 	if !e.First {
-		renderText(w, bs.Current().Style.StylePrimitive, "\n")
+		renderText(w, ctx.colorProfile, bs.Current().Style.StylePrimitive, "\n")
 	}
 
 	be := BlockElement{
@@ -44,8 +44,8 @@ func (e *HeadingElement) Render(w io.Writer, ctx RenderContext) error {
 	}
 	bs.Push(be)
 
-	renderText(w, bs.Parent().Style.StylePrimitive, rules.BlockPrefix)
-	renderText(bs.Current().Block, bs.Current().Style.StylePrimitive, rules.Prefix)
+	renderText(w, ctx.colorProfile, bs.Parent().Style.StylePrimitive, rules.BlockPrefix)
+	renderText(bs.Current().Block, ctx.colorProfile, bs.Current().Style.StylePrimitive, rules.Prefix)
 	return nil
 }
 
@@ -65,7 +65,7 @@ func (e *HeadingElement) Finish(w io.Writer, ctx RenderContext) error {
 	iw := &indent.Writer{
 		Indent: indentation + margin,
 		IndentFunc: func(wr io.Writer) {
-			renderText(w, bs.Parent().Style.StylePrimitive, " ")
+			renderText(w, ctx.colorProfile, bs.Parent().Style.StylePrimitive, " ")
 		},
 		Forward: &ansi.Writer{
 			Forward: w,
@@ -84,8 +84,8 @@ func (e *HeadingElement) Finish(w io.Writer, ctx RenderContext) error {
 		return err
 	}
 
-	renderText(w, bs.Current().Style.StylePrimitive, rules.Suffix)
-	renderText(w, bs.Parent().Style.StylePrimitive, rules.BlockSuffix)
+	renderText(w, ctx.colorProfile, bs.Current().Style.StylePrimitive, rules.Suffix)
+	renderText(w, ctx.colorProfile, bs.Parent().Style.StylePrimitive, rules.BlockSuffix)
 
 	bs.Current().Block.Reset()
 	bs.Pop()

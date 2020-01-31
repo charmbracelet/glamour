@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/microcosm-cc/bluemonday"
+	"github.com/muesli/termenv"
 )
 
 // RenderContext holds the current rendering options and state.
@@ -14,16 +15,18 @@ type RenderContext struct {
 	blockStack *BlockStack
 	table      *TableElement
 
-	stripper *bluemonday.Policy
+	stripper     *bluemonday.Policy
+	colorProfile termenv.Profile
 }
 
 // NewRenderContext returns a new RenderContext.
 func NewRenderContext(options Options) RenderContext {
 	return RenderContext{
-		options:    options,
-		blockStack: &BlockStack{},
-		table:      &TableElement{},
-		stripper:   bluemonday.StrictPolicy(),
+		options:      options,
+		blockStack:   &BlockStack{},
+		table:        &TableElement{},
+		stripper:     bluemonday.StrictPolicy(),
+		colorProfile: termenv.ColorProfile(),
 	}
 }
 
