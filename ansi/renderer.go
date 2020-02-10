@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/muesli/termenv"
 	"github.com/yuin/goldmark/ast"
 	astext "github.com/yuin/goldmark/extension/ast"
 	"github.com/yuin/goldmark/renderer"
@@ -13,9 +14,10 @@ import (
 
 // Options is used to configure an ANSIRenderer.
 type Options struct {
-	BaseURL  string
-	WordWrap int
-	Styles   StyleConfig
+	BaseURL      string
+	WordWrap     int
+	ColorProfile termenv.Profile
+	Styles       StyleConfig
 }
 
 // ANSIRenderer renders markdown content as ANSI escaped sequences.

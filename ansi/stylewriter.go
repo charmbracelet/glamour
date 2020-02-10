@@ -28,6 +28,6 @@ func (w *StyleWriter) Write(b []byte) (int, error) {
 
 // Close must be called when you're finished writing to a StyleWriter.
 func (w *StyleWriter) Close() error {
-	renderText(w.w, w.ctx.colorProfile, w.rules, w.buf.String())
+	renderText(w.w, w.ctx.options.ColorProfile, w.rules, w.buf.String())
 	return nil
 }

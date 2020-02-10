@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/muesli/termenv"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
@@ -60,7 +61,8 @@ func NewTermRenderer(options ...TermRendererOption) (*TermRenderer, error) {
 			),
 		),
 		ansiOptions: ansi.Options{
-			WordWrap: 80,
+			WordWrap:     80,
+			ColorProfile: termenv.TrueColor,
 		},
 	}
 	for _, o := range options {
@@ -83,6 +85,15 @@ func NewTermRenderer(options ...TermRendererOption) (*TermRenderer, error) {
 func WithBaseURL(baseURL string) TermRendererOption {
 	return func(tr *TermRenderer) error {
 		tr.ansiOptions.BaseURL = baseURL
+		return nil
+	}
+}
+
+// WithColorProfile sets the TermRenderer's color profile
+// (TrueColor / ANSI256 / ANSI).
+func WithColorProfile(profile termenv.Profile) TermRendererOption {
+	return func(tr *TermRenderer) error {
+		tr.ansiOptions.ColorProfile = profile
 		return nil
 	}
 }
