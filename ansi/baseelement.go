@@ -73,22 +73,22 @@ func renderText(w io.Writer, p termenv.Profile, rules StylePrimitive, s string) 
 func (e *BaseElement) Render(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 
-	renderText(w, ctx.colorProfile, bs.Current().Style.StylePrimitive, e.Prefix)
+	renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, e.Prefix)
 	defer func() {
-		renderText(w, ctx.colorProfile, bs.Current().Style.StylePrimitive, e.Suffix)
+		renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, e.Suffix)
 	}()
 
 	rules := bs.With(e.Style)
 	// render unstyled prefix/suffix
-	renderText(w, ctx.colorProfile, bs.Current().Style.StylePrimitive, rules.BlockPrefix)
+	renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, rules.BlockPrefix)
 	defer func() {
-		renderText(w, ctx.colorProfile, bs.Current().Style.StylePrimitive, rules.BlockSuffix)
+		renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, rules.BlockSuffix)
 	}()
 
 	// render styled prefix/suffix
-	renderText(w, ctx.colorProfile, rules, rules.Prefix)
+	renderText(w, ctx.options.ColorProfile, rules, rules.Prefix)
 	defer func() {
-		renderText(w, ctx.colorProfile, rules, rules.Suffix)
+		renderText(w, ctx.options.ColorProfile, rules, rules.Suffix)
 	}()
 
 	s := e.Token
@@ -99,6 +99,6 @@ func (e *BaseElement) Render(w io.Writer, ctx RenderContext) error {
 			return err
 		}
 	}
-	renderText(w, ctx.colorProfile, rules, s)
+	renderText(w, ctx.options.ColorProfile, rules, s)
 	return nil
 }

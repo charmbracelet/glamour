@@ -43,14 +43,14 @@ func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
 	}
 
 	iw := indent.NewWriterPipe(w, indentation+margin, func(wr io.Writer) {
-		renderText(w, ctx.colorProfile, bs.Current().Style.StylePrimitive, " ")
+		renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, " ")
 	})
 
 	style := bs.With(rules.StylePrimitive)
 	ctx.table.styleWriter = NewStyleWriter(ctx, iw, style)
 
-	renderText(w, ctx.colorProfile, bs.Current().Style.StylePrimitive, rules.BlockPrefix)
-	renderText(ctx.table.styleWriter, ctx.colorProfile, style, rules.Prefix)
+	renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, rules.BlockPrefix)
+	renderText(ctx.table.styleWriter, ctx.options.ColorProfile, style, rules.Prefix)
 	ctx.table.writer = tablewriter.NewWriter(ctx.table.styleWriter)
 	return nil
 }
@@ -72,8 +72,8 @@ func (e *TableElement) Finish(w io.Writer, ctx RenderContext) error {
 	ctx.table.writer.Render()
 	ctx.table.writer = nil
 
-	renderText(ctx.table.styleWriter, ctx.colorProfile, ctx.blockStack.With(rules.StylePrimitive), rules.Suffix)
-	renderText(ctx.table.styleWriter, ctx.colorProfile, ctx.blockStack.Current().Style.StylePrimitive, rules.BlockSuffix)
+	renderText(ctx.table.styleWriter, ctx.options.ColorProfile, ctx.blockStack.With(rules.StylePrimitive), rules.Suffix)
+	renderText(ctx.table.styleWriter, ctx.options.ColorProfile, ctx.blockStack.Current().Style.StylePrimitive, rules.BlockSuffix)
 	return ctx.table.styleWriter.Close()
 }
 

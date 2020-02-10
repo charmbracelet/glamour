@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/muesli/termenv"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
@@ -43,7 +44,8 @@ func TestRenderer(t *testing.T) {
 		}
 
 		options := Options{
-			WordWrap: 80,
+			WordWrap:     80,
+			ColorProfile: termenv.TrueColor,
 		}
 		err = json.Unmarshal(b, &options.Styles)
 		if err != nil {
@@ -113,7 +115,8 @@ func TestRendererIssues(t *testing.T) {
 		}
 
 		options := Options{
-			WordWrap: 80,
+			WordWrap:     80,
+			ColorProfile: termenv.TrueColor,
 		}
 		err = json.Unmarshal(b, &options.Styles)
 		if err != nil {

@@ -34,7 +34,7 @@ func (e *HeadingElement) Render(w io.Writer, ctx RenderContext) error {
 	}
 
 	if !e.First {
-		renderText(w, ctx.colorProfile, bs.Current().Style.StylePrimitive, "\n")
+		renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, "\n")
 	}
 
 	be := BlockElement{
@@ -43,8 +43,8 @@ func (e *HeadingElement) Render(w io.Writer, ctx RenderContext) error {
 	}
 	bs.Push(be)
 
-	renderText(w, ctx.colorProfile, bs.Parent().Style.StylePrimitive, rules.BlockPrefix)
-	renderText(bs.Current().Block, ctx.colorProfile, bs.Current().Style.StylePrimitive, rules.Prefix)
+	renderText(w, ctx.options.ColorProfile, bs.Parent().Style.StylePrimitive, rules.BlockPrefix)
+	renderText(bs.Current().Block, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, rules.Prefix)
 	return nil
 }
 
@@ -62,7 +62,7 @@ func (e *HeadingElement) Finish(w io.Writer, ctx RenderContext) error {
 	}
 
 	iw := indent.NewWriterPipe(w, indentation+margin, func(wr io.Writer) {
-		renderText(w, ctx.colorProfile, bs.Parent().Style.StylePrimitive, " ")
+		renderText(w, ctx.options.ColorProfile, bs.Parent().Style.StylePrimitive, " ")
 	})
 
 	flow := wordwrap.NewWriter(int(bs.Width(ctx) - indentation - margin*2))
@@ -77,8 +77,8 @@ func (e *HeadingElement) Finish(w io.Writer, ctx RenderContext) error {
 		return err
 	}
 
-	renderText(w, ctx.colorProfile, bs.Current().Style.StylePrimitive, rules.Suffix)
-	renderText(w, ctx.colorProfile, bs.Parent().Style.StylePrimitive, rules.BlockSuffix)
+	renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, rules.Suffix)
+	renderText(w, ctx.options.ColorProfile, bs.Parent().Style.StylePrimitive, rules.BlockSuffix)
 
 	bs.Current().Block.Reset()
 	bs.Pop()
