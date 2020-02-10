@@ -10,6 +10,7 @@ jobs:
     env:
       GO111MODULE: "on"
       COLORTERM: "truecolor"
+      COLORFGBG: "7;0"
       TERM: "xterm-256color"
     steps:
 
