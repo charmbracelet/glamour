@@ -3,7 +3,6 @@ package ansi
 import (
 	"io"
 
-	"github.com/muesli/reflow/ansi"
 	"github.com/muesli/reflow/indent"
 	"github.com/olekukonko/tablewriter"
 )
@@ -43,15 +42,9 @@ func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
 		margin = *rules.Margin
 	}
 
-	iw := &indent.Writer{
-		Indent: indentation + margin,
-		IndentFunc: func(wr io.Writer) {
-			renderText(w, ctx.colorProfile, bs.Current().Style.StylePrimitive, " ")
-		},
-		Forward: &ansi.Writer{
-			Forward: w,
-		},
-	}
+	iw := indent.NewWriterPipe(w, indentation+margin, func(wr io.Writer) {
+		renderText(w, ctx.colorProfile, bs.Current().Style.StylePrimitive, " ")
+	})
 
 	style := bs.With(rules.StylePrimitive)
 	ctx.table.styleWriter = NewStyleWriter(ctx, iw, style)

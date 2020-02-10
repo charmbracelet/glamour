@@ -3,7 +3,6 @@ package ansi
 import (
 	"io"
 
-	"github.com/muesli/reflow/ansi"
 	"github.com/muesli/reflow/indent"
 	"github.com/muesli/reflow/padding"
 )
@@ -29,29 +28,17 @@ func NewMarginWriter(ctx RenderContext, w io.Writer, rules StyleBlock) *MarginWr
 		margin = *rules.Margin
 	}
 
-	pw := &padding.Writer{
-		Padding: bs.Width(ctx),
-		PadFunc: func(wr io.Writer) {
-			renderText(w, ctx.colorProfile, rules.StylePrimitive, " ")
-		},
-		Forward: &ansi.Writer{
-			Forward: w,
-		},
-	}
+	pw := padding.NewWriterPipe(w, bs.Width(ctx), func(wr io.Writer) {
+		renderText(w, ctx.colorProfile, rules.StylePrimitive, " ")
+	})
 
 	ic := " "
 	if rules.IndentToken != nil {
 		ic = *rules.IndentToken
 	}
-	iw := &indent.Writer{
-		Indent: indentation + margin,
-		IndentFunc: func(wr io.Writer) {
-			renderText(w, ctx.colorProfile, bs.Parent().Style.StylePrimitive, ic)
-		},
-		Forward: &ansi.Writer{
-			Forward: pw,
-		},
-	}
+	iw := indent.NewWriterPipe(pw, indentation+margin, func(wr io.Writer) {
+		renderText(w, ctx.colorProfile, bs.Parent().Style.StylePrimitive, ic)
+	})
 
 	return &MarginWriter{
 		w:  w,

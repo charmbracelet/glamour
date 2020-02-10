@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"io"
 
-	"github.com/muesli/reflow/ansi"
 	"github.com/muesli/reflow/indent"
 	"github.com/muesli/reflow/wordwrap"
 )
@@ -62,15 +61,9 @@ func (e *HeadingElement) Finish(w io.Writer, ctx RenderContext) error {
 		margin = *rules.Margin
 	}
 
-	iw := &indent.Writer{
-		Indent: indentation + margin,
-		IndentFunc: func(wr io.Writer) {
-			renderText(w, ctx.colorProfile, bs.Parent().Style.StylePrimitive, " ")
-		},
-		Forward: &ansi.Writer{
-			Forward: w,
-		},
-	}
+	iw := indent.NewWriterPipe(w, indentation+margin, func(wr io.Writer) {
+		renderText(w, ctx.colorProfile, bs.Parent().Style.StylePrimitive, " ")
+	})
 
 	flow := wordwrap.NewWriter(int(bs.Width(ctx) - indentation - margin*2))
 	_, err := flow.Write(bs.Current().Block.Bytes())

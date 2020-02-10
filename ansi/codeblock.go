@@ -6,7 +6,6 @@ import (
 	"github.com/alecthomas/chroma"
 	"github.com/alecthomas/chroma/quick"
 	"github.com/alecthomas/chroma/styles"
-	"github.com/muesli/reflow/ansi"
 	"github.com/muesli/reflow/indent"
 )
 
@@ -102,21 +101,18 @@ func (e *CodeBlockElement) Render(w io.Writer, ctx RenderContext) error {
 			}))
 	}
 
-	iw := &indent.Writer{
-		Indent: indentation + margin,
-		IndentFunc: func(wr io.Writer) {
-			renderText(w, ctx.colorProfile, bs.Current().Style.StylePrimitive, " ")
-		},
-		Forward: &ansi.Writer{
-			Forward: w,
-		},
-	}
+	iw := indent.NewWriterPipe(w, indentation+margin, func(wr io.Writer) {
+		renderText(w, ctx.colorProfile, bs.Current().Style.StylePrimitive, " ")
+	})
 
 	if len(theme) > 0 {
 		renderText(iw, ctx.colorProfile, bs.Current().Style.StylePrimitive, rules.BlockPrefix)
 		err := quick.Highlight(iw, e.Code, e.Language, "terminal256", theme)
+		if err != nil {
+			return err
+		}
 		renderText(iw, ctx.colorProfile, bs.Current().Style.StylePrimitive, rules.BlockSuffix)
-		return err
+		return nil
 	}
 
 	// fallback rendering
