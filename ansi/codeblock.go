@@ -63,7 +63,7 @@ func (e *CodeBlockElement) Render(w io.Writer, ctx RenderContext) error {
 	}
 	theme := rules.Theme
 
-	if rules.Chroma != nil {
+	if rules.Chroma != nil && ctx.options.ColorProfile > 1 {
 		theme = "charm"
 		styles.Register(chroma.MustNewStyle("charm",
 			chroma.StyleEntries{
