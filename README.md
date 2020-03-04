@@ -1,7 +1,7 @@
 # Glamour
 
 [![Latest Release](https://img.shields.io/github/release/charmbracelet/glamour.svg)](https://github.com/charmbracelet/glamour/releases)
-[![GoDoc](https://godoc.org/github.com/golang/gddo?status.svg)](https://godoc.org/github.com/charmbracelet/glamour)
+[![GoDoc](https://godoc.org/github.com/golang/gddo?status.svg)](https://pkg.go.dev/github.com/charmbracelet/glamour?tab=doc)
 [![Build Status](https://github.com/charmbracelet/glamour/workflows/build/badge.svg)](https://github.com/charmbracelet/glamour/actions)
 [![Coverage Status](https://coveralls.io/repos/github/charmbracelet/glamour/badge.svg?branch=master)](https://coveralls.io/github/charmbracelet/glamour?branch=master)
 [![Go ReportCard](http://goreportcard.com/badge/charmbracelet/glamour)](http://goreportcard.com/report/charmbracelet/glamour)
