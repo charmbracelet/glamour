@@ -92,7 +92,7 @@ func TestTermRenderer(t *testing.T) {
 
 func TestStyles(t *testing.T) {
 	_, err := NewTermRenderer(
-		WithStandardStyle("auto"),
+		WithAutoStyle(),
 	)
 	if err != nil {
 		t.Fatal(err)
