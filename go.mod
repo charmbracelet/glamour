@@ -8,5 +8,5 @@ require (
 	github.com/muesli/reflow v0.1.0
 	github.com/muesli/termenv v0.5.0
 	github.com/olekukonko/tablewriter v0.0.4
-	github.com/yuin/goldmark v1.1.24
+	github.com/yuin/goldmark v1.1.26
 )
