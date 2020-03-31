@@ -30,8 +30,8 @@ github.com/microcosm-cc/bluemonday v1.0.2/go.mod h1:iVP4YcDBq+n/5fb23BhYFvIMq/le
 github.com/mitchellh/mapstructure v1.1.2/go.mod h1:FVVH3fgwuzCH5S8UJGiWEs2h04kUh9fWfEaFds41c1Y=
 github.com/muesli/reflow v0.1.0 h1:oQdpLfO56lr5pgLvqD0TcjW85rDjSYSBVdiG1Ch1ddM=
 github.com/muesli/reflow v0.1.0/go.mod h1:I9bWAt7QTg/que/qmUCJBGlj7wEq8OAFBjPNjc6xK4I=
-github.com/muesli/termenv v0.4.0 h1:8Bz8WDF/6OoL7QENtESkAl3TlMyQq6+c3bjtJO3y9V8=
-github.com/muesli/termenv v0.4.0/go.mod h1:O1/I6sw+6KcrgAmcs6uiUVr7Lui+DNVbHTzt9Lm/PlI=
+github.com/muesli/termenv v0.5.0 h1:7uYkBUJ2EE+CdWlBoYzO70I/cq/r3bOm4a40/lvmiAU=
+github.com/muesli/termenv v0.5.0/go.mod h1:O1/I6sw+6KcrgAmcs6uiUVr7Lui+DNVbHTzt9Lm/PlI=
 github.com/olekukonko/tablewriter v0.0.4 h1:vHD/YYe1Wolo78koG299f7V/VAS08c6IpCLn+Ejf/w8=
 github.com/olekukonko/tablewriter v0.0.4/go.mod h1:zq6QwlOf5SlnkVbMSr5EoBv3636FWnp+qbPhuoO21uA=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
