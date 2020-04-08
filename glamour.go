@@ -114,15 +114,7 @@ func WithStandardStyle(style string) TermRendererOption {
 // WithAutoStyle sets a TermRenderer's styles with either the standard dark
 // or light style, depending on the terminal's background color at run-time.
 func WithAutoStyle() TermRendererOption {
-	return func(tr *TermRenderer) error {
-		style := LightStyleConfig
-		if termenv.HasDarkBackground() {
-			style = DarkStyleConfig
-		}
-
-		tr.ansiOptions.Styles = style
-		return nil
-	}
+	return WithStandardStyle("auto")
 }
 
 // WithStylePath sets a TermRenderer's style from stylePath. stylePath is first
@@ -216,6 +208,13 @@ func (tr *TermRenderer) RenderBytes(in []byte) ([]byte, error) {
 }
 
 func getDefaultStyle(style string) (*ansi.StyleConfig, error) {
+	if style == "auto" {
+		if termenv.HasDarkBackground() {
+			return &DarkStyleConfig, nil
+		}
+		return &LightStyleConfig, nil
+	}
+
 	styles, ok := DefaultStyles[style]
 	if !ok {
 		return nil, fmt.Errorf("%s: style not found", style)
