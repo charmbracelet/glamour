@@ -8,9 +8,10 @@
 
 Write handsome command-line tools with *glamour*!
 
-`glamour` lets you use [markdown](https://en.wikipedia.org/wiki/Markdown)
-templates to render user-friendly & stylish output on [ANSI](https://en.wikipedia.org/wiki/ANSI_escape_code)
-compatible terminals.
+`glamour` lets you render [markdown](https://en.wikipedia.org/wiki/Markdown)
+documents & templates on [ANSI](https://en.wikipedia.org/wiki/ANSI_escape_code)
+compatible terminals. You can create your own stylesheet or use one of our
+glamourous default themes.
 
 
 ## Usage
@@ -47,6 +48,12 @@ r, _ := glamour.NewTermRenderer(
 out, _ := r.Render(in)
 fmt.Print(out)
 ```
+
+
+## Styles
+
+You can find all available default styles in our [gallery](https://github.com/charmbracelet/glamour/tree/master/styles/gallery).
+Want to create your own style? [Learn how!](https://github.com/charmbracelet/glamour/tree/master/styles)
 
 
 ## Glamourous Projects
