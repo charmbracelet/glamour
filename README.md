@@ -38,7 +38,9 @@ fmt.Print(out)
 import "github.com/charmbracelet/glamour"
 
 r, _ := glamour.NewTermRenderer(
-	glamour.WithStandardStyle("dark"),
+	// detect background color and pick either the default dark or light theme
+	glamour.WithAutoStyle(),
+	// wrap output at specific width
 	glamour.WithWordWrap(40),
 )
 
