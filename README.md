@@ -27,7 +27,7 @@ Check out the [other examples](https://github.com/charmbracelet/glamour/tree/mas
 Bye!
 `
 
-out, _ := glamour.Render(in, "dark")
+out, err := glamour.Render(in, "dark")
 fmt.Print(out)
 ```
 
@@ -39,13 +39,13 @@ fmt.Print(out)
 import "github.com/charmbracelet/glamour"
 
 r, _ := glamour.NewTermRenderer(
-	// detect background color and pick either the default dark or light theme
-	glamour.WithAutoStyle(),
-	// wrap output at specific width
-	glamour.WithWordWrap(40),
+    // detect background color and pick either the default dark or light theme
+    glamour.WithAutoStyle(),
+    // wrap output at specific width
+    glamour.WithWordWrap(40),
 )
 
-out, _ := r.Render(in)
+out, err := r.Render(in)
 fmt.Print(out)
 ```
 
