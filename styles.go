@@ -14,7 +14,7 @@ var (
 				BlockPrefix: "\n",
 				BlockSuffix: "\n",
 			},
-			Indent: uintPtr(2),
+			Margin: uintPtr(2),
 		},
 		BlockQuote: ansi.StyleBlock{
 			StylePrimitive: ansi.StylePrimitive{},
@@ -122,7 +122,7 @@ var (
 				BlockSuffix: "\n",
 				Color:       stringPtr("252"),
 			},
-			Indent: uintPtr(2),
+			Margin: uintPtr(2),
 		},
 		BlockQuote: ansi.StyleBlock{
 			StylePrimitive: ansi.StylePrimitive{},
@@ -335,7 +335,7 @@ var (
 				BlockSuffix: "\n",
 				Color:       stringPtr("234"),
 			},
-			Indent: uintPtr(2),
+			Margin: uintPtr(2),
 		},
 		BlockQuote: ansi.StyleBlock{
 			StylePrimitive: ansi.StylePrimitive{},
@@ -546,7 +546,7 @@ var (
 				BlockPrefix: "\n",
 				BlockSuffix: "\n",
 			},
-			Indent: uintPtr(2),
+			Margin: uintPtr(2),
 		},
 		BlockQuote: ansi.StyleBlock{
 			StylePrimitive: ansi.StylePrimitive{},

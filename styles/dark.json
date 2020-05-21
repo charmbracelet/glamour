@@ -3,7 +3,7 @@
     "block_prefix": "\n",
     "block_suffix": "\n",
     "color": "252",
-    "indent": 2
+    "margin": 2
   },
   "block_quote": {
     "indent": 1,
