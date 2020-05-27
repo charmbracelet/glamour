@@ -36,6 +36,14 @@ func Render(in string, stylePath string) (string, error) {
 	return string(b), err
 }
 
+// Render initializes a new TermRenderer and renders a markdown with a specific
+// style defined by the GLAMOUR_STYLE environment variable.
+func RenderWithConfig(in string) (string, error) {
+	stylePath := os.Getenv("GLAMOUR_STYLE")
+	b, err := RenderBytes([]byte(in), stylePath)
+	return string(b), err
+}
+
 // RenderBytes initializes a new TermRenderer and renders a markdown with a
 // specific style.
 func RenderBytes(in []byte, stylePath string) ([]byte, error) {
