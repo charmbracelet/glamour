@@ -4,7 +4,7 @@
 [![GoDoc](https://godoc.org/github.com/golang/gddo?status.svg)](https://pkg.go.dev/github.com/charmbracelet/glamour?tab=doc)
 [![Build Status](https://github.com/charmbracelet/glamour/workflows/build/badge.svg)](https://github.com/charmbracelet/glamour/actions)
 [![Coverage Status](https://coveralls.io/repos/github/charmbracelet/glamour/badge.svg?branch=master)](https://coveralls.io/github/charmbracelet/glamour?branch=master)
-[![Go ReportCard](http://goreportcard.com/report/github.com/charmbracelet/glamour)](http://goreportcard.com/report/charmbracelet/glamour)
+[![Go ReportCard](http://goreportcard.com/badge/charmbracelet/glamour)](http://goreportcard.com/report/charmbracelet/glamour)
 
 Write handsome command-line tools with *glamour*!
 
