@@ -39,7 +39,7 @@ func Render(in string, stylePath string) (string, error) {
 // RenderWithEnvironmentConfig initializes a new TermRenderer and renders a
 // markdown with a specific style defined by the GLAMOUR_STYLE environment variable.
 func RenderWithEnvironmentConfig(in string) (string, error) {
-	b, err := RenderBytes([]byte(in), getGlamourStyleFromEnvironment())
+	b, err := RenderBytes([]byte(in), getEnvironmentStyle())
 	return string(b), err
 }
 
@@ -127,7 +127,7 @@ func WithAutoStyle() TermRendererOption {
 // WithEnvironmentConfig sets a TermRenderer's styles based on the
 // GLAMOUR_STYLE environment variable.
 func WithEnvironmentConfig() TermRendererOption {
-	return WithStylePath(getGlamourStyleFromEnvironment())
+	return WithStylePath(getEnvironmentStyle())
 }
 
 // WithStylePath sets a TermRenderer's style from stylePath. stylePath is first
@@ -220,7 +220,7 @@ func (tr *TermRenderer) RenderBytes(in []byte) ([]byte, error) {
 	return buf.Bytes(), err
 }
 
-func getGlamourStyleFromEnvironment() string {
+func getEnvironmentStyle() string {
 	glamourStyle := os.Getenv("GLAMOUR_STYLE")
 	if len(glamourStyle) == 0 {
 		glamourStyle = "auto"
