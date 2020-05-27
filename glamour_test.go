@@ -104,6 +104,13 @@ func TestStyles(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	_, err = NewTermRenderer(
+		WithEnvironmentConfig(),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestRenderHelpers(t *testing.T) {

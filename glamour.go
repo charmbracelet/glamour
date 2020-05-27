@@ -36,11 +36,10 @@ func Render(in string, stylePath string) (string, error) {
 	return string(b), err
 }
 
-// Render initializes a new TermRenderer and renders a markdown with a specific
-// style defined by the GLAMOUR_STYLE environment variable.
-func RenderWithConfig(in string) (string, error) {
-	stylePath := os.Getenv("GLAMOUR_STYLE")
-	b, err := RenderBytes([]byte(in), stylePath)
+// RenderWithEnvironmentConfig initializes a new TermRenderer and renders a
+// markdown with a specific style defined by the GLAMOUR_STYLE environment variable.
+func RenderWithEnvironmentConfig(in string) (string, error) {
+	b, err := RenderBytes([]byte(in), getGlamourStyleFromEnvironment())
 	return string(b), err
 }
 
@@ -123,6 +122,12 @@ func WithStandardStyle(style string) TermRendererOption {
 // or light style, depending on the terminal's background color at run-time.
 func WithAutoStyle() TermRendererOption {
 	return WithStandardStyle("auto")
+}
+
+// WithEnvironmentConfig sets a TermRenderer's styles based on the
+// GLAMOUR_STYLE environment variable.
+func WithEnvironmentConfig() TermRendererOption {
+	return WithStylePath(getGlamourStyleFromEnvironment())
 }
 
 // WithStylePath sets a TermRenderer's style from stylePath. stylePath is first
@@ -213,6 +218,15 @@ func (tr *TermRenderer) RenderBytes(in []byte) ([]byte, error) {
 	var buf bytes.Buffer
 	err := tr.md.Convert(in, &buf)
 	return buf.Bytes(), err
+}
+
+func getGlamourStyleFromEnvironment() string {
+	glamourStyle := os.Getenv("GLAMOUR_STYLE")
+	if len(glamourStyle) == 0 {
+		glamourStyle = "auto"
+	}
+
+	return glamourStyle
 }
 
 func getDefaultStyle(style string) (*ansi.StyleConfig, error) {
