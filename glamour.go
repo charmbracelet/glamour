@@ -135,20 +135,17 @@ func WithEnvironmentConfig() TermRendererOption {
 // standard style.
 func WithStylePath(stylePath string) TermRendererOption {
 	return func(tr *TermRenderer) error {
-		jsonBytes, err := ioutil.ReadFile(stylePath)
-		switch {
-		case err == nil:
-			return json.Unmarshal(jsonBytes, &tr.ansiOptions.Styles)
-		case os.IsNotExist(err):
-			styles, err := getDefaultStyle(stylePath)
+		styles, err := getDefaultStyle(stylePath)
+		if err != nil {
+			jsonBytes, err := ioutil.ReadFile(stylePath)
 			if err != nil {
 				return err
 			}
-			tr.ansiOptions.Styles = *styles
-			return nil
-		default:
-			return err
+
+			return json.Unmarshal(jsonBytes, &tr.ansiOptions.Styles)
 		}
+		tr.ansiOptions.Styles = *styles
+		return nil
 	}
 }
 
