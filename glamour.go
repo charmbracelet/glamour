@@ -138,12 +138,11 @@ func WithStylePath(stylePath string) TermRendererOption {
 		styles, err := getDefaultStyle(stylePath)
 		if err != nil {
 			jsonBytes, err := ioutil.ReadFile(stylePath)
-			switch {
-			case err == nil:
-				return json.Unmarshal(jsonBytes, &tr.ansiOptions.Styles)
-			default:
+			if err != nil {
 				return err
 			}
+
+			return json.Unmarshal(jsonBytes, &tr.ansiOptions.Styles)
 		}
 		tr.ansiOptions.Styles = *styles
 		return nil
