@@ -63,9 +63,10 @@ There are a few options for using a custom style:
 
 ## Glamourous Projects
 
-Check out [Glow](https://github.com/charmbracelet/glow), a markdown renderer for
-the command-line, which uses `glamour`.
-
+Check out these projects, which use `glamour`:
+- [Glow](https://github.com/charmbracelet/glow), a markdown renderer for
+the command-line.
+- [GitHub CLI](https://github.com/cli/cli), GitHub’s official command line tool.
 
 ## License
 
