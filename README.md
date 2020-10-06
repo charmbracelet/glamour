@@ -1,10 +1,13 @@
 # Glamour
 
-[![Latest Release](https://img.shields.io/github/release/charmbracelet/glamour.svg)](https://github.com/charmbracelet/glamour/releases)
-[![GoDoc](https://godoc.org/github.com/golang/gddo?status.svg)](https://pkg.go.dev/github.com/charmbracelet/glamour?tab=doc)
-[![Build Status](https://github.com/charmbracelet/glamour/workflows/build/badge.svg)](https://github.com/charmbracelet/glamour/actions)
-[![Coverage Status](https://coveralls.io/repos/github/charmbracelet/glamour/badge.svg?branch=master)](https://coveralls.io/github/charmbracelet/glamour?branch=master)
-[![Go ReportCard](http://goreportcard.com/badge/charmbracelet/glamour)](http://goreportcard.com/report/charmbracelet/glamour)
+<p>
+    <img src="https://stuff.charm.sh/glamour/glamour-github-header.png" width="245" alt="Glamour Title Treatment"><br>
+    <a href="https://github.com/charmbracelet/glamour/releases"><img src="https://img.shields.io/github/release/charmbracelet/glamour.svg" alt="Latest Release"></a>
+    <a href="https://pkg.go.dev/github.com/charmbracelet/glamour?tab=doc"><img src="https://godoc.org/github.com/golang/gddo?status.svg" alt="GoDoc"></a>
+    <a href="https://github.com/charmbracelet/glamour/actions"><img src="https://github.com/charmbracelet/glamour/workflows/build/badge.svg" alt="Build Status"></a>
+    <a href="https://coveralls.io/github/charmbracelet/glamour?branch=master"><img src="https://coveralls.io/repos/github/charmbracelet/glamour/badge.svg?branch=master" alt="Coverage Status"></a>
+    <a href="http://goreportcard.com/report/charmbracelet/glamour"><img src="http://goreportcard.com/badge/charmbracelet/glamour" alt="Go ReportCard"></a>
+</p>
 
 Write handsome command-line tools with *glamour*!
 
@@ -72,3 +75,12 @@ the command-line.
 ## License
 
 [MIT](https://github.com/charmbracelet/glamour/raw/master/LICENSE)
+
+
+***
+
+Part of [Charm](https://charm.sh).
+
+<img alt="the Charm logo" src="https://stuff.charm.sh/charm-badge.jpg" width="400">
+
+Charm喜爱开源软件！
