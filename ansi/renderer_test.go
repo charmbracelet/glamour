@@ -10,6 +10,7 @@ import (
 
 	"github.com/muesli/termenv"
 	"github.com/yuin/goldmark"
+	emoji "github.com/yuin/goldmark-emoji"
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/renderer"
@@ -56,6 +57,7 @@ func TestRenderer(t *testing.T) {
 			goldmark.WithExtensions(
 				extension.GFM,
 				extension.DefinitionList,
+				emoji.Emoji,
 			),
 			goldmark.WithParserOptions(
 				parser.WithAutoHeadingID(),
@@ -127,6 +129,7 @@ func TestRendererIssues(t *testing.T) {
 			goldmark.WithExtensions(
 				extension.GFM,
 				extension.DefinitionList,
+				emoji.Emoji,
 			),
 			goldmark.WithParserOptions(
 				parser.WithAutoHeadingID(),
