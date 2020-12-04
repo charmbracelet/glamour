@@ -63,7 +63,6 @@ func NewTermRenderer(options ...TermRendererOption) (*TermRenderer, error) {
 			goldmark.WithExtensions(
 				extension.GFM,
 				extension.DefinitionList,
-				emoji.Emoji,
 			),
 			goldmark.WithParserOptions(
 				parser.WithAutoHeadingID(),
@@ -182,6 +181,14 @@ func WithStylesFromJSONFile(filename string) TermRendererOption {
 func WithWordWrap(wordWrap int) TermRendererOption {
 	return func(tr *TermRenderer) error {
 		tr.ansiOptions.WordWrap = wordWrap
+		return nil
+	}
+}
+
+// WithEmoji sets a TermRenderer's emoji rendering.
+func WithEmoji() TermRendererOption {
+	return func(tr *TermRenderer) error {
+		emoji.New().Extend(tr.md)
 		return nil
 	}
 }
