@@ -9,6 +9,7 @@ import (
 
 	"github.com/muesli/termenv"
 	"github.com/yuin/goldmark"
+	emoji "github.com/yuin/goldmark-emoji"
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/renderer"
@@ -180,6 +181,14 @@ func WithStylesFromJSONFile(filename string) TermRendererOption {
 func WithWordWrap(wordWrap int) TermRendererOption {
 	return func(tr *TermRenderer) error {
 		tr.ansiOptions.WordWrap = wordWrap
+		return nil
+	}
+}
+
+// WithEmoji sets a TermRenderer's emoji rendering.
+func WithEmoji() TermRendererOption {
+	return func(tr *TermRenderer) error {
+		emoji.New().Extend(tr.md)
 		return nil
 	}
 }
