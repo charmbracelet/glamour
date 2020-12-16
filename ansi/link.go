@@ -64,7 +64,7 @@ func (e *LinkElement) Render(w io.Writer, ctx RenderContext) error {
 		}
 
 		el := &BaseElement{
-			Token:  resolveRelativeURL(e.BaseURL, e.URL),
+			Token:  resolveURL(e.BaseURL, e.URL),
 			Prefix: pre,
 			Style:  style,
 		}
