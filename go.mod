@@ -8,6 +8,6 @@ require (
 	github.com/muesli/reflow v0.2.0
 	github.com/muesli/termenv v0.7.4
 	github.com/olekukonko/tablewriter v0.0.4
-	github.com/yuin/goldmark v1.2.1
+	github.com/yuin/goldmark v1.3.1
 	github.com/yuin/goldmark-emoji v1.0.1
 )
