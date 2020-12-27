@@ -73,7 +73,7 @@ func (r *ANSIRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegisterer) {
 	reg.Register(astext.KindFootnote, r.renderNode)
 	reg.Register(astext.KindFootnoteList, r.renderNode)
 	reg.Register(astext.KindFootnoteLink, r.renderNode)
-	reg.Register(astext.KindFootnoteBackLink, r.renderNode)
+	reg.Register(astext.KindFootnoteBacklink, r.renderNode)
 
 	// checkboxes
 	reg.Register(astext.KindTaskCheckBox, r.renderNode)
