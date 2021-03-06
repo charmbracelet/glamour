@@ -168,3 +168,48 @@ func TestRendererIssues(t *testing.T) {
 		}
 	}
 }
+
+func TestUrlResolver(t *testing.T) {
+	// resolveURL should be compliant with https://tools.ietf.org/html/rfc3986#section-5.2.2
+
+	host := "https://example.com"
+	host2 := "https://elpmaxe.moc"
+
+	assertEqual(t, resolveURL("a/b", "/c/d"), "/c/d")
+	assertEqual(t, resolveURL("a/b", "./c/d"), "/a/c/d")
+	assertEqual(t, resolveURL("a/b", "../c/d"), "/c/d")
+	assertEqual(t, resolveURL("a/b/", "./c/d"), "/a/b/c/d")
+	assertEqual(t, resolveURL("a/b/", "c/d"), "/a/b/c/d")
+	assertEqual(t, resolveURL("a/b/", host2+"/c/d"), host2+"/c/d")
+
+	assertEqual(t, resolveURL("/a/b", "/c/d"), "/c/d")
+	assertEqual(t, resolveURL("/a/b", "./c/d"), "/a/c/d")
+	assertEqual(t, resolveURL("/a/b", "../c/d"), "/c/d")
+	assertEqual(t, resolveURL("/a/b/", "./c/d"), "/a/b/c/d")
+	assertEqual(t, resolveURL("/a/b/", "c/d"), "/a/b/c/d")
+	assertEqual(t, resolveURL("/a/b/", host2+"/c/d"), host2+"/c/d")
+
+	assertEqual(t, resolveURL(host+"/a/b", "/c/d"), host+"/c/d")
+	assertEqual(t, resolveURL(host+"/a/b", "./c/d"), host+"/a/c/d")
+	assertEqual(t, resolveURL(host+"/a/b", "../c/d"), host+"/c/d")
+	assertEqual(t, resolveURL(host+"/a/b/", "./c/d"), host+"/a/b/c/d")
+	assertEqual(t, resolveURL(host+"/a/b/", "c/d"), host+"/a/b/c/d")
+	assertEqual(t, resolveURL(host+"/a/b/", host2+"/c/d"), host2+"/c/d")
+}
+
+func TestUrlResolverForGitforgeUsage(t *testing.T) {
+	// in git-forges like github & gitea, URLs are often written relative,
+	// where the repo-url (`gitea.com/gitea/tea`) treated as reference.
+	// The base URL needs to be treated with a trailing slash, acting as a "directory",
+	// requiring preprocessing of the URLs by applications (appending trailing slash to base URL).
+	base := "https://gitea.com/gitea/tea/"
+	assertEqual(t,
+		resolveURL(base, "src/branch/master/modules/print/markdown.go"),
+		"https://gitea.com/gitea/tea/src/branch/master/modules/print/markdown.go")
+}
+
+func assertEqual(t *testing.T, value interface{}, expected interface{}) {
+	if value != expected {
+		t.Errorf("Expected '%v', but got '%v'", expected, value)
+	}
+}
