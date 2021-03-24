@@ -9,8 +9,8 @@ import (
 func main() {
 	in := `# Hello World
 
-This is a simple example of glamour!
-Check out the [other examples](https://github.com/charmbracelet/glamour/tree/master/examples).
+This is a simple example of Markdown rendering with Glamour!
+Check out the [other examples](https://github.com/charmbracelet/glamour/tree/master/examples) too.
 
 Bye!
 `
