@@ -9,12 +9,12 @@
     <a href="http://goreportcard.com/report/charmbracelet/glamour"><img src="http://goreportcard.com/badge/charmbracelet/glamour" alt="Go ReportCard"></a>
 </p>
 
-Write handsome command-line tools with *glamour*!
+Write handsome command-line tools with *Glamour*.
 
 `glamour` lets you render [markdown](https://en.wikipedia.org/wiki/Markdown)
 documents & templates on [ANSI](https://en.wikipedia.org/wiki/ANSI_escape_code)
-compatible terminals. You can create your own stylesheet or use one of our
-glamourous default themes.
+compatible terminals. You can create your own stylesheet or simply use one of
+the stylish defaults.
 
 
 ## Usage
@@ -24,8 +24,8 @@ import "github.com/charmbracelet/glamour"
 
 in := `# Hello World
 
-This is a simple example of glamour!
-Check out the [other examples](https://github.com/charmbracelet/glamour/tree/master/examples).
+This is a simple example of Markdown rendering with Glamour!
+Check out the [other examples](https://github.com/charmbracelet/glamour/tree/master/examples) too.
 
 Bye!
 `
@@ -34,7 +34,7 @@ out, err := glamour.Render(in, "dark")
 fmt.Print(out)
 ```
 
-![HelloWorld Example](https://github.com/charmbracelet/glamour/raw/master/examples/helloworld/helloworld.png)
+<img src="https://github.com/charmbracelet/glamour/raw/master/examples/helloworld/helloworld.png" width="600" alt="Hello World example">
 
 ### Custom Renderer
 
@@ -83,5 +83,5 @@ Part of [Charm](https://charm.sh).
 
 <a href="https://charm.sh/"><img alt="The Charm logo" src="https://stuff.charm.sh/charm-badge-unrounded.jpg" width="400"></a>
 
-Charm热爱开源! / Charm loves open source!
+Charm热爱开源 • Charm loves open source
 
