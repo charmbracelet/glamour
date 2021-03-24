@@ -11,6 +11,8 @@
 
 Write handsome command-line tools with *Glamour*.
 
+![Glamour dark style example](https://stuff.charm.sh/glamour/glamour-example.png)
+
 `glamour` lets you render [markdown](https://en.wikipedia.org/wiki/Markdown)
 documents & templates on [ANSI](https://en.wikipedia.org/wiki/ANSI_escape_code)
 compatible terminals. You can create your own stylesheet or simply use one of
