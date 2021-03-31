@@ -197,6 +197,13 @@ func TestUrlResolver(t *testing.T) {
 	assertEqual(t, resolveURL(host+"/a/b/", host2+"/c/d"), host2+"/c/d")
 }
 
+func TestUrlResolverForLocalFiles(t *testing.T) {
+	base := "/home/foobar/project/"
+	assertEqual(t,
+		resolveURL(base, "/assets/logo.png"),
+		"/home/foobar/project/assets/logo.png")
+}
+
 func TestUrlResolverForGitforgeUsage(t *testing.T) {
 	// in git-forges like github & gitea, URLs are often written relative,
 	// where the repo-url (`gitea.com/gitea/tea`) treated as reference.
@@ -206,6 +213,16 @@ func TestUrlResolverForGitforgeUsage(t *testing.T) {
 	assertEqual(t,
 		resolveURL(base, "src/branch/master/modules/print/markdown.go"),
 		"https://gitea.com/gitea/tea/src/branch/master/modules/print/markdown.go")
+
+	base = "https://raw.githubusercontent.com/foo/bar/master/"
+	assertEqual(t,
+		resolveURL(base, "/assets/logo.png"),
+		"https://raw.githubusercontent.com/foo/bar/master/assets/logo.png")
+
+	base = "https://raw.githubusercontent.com/foo/bar/master/some/dir/"
+	assertEqual(t,
+		resolveURL(base, "/assets/logo.png"),
+		"https://raw.githubusercontent.com/foo/bar/master/assets/logo.png")
 }
 
 func assertEqual(t *testing.T, value interface{}, expected interface{}) {
