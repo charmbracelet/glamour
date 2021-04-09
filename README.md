@@ -9,7 +9,7 @@
     <a href="http://goreportcard.com/report/charmbracelet/glamour"><img src="http://goreportcard.com/badge/charmbracelet/glamour" alt="Go ReportCard"></a>
 </p>
 
-Write handsome command-line tools with *Glamour*.
+Stylesheet-based markdown rendering for your CLI apps.
 
 ![Glamour dark style example](https://stuff.charm.sh/glamour/glamour-example.png)
 
