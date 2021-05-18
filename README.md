@@ -6,7 +6,7 @@
     <a href="https://pkg.go.dev/github.com/charmbracelet/glamour?tab=doc"><img src="https://godoc.org/github.com/golang/gddo?status.svg" alt="GoDoc"></a>
     <a href="https://github.com/charmbracelet/glamour/actions"><img src="https://github.com/charmbracelet/glamour/workflows/build/badge.svg" alt="Build Status"></a>
     <a href="https://coveralls.io/github/charmbracelet/glamour?branch=master"><img src="https://coveralls.io/repos/github/charmbracelet/glamour/badge.svg?branch=master" alt="Coverage Status"></a>
-    <a href="http://goreportcard.com/report/charmbracelet/glamour"><img src="http://goreportcard.com/badge/charmbracelet/glamour" alt="Go ReportCard"></a>
+    <a href="https://goreportcard.com/report/charmbracelet/glamour"><img src="https://goreportcard.com/badge/charmbracelet/glamour" alt="Go ReportCard"></a>
 </p>
 
 Stylesheet-based markdown rendering for your CLI apps.
