@@ -185,6 +185,14 @@ func WithWordWrap(wordWrap int) TermRendererOption {
 	}
 }
 
+// WithWordWrap sets a TermRenderer's word wrap.
+func WithNewLines() TermRendererOption {
+	return func(tr *TermRenderer) error {
+		tr.ansiOptions.NewLines = true
+		return nil
+	}
+}
+
 // WithEmoji sets a TermRenderer's emoji rendering.
 func WithEmoji() TermRendererOption {
 	return func(tr *TermRenderer) error {

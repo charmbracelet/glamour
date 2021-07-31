@@ -17,6 +17,7 @@ import (
 type Options struct {
 	BaseURL      string
 	WordWrap     int
+	NewLines     bool
 	ColorProfile termenv.Profile
 	Styles       StyleConfig
 }
