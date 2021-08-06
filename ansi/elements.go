@@ -156,6 +156,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		return Element{
 			Exiting: post,
 			Renderer: &ItemElement{
+				IsOrdered: node.Parent().(*ast.List).IsOrdered(),
 				Enumeration: e,
 			},
 		}
