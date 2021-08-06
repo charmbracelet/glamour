@@ -129,6 +129,9 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		}
 		if node.Parent().(*ast.List).IsOrdered() {
 			e = l
+			if node.Parent().(*ast.List).Start != 1 {
+				e += uint(node.Parent().(*ast.List).Start) - 1
+			}
 		}
 
 		post := "\n"
