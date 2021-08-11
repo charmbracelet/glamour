@@ -121,7 +121,7 @@ func TestWithPreservedNewLines(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	in, err := ioutil.ReadFile("testdata/preservedNewLines.in")
+	in, err := ioutil.ReadFile("testdata/preserved_newline.in")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -132,7 +132,7 @@ func TestWithPreservedNewLines(t *testing.T) {
 	}
 
 	// verify
-	td, err := ioutil.ReadFile("testdata/preservedNewLines.test")
+	td, err := ioutil.ReadFile("testdata/preserved_newline.test")
 	if err != nil {
 		t.Fatal(err)
 	}
