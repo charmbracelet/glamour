@@ -113,6 +113,36 @@ func TestWithEmoji(t *testing.T) {
 	}
 }
 
+func TestWithPreservedNewLines(t *testing.T) {
+	r, err := NewTermRenderer(
+		WithPreservedNewLines(),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	in, err := ioutil.ReadFile("testdata/preserved_newline.in")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	b, err := r.Render(string(in))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// verify
+	td, err := ioutil.ReadFile("testdata/preserved_newline.test")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !bytes.Equal(td, []byte(b)) {
+		t.Errorf("Rendered output doesn't match!\nExpected: `\n%s`\nGot: `\n%s`\n",
+			string(td), b)
+	}
+}
+
 func TestStyles(t *testing.T) {
 	_, err := NewTermRenderer(
 		WithAutoStyle(),
