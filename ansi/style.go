@@ -45,6 +45,8 @@ type StylePrimitive struct {
 	BackgroundColor *string `json:"background_color,omitempty"`
 	Underline       *bool   `json:"underline,omitempty"`
 	Bold            *bool   `json:"bold,omitempty"`
+	Upper           *bool   `json:"upper,omitempty"`
+	Lower           *bool   `json:"lower,omitempty"`
 	Italic          *bool   `json:"italic,omitempty"`
 	CrossedOut      *bool   `json:"crossed_out,omitempty"`
 	Faint           *bool   `json:"faint,omitempty"`
@@ -151,6 +153,8 @@ func cascadeStyle(parent StyleBlock, child StyleBlock, toBlock bool) StyleBlock 
 	s.BackgroundColor = parent.BackgroundColor
 	s.Underline = parent.Underline
 	s.Bold = parent.Bold
+	s.Upper = parent.Upper
+	s.Lower = parent.Lower
 	s.Italic = parent.Italic
 	s.CrossedOut = parent.CrossedOut
 	s.Faint = parent.Faint
@@ -185,6 +189,12 @@ func cascadeStyle(parent StyleBlock, child StyleBlock, toBlock bool) StyleBlock 
 	}
 	if child.Bold != nil {
 		s.Bold = child.Bold
+	}
+	if child.Upper != nil {
+		s.Upper = child.Upper
+	}
+	if child.Lower != nil {
+		s.Lower = child.Lower
 	}
 	if child.Italic != nil {
 		s.Italic = child.Italic
