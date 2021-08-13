@@ -40,7 +40,7 @@ func renderText(w io.Writer, p termenv.Profile, rules StylePrimitive, s string) 
 	out := termenv.String(s)
 
 	if rules.Upper != nil && *rules.Upper {
-		out = termenv.String(strings.Title(s))
+		out = termenv.String(strings.ToUpper(s))
 	}
 	if rules.Lower != nil && *rules.Lower {
 		out = termenv.String(strings.ToLower(s))
