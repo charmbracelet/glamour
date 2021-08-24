@@ -45,6 +45,9 @@ func renderText(w io.Writer, p termenv.Profile, rules StylePrimitive, s string) 
 	if rules.Lower != nil && *rules.Lower {
 		out = termenv.String(strings.ToLower(s))
 	}
+	if rules.Title != nil && *rules.Title {
+		out = termenv.String(strings.Title(s))
+	}
 	if rules.Color != nil {
 		out = out.Foreground(p.Color(*rules.Color))
 	}
