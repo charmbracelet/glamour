@@ -1,0 +1,4 @@
+Preserving line breaks will ensure
+that this text displays on two separate lines
+
+While this text appears on one line, it will wrap when the text meets the renderer's default value of 80 characters

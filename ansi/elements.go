@@ -129,6 +129,9 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		}
 		if node.Parent().(*ast.List).IsOrdered() {
 			e = l
+			if node.Parent().(*ast.List).Start != 1 {
+				e += uint(node.Parent().(*ast.List).Start) - 1
+			}
 		}
 
 		post := "\n"
@@ -153,6 +156,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		return Element{
 			Exiting: post,
 			Renderer: &ItemElement{
+				IsOrdered: node.Parent().(*ast.List).IsOrdered(),
 				Enumeration: e,
 			},
 		}
