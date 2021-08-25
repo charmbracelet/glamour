@@ -190,14 +190,12 @@ func TestRenderHelpers(t *testing.T) {
 }
 
 func TestCapitalization(t *testing.T) {
-	var s bool = true
-	var p *bool = &s
+	p := true
 	style := DarkStyleConfig
-	style.H1.Upper = p
-	style.H2.Title = p
-	style.H3.Lower = p
+	style.H1.Upper = &p
+	style.H2.Title = &p
+	style.H3.Lower = &p
 
-	// render input text
 	r, err := NewTermRenderer(
 		WithStyles(style),
 	)
@@ -210,6 +208,7 @@ func TestCapitalization(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	// expected outcome
 	td, err := ioutil.ReadFile("testdata/capitalization.test")
 	if err != nil {
 		t.Fatal(err)
