@@ -188,3 +188,33 @@ func TestRenderHelpers(t *testing.T) {
 			string(td), b)
 	}
 }
+
+func TestCapitalization(t *testing.T) {
+	p := true
+	style := DarkStyleConfig
+	style.H1.Upper = &p
+	style.H2.Title = &p
+	style.H3.Lower = &p
+
+	r, err := NewTermRenderer(
+		WithStyles(style),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	b, err := r.Render("# everything is uppercase\n## everything is titled\n### everything is lowercase")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// expected outcome
+	td, err := ioutil.ReadFile("testdata/capitalization.test")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if string(td) != b {
+		t.Errorf("Rendered output doesn't match!\nExpected: `\n%s`\nGot: `\n%s`\n", td, b)
+	}
+}

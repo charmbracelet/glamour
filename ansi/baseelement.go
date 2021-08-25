@@ -3,6 +3,7 @@ package ansi
 import (
 	"bytes"
 	"io"
+	"strings"
 	"text/template"
 
 	"github.com/muesli/termenv"
@@ -38,13 +39,21 @@ func renderText(w io.Writer, p termenv.Profile, rules StylePrimitive, s string) 
 
 	out := termenv.String(s)
 
+	if rules.Upper != nil && *rules.Upper {
+		out = termenv.String(strings.ToUpper(s))
+	}
+	if rules.Lower != nil && *rules.Lower {
+		out = termenv.String(strings.ToLower(s))
+	}
+	if rules.Title != nil && *rules.Title {
+		out = termenv.String(strings.Title(s))
+	}
 	if rules.Color != nil {
 		out = out.Foreground(p.Color(*rules.Color))
 	}
 	if rules.BackgroundColor != nil {
 		out = out.Background(p.Color(*rules.BackgroundColor))
 	}
-
 	if rules.Underline != nil && *rules.Underline {
 		out = out.Underline()
 	}
