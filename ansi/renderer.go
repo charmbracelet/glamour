@@ -3,7 +3,6 @@ package ansi
 import (
 	"io"
 	"net/url"
-	"strings"
 
 	"github.com/muesli/termenv"
 	east "github.com/yuin/goldmark-emoji/ast"
@@ -150,7 +149,7 @@ func isChild(node ast.Node) bool {
 	return false
 }
 
-func resolveRelativeURL(baseURL string, rel string) string {
+func resolveURL(baseURL string, rel string) string {
 	u, err := url.Parse(rel)
 	if err != nil {
 		return rel
@@ -158,7 +157,6 @@ func resolveRelativeURL(baseURL string, rel string) string {
 	if u.IsAbs() {
 		return rel
 	}
-	u.Path = strings.TrimPrefix(u.Path, "/")
 
 	base, err := url.Parse(baseURL)
 	if err != nil {
