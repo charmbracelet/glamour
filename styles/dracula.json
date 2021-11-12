@@ -49,11 +49,11 @@
     "crossed_out": true
   },
   "emph": {
-    "italic": true
+    "italic": true,
     "color": "229"
   },
   "strong": {
-    "bold": true
+    "bold": true,
     "color": "#ffb86c"
   },
   "hr": {
