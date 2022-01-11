@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/alecthomas/chroma v0.9.4
-	github.com/microcosm-cc/bluemonday v1.0.16
+	github.com/microcosm-cc/bluemonday v1.0.17
 	github.com/muesli/reflow v0.3.0
 	github.com/muesli/termenv v0.9.0
 	github.com/olekukonko/tablewriter v0.0.5
