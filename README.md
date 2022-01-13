@@ -72,7 +72,8 @@ Check out these projects, which use `glamour`:
 - [Glow](https://github.com/charmbracelet/glow), a markdown renderer for
 the command-line.
 - [GitHub CLI](https://github.com/cli/cli), GitHub’s official command line tool.
-- [GLab](https://github.com/profclems/glab), An open source GitLab command line tool.
+- [GLab](https://github.com/profclems/glab), an open source GitLab command line tool.
+- [Meteor](https://github.com/odpf/meteor), an easy-to-use, plugin-driven metadata collection framework.
 
 ## License
 
