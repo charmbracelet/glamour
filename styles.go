@@ -648,10 +648,11 @@ var (
 
 	// DefaultStyles are the default styles.
 	DefaultStyles = map[string]*ansi.StyleConfig{
-		"ascii": &ASCIIStyleConfig,
-		"dark":  &DarkStyleConfig,
-		"light": &LightStyleConfig,
-		"notty": &NoTTYStyleConfig,
+		"ascii":   &ASCIIStyleConfig,
+		"dark":    &DarkStyleConfig,
+		"light":   &LightStyleConfig,
+		"notty":   &NoTTYStyleConfig,
+		"dracula": &DraculaStyleConfig,
 	}
 )
 
