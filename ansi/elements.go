@@ -156,7 +156,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		return Element{
 			Exiting: post,
 			Renderer: &ItemElement{
-				IsOrdered: node.Parent().(*ast.List).IsOrdered(),
+				IsOrdered:   node.Parent().(*ast.List).IsOrdered(),
 				Enumeration: e,
 			},
 		}
@@ -332,7 +332,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		n := node.(*ast.HTMLBlock)
 		return Element{
 			Renderer: &BaseElement{
-				Token: ctx.SanitizeHTML(string(n.Text(source)), true) + "\n",
+				Token: ctx.SanitizeHTML(string(n.Text(source)), true),
 				Style: ctx.options.Styles.HTMLBlock.StylePrimitive,
 			},
 		}
