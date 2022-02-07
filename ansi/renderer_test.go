@@ -105,66 +105,68 @@ func TestRendererIssues(t *testing.T) {
 
 	for _, f := range files {
 		bn := strings.TrimSuffix(filepath.Base(f), ".md")
-		tn := filepath.Join(issuesDir, bn+".test")
+		t.Run(bn, func(t *testing.T) {
+			tn := filepath.Join(issuesDir, bn+".test")
 
-		in, err := ioutil.ReadFile(f)
-		if err != nil {
-			t.Fatal(err)
-		}
-		b, err := ioutil.ReadFile("../styles/dark.json")
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		options := Options{
-			WordWrap:     80,
-			ColorProfile: termenv.TrueColor,
-		}
-		err = json.Unmarshal(b, &options.Styles)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		md := goldmark.New(
-			goldmark.WithExtensions(
-				extension.GFM,
-				extension.DefinitionList,
-				emoji.Emoji,
-			),
-			goldmark.WithParserOptions(
-				parser.WithAutoHeadingID(),
-			),
-		)
-
-		ar := NewRenderer(options)
-		md.SetRenderer(
-			renderer.NewRenderer(
-				renderer.WithNodeRenderers(util.Prioritized(ar, 1000))))
-
-		var buf bytes.Buffer
-		err = md.Convert(in, &buf)
-		if err != nil {
-			t.Error(err)
-		}
-
-		// generate
-		if generateIssues {
-			err = ioutil.WriteFile(tn, buf.Bytes(), 0644)
+			in, err := ioutil.ReadFile(f)
 			if err != nil {
 				t.Fatal(err)
 			}
-			continue
-		}
+			b, err := ioutil.ReadFile("../styles/dark.json")
+			if err != nil {
+				t.Fatal(err)
+			}
 
-		// verify
-		td, err := ioutil.ReadFile(tn)
-		if err != nil {
-			t.Fatal(err)
-		}
+			options := Options{
+				WordWrap:     80,
+				ColorProfile: termenv.TrueColor,
+			}
+			err = json.Unmarshal(b, &options.Styles)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-		if !bytes.Equal(td, buf.Bytes()) {
-			t.Errorf("Rendered output for %s doesn't match!\nExpected: `\n%s`\nGot: `\n%s`\n",
-				bn, string(td), buf.String())
-		}
+			md := goldmark.New(
+				goldmark.WithExtensions(
+					extension.GFM,
+					extension.DefinitionList,
+					emoji.Emoji,
+				),
+				goldmark.WithParserOptions(
+					parser.WithAutoHeadingID(),
+				),
+			)
+
+			ar := NewRenderer(options)
+			md.SetRenderer(
+				renderer.NewRenderer(
+					renderer.WithNodeRenderers(util.Prioritized(ar, 1000))))
+
+			var buf bytes.Buffer
+			err = md.Convert(in, &buf)
+			if err != nil {
+				t.Error(err)
+			}
+
+			// generate
+			if generateIssues {
+				err = ioutil.WriteFile(tn, buf.Bytes(), 0644)
+				if err != nil {
+					t.Fatal(err)
+				}
+				return
+			}
+
+			// verify
+			td, err := ioutil.ReadFile(tn)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if !bytes.Equal(td, buf.Bytes()) {
+				t.Errorf("Rendered output for %s doesn't match!\nExpected: `\n%s`\nGot: `\n%s`\n",
+					bn, string(td), buf.String())
+			}
+		})
 	}
 }
