@@ -185,7 +185,7 @@ func WithWordWrap(wordWrap int) TermRendererOption {
 	}
 }
 
-// WithWordWrap sets a TermRenderer's word wrap.
+// WithPreservedNewlines preserves newlines from being replaced.
 func WithPreservedNewLines() TermRendererOption {
 	return func(tr *TermRenderer) error {
 		tr.ansiOptions.PreserveNewLines = true
