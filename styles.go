@@ -539,6 +539,117 @@ var (
 		},
 	}
 
+	// PinkStyleConfig is the default pink style.
+	PinkStyleConfig = ansi.StyleConfig{
+		Document: ansi.StyleBlock{
+			Margin: uintPtr(2),
+		},
+		BlockQuote: ansi.StyleBlock{
+			Indent:      uintPtr(1),
+			IndentToken: stringPtr("│ "),
+		},
+		List: ansi.StyleList{
+			LevelIndent: 0,
+		},
+		Heading: ansi.StyleBlock{
+			StylePrimitive: ansi.StylePrimitive{
+				BlockSuffix: "\n",
+				Color:       stringPtr("212"),
+				Bold:        boolPtr(true),
+			},
+		},
+		H1: ansi.StyleBlock{
+			StylePrimitive: ansi.StylePrimitive{
+				BlockSuffix: "\n",
+				BlockPrefix: "\n",
+				Prefix:      "",
+			},
+		},
+		H2: ansi.StyleBlock{
+			StylePrimitive: ansi.StylePrimitive{
+				Prefix: "▌ ",
+			},
+		},
+		H3: ansi.StyleBlock{
+			StylePrimitive: ansi.StylePrimitive{
+				Prefix: "┃ ",
+			},
+		},
+		H4: ansi.StyleBlock{
+			StylePrimitive: ansi.StylePrimitive{
+				Prefix: "│ ",
+			},
+		},
+		H5: ansi.StyleBlock{
+			StylePrimitive: ansi.StylePrimitive{
+				Prefix: "┆ ",
+			},
+		},
+		H6: ansi.StyleBlock{
+			StylePrimitive: ansi.StylePrimitive{
+				Prefix: "┊ ",
+				Bold:   boolPtr(false),
+			},
+		},
+		Text: ansi.StylePrimitive{},
+		Strikethrough: ansi.StylePrimitive{
+			CrossedOut: boolPtr(true),
+		},
+		Emph: ansi.StylePrimitive{
+			Italic: boolPtr(true),
+		},
+		Strong: ansi.StylePrimitive{
+			Bold: boolPtr(true),
+		},
+		HorizontalRule: ansi.StylePrimitive{
+			Color:  stringPtr("212"),
+			Format: "\n──────\n",
+		},
+		Item: ansi.StylePrimitive{
+			BlockPrefix: "• ",
+		},
+		Enumeration: ansi.StylePrimitive{
+			BlockPrefix: ". ",
+		},
+		Task: ansi.StyleTask{
+			Ticked:   "[✓] ",
+			Unticked: "[ ] ",
+		},
+		Link: ansi.StylePrimitive{
+			Color:     stringPtr("99"),
+			Underline: boolPtr(true),
+		},
+		LinkText: ansi.StylePrimitive{
+			Bold: boolPtr(true),
+		},
+		Image: ansi.StylePrimitive{
+			Underline: boolPtr(true),
+		},
+		ImageText: ansi.StylePrimitive{
+			Format: "Image: {{.text}}",
+		},
+		Code: ansi.StyleBlock{
+			StylePrimitive: ansi.StylePrimitive{
+				Color:           stringPtr("212"),
+				BackgroundColor: stringPtr("236"),
+				Prefix:          " ",
+				Suffix:          " ",
+			},
+		},
+		Table: ansi.StyleTable{
+			CenterSeparator: stringPtr("┼"),
+			ColumnSeparator: stringPtr("│"),
+			RowSeparator:    stringPtr("─"),
+		},
+		DefinitionList: ansi.StyleBlock{},
+		DefinitionTerm: ansi.StylePrimitive{},
+		DefinitionDescription: ansi.StylePrimitive{
+			BlockPrefix: "\n🠶 ",
+		},
+		HTMLBlock: ansi.StyleBlock{},
+		HTMLSpan:  ansi.StyleBlock{},
+	}
+
 	// NoTTYStyleConfig is the default notty style.
 	NoTTYStyleConfig = ansi.StyleConfig{
 		Document: ansi.StyleBlock{
@@ -651,6 +762,7 @@ var (
 		"ascii":   &ASCIIStyleConfig,
 		"dark":    &DarkStyleConfig,
 		"light":   &LightStyleConfig,
+		"pink":    &PinkStyleConfig,
 		"notty":   &NoTTYStyleConfig,
 		"dracula": &DraculaStyleConfig,
 	}
