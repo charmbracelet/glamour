@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/muesli/termenv"
 	"github.com/yuin/goldmark"
 	emoji "github.com/yuin/goldmark-emoji"
@@ -33,14 +34,16 @@ type TermRenderer struct {
 // Render initializes a new TermRenderer and renders a markdown with a specific
 // style.
 func Render(in string, stylePath string) (string, error) {
-	b, err := RenderBytes([]byte(in), stylePath)
+	indentAdjustedin := heredoc.Doc(in)
+	b, err := RenderBytes([]byte(indentAdjustedin), stylePath)
 	return string(b), err
 }
 
 // RenderWithEnvironmentConfig initializes a new TermRenderer and renders a
 // markdown with a specific style defined by the GLAMOUR_STYLE environment variable.
 func RenderWithEnvironmentConfig(in string) (string, error) {
-	b, err := RenderBytes([]byte(in), getEnvironmentStyle())
+	indentAdjustedin := heredoc.Doc(in)
+	b, err := RenderBytes([]byte(indentAdjustedin), getEnvironmentStyle())
 	return string(b), err
 }
 
