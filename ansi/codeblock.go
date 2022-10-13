@@ -8,6 +8,7 @@ import (
 	"github.com/alecthomas/chroma/quick"
 	"github.com/alecthomas/chroma/styles"
 	"github.com/muesli/reflow/indent"
+	"github.com/muesli/termenv"
 )
 
 const (
@@ -75,7 +76,7 @@ func (e *CodeBlockElement) Render(w io.Writer, ctx RenderContext) error {
 	}
 	theme := rules.Theme
 
-	if rules.Chroma != nil && ctx.options.ColorProfile > 1 {
+	if rules.Chroma != nil && ctx.options.ColorProfile != termenv.Ascii {
 		theme = chromaStyleTheme
 		mutex.Lock()
 		// Don't register the style if it's already registered.
