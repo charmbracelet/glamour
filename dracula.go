@@ -111,97 +111,12 @@ var DraculaStyleConfig = ansi.StyleConfig{
 		},
 	},
 	CodeBlock: ansi.StyleCodeBlock{
+		Theme: "dracula",
 		StyleBlock: ansi.StyleBlock{
 			StylePrimitive: ansi.StylePrimitive{
 				Color: stringPtr("#ffb86c"),
 			},
 			Margin: uintPtr(2),
-		},
-		Chroma: &ansi.Chroma{
-			Text: ansi.StylePrimitive{
-				Color: stringPtr("#f8f8f2"),
-			},
-			Error: ansi.StylePrimitive{
-				Color:           stringPtr("#f8f8f2"),
-				BackgroundColor: stringPtr("#ff5555"),
-			},
-			Comment: ansi.StylePrimitive{
-				Color: stringPtr("#6272A4"),
-			},
-			CommentPreproc: ansi.StylePrimitive{
-				Color: stringPtr("#ff79c6"),
-			},
-			Keyword: ansi.StylePrimitive{
-				Color: stringPtr("#ff79c6"),
-			},
-			KeywordReserved: ansi.StylePrimitive{
-				Color: stringPtr("#ff79c6"),
-			},
-			KeywordNamespace: ansi.StylePrimitive{
-				Color: stringPtr("#ff79c6"),
-			},
-			KeywordType: ansi.StylePrimitive{
-				Color: stringPtr("#8be9fd"),
-			},
-			Operator: ansi.StylePrimitive{
-				Color: stringPtr("#ff79c6"),
-			},
-			Punctuation: ansi.StylePrimitive{
-				Color: stringPtr("#f8f8f2"),
-			},
-			Name: ansi.StylePrimitive{
-				Color: stringPtr("#8be9fd"),
-			},
-			NameBuiltin: ansi.StylePrimitive{
-				Color: stringPtr("#8be9fd"),
-			},
-			NameTag: ansi.StylePrimitive{
-				Color: stringPtr("#ff79c6"),
-			},
-			NameAttribute: ansi.StylePrimitive{
-				Color: stringPtr("#50fa7b"),
-			},
-			NameClass: ansi.StylePrimitive{
-				Color: stringPtr("#8be9fd"),
-			},
-			NameConstant: ansi.StylePrimitive{
-				Color: stringPtr("#bd93f9"),
-			},
-			NameDecorator: ansi.StylePrimitive{
-				Color: stringPtr("#50fa7b"),
-			},
-			NameFunction: ansi.StylePrimitive{
-				Color: stringPtr("#50fa7b"),
-			},
-			LiteralNumber: ansi.StylePrimitive{
-				Color: stringPtr("#6EEFC0"),
-			},
-			LiteralString: ansi.StylePrimitive{
-				Color: stringPtr("#f1fa8c"),
-			},
-			LiteralStringEscape: ansi.StylePrimitive{
-				Color: stringPtr("#ff79c6"),
-			},
-			GenericDeleted: ansi.StylePrimitive{
-				Color: stringPtr("#ff5555"),
-			},
-			GenericEmph: ansi.StylePrimitive{
-				Color:  stringPtr("#f1fa8c"),
-				Italic: boolPtr(true),
-			},
-			GenericInserted: ansi.StylePrimitive{
-				Color: stringPtr("#50fa7b"),
-			},
-			GenericStrong: ansi.StylePrimitive{
-				Color: stringPtr("#ffb86c"),
-				Bold:  boolPtr(true),
-			},
-			GenericSubheading: ansi.StylePrimitive{
-				Color: stringPtr("#bd93f9"),
-			},
-			Background: ansi.StylePrimitive{
-				BackgroundColor: stringPtr("#282a36"),
-			},
 		},
 	},
 	Table: ansi.StyleTable{
