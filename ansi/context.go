@@ -19,6 +19,7 @@ type RenderContext struct {
 
 // NewRenderContext returns a new RenderContext.
 func NewRenderContext(options Options) RenderContext {
+	ChromaRegister(&options.Styles)
 	return RenderContext{
 		options:    options,
 		blockStack: &BlockStack{},

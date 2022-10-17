@@ -1,8 +1,16 @@
 package ansi
 
 import (
+	"sync"
+
 	"github.com/alecthomas/chroma/v2"
 	"github.com/alecthomas/chroma/v2/styles"
+)
+
+var (
+	// mutex for synchronizing access to the chroma style registry.
+	// Related https://github.com/alecthomas/chroma/pull/650
+	mutex = sync.Mutex{}
 )
 
 func chromaStyle(style StylePrimitive) string {
@@ -48,6 +56,7 @@ func ChromaRegister(cfg *StyleConfig) *chroma.Style {
 		return nil
 	}
 
+	mutex.Lock()
 	// Register the theme if it doesn't already exist.
 	_, ok := styles.Registry[theme]
 	if !ok && rules.Chroma != nil {
@@ -89,6 +98,7 @@ func ChromaRegister(cfg *StyleConfig) *chroma.Style {
 			),
 		)
 	}
+	mutex.Unlock()
 
 	return style
 }
