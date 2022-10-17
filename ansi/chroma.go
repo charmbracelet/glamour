@@ -1,8 +1,8 @@
 package ansi
 
 import (
-	"github.com/alecthomas/chroma"
-	"github.com/alecthomas/chroma/styles"
+	"github.com/alecthomas/chroma/v2"
+	"github.com/alecthomas/chroma/v2/styles"
 )
 
 func chromaStyle(style StylePrimitive) string {
