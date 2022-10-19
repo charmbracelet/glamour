@@ -3,6 +3,7 @@ package glamour
 import (
 	"bytes"
 	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
 )
@@ -210,6 +211,50 @@ func TestCapitalization(t *testing.T) {
 
 	// expected outcome
 	td, err := ioutil.ReadFile("testdata/capitalization.test")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if string(td) != b {
+		t.Errorf("Rendered output doesn't match!\nExpected: `\n%s`\nGot: `\n%s`\n", td, b)
+	}
+}
+
+func TestImageDisplay(t *testing.T) {
+	oldTermProgram := os.Getenv("TERM_PROGRAM")
+	err := os.Setenv("TERM_PROGRAM", "iterm.app")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Cleanup(func() {
+		err := os.Setenv("TERM_PROGRAM", oldTermProgram)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+	dir, err := os.Getwd()
+
+	if err != nil {
+		t.Fatal(err)
+	}
+	r, err := NewTermRenderer(
+		WithAutoStyle(),
+		WithWordWrap(0),
+		WithBaseURL(dir+"/testdata/fixtures/"),
+		WithImageDisplay(),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := "# Hello World\n![aaa](./cc-by.png)\nBye!"
+	b, err := r.Render(s)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// expected outcome
+	td, err := ioutil.ReadFile("testdata/image.test")
 	if err != nil {
 		t.Fatal(err)
 	}

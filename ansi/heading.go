@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"io"
 
-	"github.com/muesli/reflow/indent"
-	"github.com/muesli/reflow/wordwrap"
+	"github.com/charmbracelet/glamour/ansi/indent"
+	"github.com/charmbracelet/glamour/ansi/wordwrap"
 )
 
 // A HeadingElement is used to render headings.

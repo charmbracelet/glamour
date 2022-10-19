@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"io"
 
-	"github.com/muesli/reflow/wordwrap"
+	"github.com/charmbracelet/glamour/ansi/wordwrap"
 )
 
 // BlockElement provides a render buffer for children of a block element.

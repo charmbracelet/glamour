@@ -201,6 +201,13 @@ func WithEmoji() TermRendererOption {
 	}
 }
 
+func WithImageDisplay() TermRendererOption {
+	return func(tr *TermRenderer) error {
+		tr.ansiOptions.ImageDisplay = true
+		return nil
+	}
+}
+
 func (tr *TermRenderer) Read(b []byte) (int, error) {
 	return tr.renderBuf.Read(b)
 }
