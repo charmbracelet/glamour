@@ -73,6 +73,7 @@ Check out these projects, which use `glamour`:
 the command-line.
 - [GitHub CLI](https://github.com/cli/cli), GitHub’s official command line tool.
 - [GLab](https://github.com/profclems/glab), an open source GitLab command line tool.
+- [Gitea CLI](https://gitea.com/gitea/tea), Gitea's official command line tool.
 - [Meteor](https://github.com/odpf/meteor), an easy-to-use, plugin-driven metadata collection framework.
 
 ## License
