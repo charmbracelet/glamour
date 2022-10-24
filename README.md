@@ -18,7 +18,6 @@ documents & templates on [ANSI](https://en.wikipedia.org/wiki/ANSI_escape_code)
 compatible terminals. You can create your own stylesheet or simply use one of
 the stylish defaults.
 
-
 ## Usage
 
 ```go
@@ -54,7 +53,6 @@ out, err := r.Render(in)
 fmt.Print(out)
 ```
 
-
 ## Styles
 
 You can find all available default styles in our [gallery](https://github.com/charmbracelet/glamour/tree/master/styles/gallery).
@@ -64,7 +62,6 @@ There are a few options for using a custom style:
 1. Call `glamour.Render(inputText, "desiredStyle")`
 1. Set the `GLAMOUR_STYLE` environment variable to your desired default style or a file location for a style and call `glamour.RenderWithEnvironmentConfig(inputText)`
 1. Set the `GLAMOUR_STYLE` environment variable and pass `glamour.WithEnvironmentConfig()` to your custom renderer
-
 
 ## Glamourous Projects
 
@@ -76,16 +73,22 @@ the command-line.
 - [Gitea CLI](https://gitea.com/gitea/tea), Gitea's official command line tool.
 - [Meteor](https://github.com/odpf/meteor), an easy-to-use, plugin-driven metadata collection framework.
 
+## Feedback
+
+We’d love to hear your thoughts on this project. Feel free to drop us a note!
+
+* [Twitter](https://twitter.com/charmcli)
+* [The Fediverse](https://mastodon.social/@charmcli)
+* [Discord](https://charm.sh/chat)
+
 ## License
 
 [MIT](https://github.com/charmbracelet/glamour/raw/master/LICENSE)
-
 
 ***
 
 Part of [Charm](https://charm.sh).
 
-<a href="https://charm.sh/"><img alt="The Charm logo" src="https://stuff.charm.sh/charm-badge-unrounded.jpg" width="400"></a>
+<a href="https://charm.sh/"><img alt="The Charm logo" src="https://stuff.charm.sh/charm-badge.jpg" width="400"></a>
 
 Charm热爱开源 • Charm loves open source
-
