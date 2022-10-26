@@ -1,6 +1,16 @@
 name: build
 on: [push, pull_request]
 jobs:
+  govulncheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: ^1
+          cache: true
+      - run: go install golang.org/x/vuln/cmd/govulncheck@latest
+      - run: govulncheck ./...
   build:
     strategy:
       matrix:
@@ -13,13 +23,14 @@ jobs:
       COLORFGBG: "7;0"
       TERM: "xterm-256color"
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Install Go
         uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go-version }}
-
-      - name: Checkout code
-        uses: actions/checkout@v3
+          cache: true
 
       - name: Download Go modules
         run: go mod download
