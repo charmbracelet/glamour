@@ -1,9 +1,11 @@
 module github.com/charmbracelet/glamour
 
-go 1.13
+go 1.16
 
 require (
+	github.com/BourgeoisBear/rasterm v1.0.3
 	github.com/alecthomas/chroma v0.10.0
+	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.21
 	github.com/muesli/reflow v0.3.0
 	github.com/muesli/termenv v0.13.0

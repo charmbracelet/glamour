@@ -22,13 +22,19 @@ type ElementFinisher interface {
 	Finish(w io.Writer, ctx RenderContext) error
 }
 
+// ElementSkipChildrenChecker is called to check if the depth-first search should skip all children.
+type ElementSkipChildrenChecker interface {
+	CheckShouldSkip(ctx RenderContext) (bool, error)
+}
+
 // An Element is used to instruct the renderer how to handle individual markdown
 // nodes.
 type Element struct {
-	Entering string
-	Exiting  string
-	Renderer ElementRenderer
-	Finisher ElementFinisher
+	Entering            string
+	Exiting             string
+	Renderer            ElementRenderer
+	Finisher            ElementFinisher
+	SkipChildrenChecker ElementSkipChildrenChecker
 }
 
 // NewElement returns the appropriate render Element for a given node.
@@ -248,6 +254,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 				BaseURL: ctx.options.BaseURL,
 				URL:     string(n.Destination),
 			},
+			SkipChildrenChecker: &ImageSkipChildrenChecker{},
 		}
 
 	// Code

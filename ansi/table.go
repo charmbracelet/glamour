@@ -3,7 +3,7 @@ package ansi
 import (
 	"io"
 
-	"github.com/muesli/reflow/indent"
+	"github.com/charmbracelet/glamour/ansi/indent"
 	"github.com/olekukonko/tablewriter"
 )
 

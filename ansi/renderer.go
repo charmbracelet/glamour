@@ -20,6 +20,7 @@ type Options struct {
 	PreserveNewLines bool
 	ColorProfile     termenv.Profile
 	Styles           StyleConfig
+	ImageDisplay     bool
 }
 
 // ANSIRenderer renders markdown content as ANSI escaped sequences.
@@ -97,6 +98,17 @@ func (r *ANSIRenderer) renderNode(w util.BufWriter, source []byte, node ast.Node
 	}
 
 	e := r.NewElement(node, source)
+	walkStatus := ast.WalkContinue
+	if e.SkipChildrenChecker != nil {
+		v, err := e.SkipChildrenChecker.CheckShouldSkip(r.context)
+		if err != nil {
+			return ast.WalkStop, nil
+		}
+		if v {
+			walkStatus = ast.WalkSkipChildren
+		}
+	}
+
 	if entering {
 		// everything below the Document element gets rendered into a block buffer
 		if bs.Len() > 0 {
@@ -110,6 +122,7 @@ func (r *ANSIRenderer) renderNode(w util.BufWriter, source []byte, node ast.Node
 				return ast.WalkStop, err
 			}
 		}
+		return walkStatus, nil
 	} else {
 		// everything below the Document element gets rendered into a block buffer
 		if bs.Len() > 0 {
@@ -129,9 +142,8 @@ func (r *ANSIRenderer) renderNode(w util.BufWriter, source []byte, node ast.Node
 			}
 		}
 		_, _ = bs.Current().Block.Write([]byte(e.Exiting))
+		return walkStatus, nil
 	}
-
-	return ast.WalkContinue, nil
 }
 
 func isChild(node ast.Node) bool {
