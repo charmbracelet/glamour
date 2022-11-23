@@ -1,6 +1,7 @@
 package ansi
 
 import (
+	localast "github.com/charmbracelet/glamour/extension/ast"
 	"io"
 	"net/url"
 	"strings"
@@ -16,6 +17,7 @@ import (
 // Options is used to configure an ANSIRenderer.
 type Options struct {
 	BaseURL          string
+	LinkTextOnly     bool
 	WordWrap         int
 	PreserveNewLines bool
 	ColorProfile     termenv.Profile
@@ -37,6 +39,7 @@ func NewRenderer(options Options) *ANSIRenderer {
 // RegisterFuncs implements NodeRenderer.RegisterFuncs.
 func (r *ANSIRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegisterer) {
 	// blocks
+	reg.Register(localast.KindFrontmatter, r.handleFrontmatter)
 	reg.Register(ast.KindDocument, r.renderNode)
 	reg.Register(ast.KindHeading, r.renderNode)
 	reg.Register(ast.KindBlockquote, r.renderNode)
@@ -84,6 +87,10 @@ func (r *ANSIRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegisterer) {
 
 	// emoji
 	reg.Register(east.KindEmoji, r.renderNode)
+}
+
+func (r *ANSIRenderer) handleFrontmatter(w util.BufWriter, source []byte, node ast.Node, entering bool) (ast.WalkStatus, error) {
+	return ast.WalkContinue, nil
 }
 
 func (r *ANSIRenderer) renderNode(w util.BufWriter, source []byte, node ast.Node, entering bool) (ast.WalkStatus, error) {

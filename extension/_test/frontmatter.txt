@@ -1,0 +1,20 @@
+1
+//- - - - - - - - -//
+---
+title: Ein Title
+longText: |
+  Ein langer Text
+  der über mehrere
+  Zeilen geht
+number: 120
+---
+//- - - - - - - - -//
+<!--
+longText: Ein langer Text
+der über mehrere
+Zeilen geht
+
+number: 120
+title: Ein Title
+-->
+//= = = = = = = = = = = = = = = = = = = = = = = =//
