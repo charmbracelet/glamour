@@ -80,7 +80,6 @@ func NewTermRenderer(options ...TermRendererOption) (*TermRenderer, error) {
 		ansiOptions: ansi.Options{
 			WordWrap:     80,
 			ColorProfile: termenv.TrueColor,
-			LinkTextOnly: false,
 		},
 	}
 	// register Termrenderer as Callback for Frontmatter
@@ -200,13 +199,6 @@ func WithStylesFromJSONFile(filename string) TermRendererOption {
 func WithWordWrap(wordWrap int) TermRendererOption {
 	return func(tr *TermRenderer) error {
 		tr.ansiOptions.WordWrap = wordWrap
-		return nil
-	}
-}
-
-func WithLinkTextOnly(onlyLinkText bool) TermRendererOption {
-	return func(tr *TermRenderer) error {
-		tr.ansiOptions.LinkTextOnly = onlyLinkText
 		return nil
 	}
 }

@@ -1,20 +1,18 @@
 1
 //- - - - - - - - -//
 ---
-title: Ein Title
+title: A Title
 longText: |
-  Ein langer Text
-  der über mehrere
-  Zeilen geht
+   Long text spanning multiple
+   lines of input
 number: 120
 ---
 //- - - - - - - - -//
 <!--
-longText: Ein langer Text
-der über mehrere
-Zeilen geht
+longText: Long text spanning multiple
+lines of input
 
 number: 120
-title: Ein Title
+title: A Title
 -->
 //= = = = = = = = = = = = = = = = = = = = = = = =//
