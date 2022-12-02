@@ -224,6 +224,7 @@ var (
 			},
 		},
 		CodeBlock: ansi.StyleCodeBlock{
+			Theme: "charm",
 			StyleBlock: ansi.StyleBlock{
 				StylePrimitive: ansi.StylePrimitive{
 					Color: stringPtr("244"),
@@ -436,6 +437,7 @@ var (
 			},
 		},
 		CodeBlock: ansi.StyleCodeBlock{
+			Theme: "charm-light",
 			StyleBlock: ansi.StyleBlock{
 				StylePrimitive: ansi.StylePrimitive{
 					Color: stringPtr("242"),

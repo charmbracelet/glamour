@@ -76,6 +76,7 @@ type StyleBlock struct {
 // StyleCodeBlock holds the style settings for a code block.
 type StyleCodeBlock struct {
 	StyleBlock
+	// Theme is a chroma theme name.
 	Theme  string  `json:"theme,omitempty"`
 	Chroma *Chroma `json:"chroma,omitempty"`
 }
