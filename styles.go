@@ -200,11 +200,11 @@ var (
 			Unticked:       "[ ] ",
 		},
 		Link: ansi.StylePrimitive{
-			Color:     stringPtr("30"),
+			Color:     stringPtr("123"),
 			Underline: boolPtr(true),
 		},
 		LinkText: ansi.StylePrimitive{
-			Color: stringPtr("35"),
+			Color: stringPtr("123"),
 			Bold:  boolPtr(true),
 		},
 		Image: ansi.StylePrimitive{
