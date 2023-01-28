@@ -67,11 +67,11 @@
     "unticked": "[ ] "
   },
   "link": {
-    "color": "30",
+    "color": "123",
     "underline": true
   },
   "link_text": {
-    "color": "35",
+    "color": "123",
     "bold": true
   },
   "image": {
