@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/alecthomas/chroma/v2 v2.5.0
-	github.com/microcosm-cc/bluemonday v1.0.22
+	github.com/microcosm-cc/bluemonday v1.0.23
 	github.com/muesli/reflow v0.3.0
 	github.com/muesli/termenv v0.14.0
 	github.com/olekukonko/tablewriter v0.0.5
@@ -21,6 +21,6 @@ require (
 	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
-	golang.org/x/net v0.7.0 // indirect
-	golang.org/x/sys v0.5.0 // indirect
+	golang.org/x/net v0.8.0 // indirect
+	golang.org/x/sys v0.6.0 // indirect
 )
