@@ -6,14 +6,14 @@ require (
 	github.com/alecthomas/chroma/v2 v2.5.0
 	github.com/microcosm-cc/bluemonday v1.0.23
 	github.com/muesli/reflow v0.3.0
-	github.com/muesli/termenv v0.14.0
+	github.com/muesli/termenv v0.15.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/yuin/goldmark v1.5.4
 	github.com/yuin/goldmark-emoji v1.0.1
 )
 
 require (
-	github.com/aymanbagabas/go-osc52 v1.2.1 // indirect
+	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/dlclark/regexp2 v1.4.0 // indirect
 	github.com/gorilla/css v1.0.0 // indirect

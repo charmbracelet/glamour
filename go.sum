@@ -4,8 +4,8 @@ github.com/alecthomas/chroma/v2 v2.5.0 h1:CQCdj1BiBV17sD4Bd32b/Bzuiq/EqoNTrnIhyQ
 github.com/alecthomas/chroma/v2 v2.5.0/go.mod h1:yrkMI9807G1ROx13fhe1v6PN2DDeaR73L3d+1nmYQtw=
 github.com/alecthomas/repr v0.2.0 h1:HAzS41CIzNW5syS8Mf9UwXhNH1J9aix/BvDRf1Ml2Yk=
 github.com/alecthomas/repr v0.2.0/go.mod h1:Fr0507jx4eOXV7AlPV6AVZLYrLIuIeSOWtW57eE/O/4=
-github.com/aymanbagabas/go-osc52 v1.2.1 h1:q2sWUyDcozPLcLabEMd+a+7Ea2DitxZVN9hTxab9L4E=
-github.com/aymanbagabas/go-osc52 v1.2.1/go.mod h1:zT8H+Rk4VSabYN90pWyugflM3ZhpTZNC7cASDfUCdT4=
+github.com/aymanbagabas/go-osc52/v2 v2.0.1 h1:HwpRHbFMcZLEVr42D4p7XBqjyuxQH5SMiErDT4WkJ2k=
+github.com/aymanbagabas/go-osc52/v2 v2.0.1/go.mod h1:uYgXzlJ7ZpABp8OJ+exZzJJhRNQ2ASbcXHWsFqH8hp8=
 github.com/aymerick/douceur v0.2.0 h1:Mv+mAeH1Q+n9Fr+oyamOlAkUNPWPlA8PPGR0QAaYuPk=
 github.com/aymerick/douceur v0.2.0/go.mod h1:wlT5vV2O3h55X9m7iVYN0TBM0NH/MmbLnd30/FjWUq4=
 github.com/dlclark/regexp2 v1.4.0 h1:F1rxgk7p4uKjwIQxBs9oAXe5CqrXlCduYEJvrF4u93E=
@@ -26,8 +26,8 @@ github.com/microcosm-cc/bluemonday v1.0.23 h1:SMZe2IGa0NuHvnVNAZ+6B38gsTbi5e4sVi
 github.com/microcosm-cc/bluemonday v1.0.23/go.mod h1:mN70sk7UkkF8TUr2IGBpNN0jAgStuPzlK76QuruE/z4=
 github.com/muesli/reflow v0.3.0 h1:IFsN6K9NfGtjeggFP+68I4chLZV2yIKsXJFNZ+eWh6s=
 github.com/muesli/reflow v0.3.0/go.mod h1:pbwTDkVPibjO2kyvBQRBxTWEEGDGq0FlB1BIKtnHY/8=
-github.com/muesli/termenv v0.14.0 h1:8x9NFfOe8lmIWK4pgy3IfVEy47f+ppe3tUqdPZG2Uy0=
-github.com/muesli/termenv v0.14.0/go.mod h1:kG/pF1E7fh949Xhe156crRUrHNyK221IuGO7Ez60Uc8=
+github.com/muesli/termenv v0.15.0 h1:ZYfCF4CZGhAA4meilZ5pd7tfUX4QLH4zB7OBie4RMS8=
+github.com/muesli/termenv v0.15.0/go.mod h1:HeAQPTzpfs016yGtA4g00CsdYnVLJvxsS4ANqrZs2sQ=
 github.com/olekukonko/tablewriter v0.0.5 h1:P2Ga83D34wi1o9J6Wh1mRuqd4mF/x/lgBS7N7AbDhec=
 github.com/olekukonko/tablewriter v0.0.5/go.mod h1:hPp6KlRPjbx+hW8ykQs1w3UBbZlj6HuIJcUGPhkA7kY=
 github.com/rivo/uniseg v0.1.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=
