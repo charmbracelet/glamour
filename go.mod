@@ -6,7 +6,7 @@ require (
 	github.com/alecthomas/chroma/v2 v2.5.0
 	github.com/microcosm-cc/bluemonday v1.0.23
 	github.com/muesli/reflow v0.3.0
-	github.com/muesli/termenv v0.15.0
+	github.com/muesli/termenv v0.15.1
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/yuin/goldmark v1.5.4
 	github.com/yuin/goldmark-emoji v1.0.1
