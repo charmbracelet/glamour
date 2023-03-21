@@ -3,7 +3,7 @@ module github.com/charmbracelet/glamour
 go 1.17
 
 require (
-	github.com/alecthomas/chroma/v2 v2.5.0
+	github.com/alecthomas/chroma/v2 v2.6.0
 	github.com/microcosm-cc/bluemonday v1.0.23
 	github.com/muesli/reflow v0.3.0
 	github.com/muesli/termenv v0.15.1
