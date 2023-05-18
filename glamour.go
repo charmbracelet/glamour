@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/mattn/go-isatty"
 	"github.com/muesli/termenv"
 	"github.com/yuin/goldmark"
 	emoji "github.com/yuin/goldmark-emoji"
@@ -245,6 +246,10 @@ func getEnvironmentStyle() string {
 
 func getDefaultStyle(style string) (*ansi.StyleConfig, error) {
 	if style == "auto" {
+		tty := termenv.DefaultOutput().TTY()
+		if tty == nil || !isatty.IsTerminal(tty.Fd()) {
+			return &NoTTYStyleConfig, nil
+		}
 		if termenv.HasDarkBackground() {
 			return &DarkStyleConfig, nil
 		}
