@@ -133,7 +133,7 @@ func WithStandardStyle(style string) TermRendererOption {
 // WithAutoStyle sets a TermRenderer's styles with either the standard dark
 // or light style, depending on the terminal's background color at run-time.
 func WithAutoStyle() TermRendererOption {
-	return WithStandardStyle(string(AutoStyle))
+	return WithStandardStyle(AutoStyle)
 }
 
 // WithEnvironmentConfig sets a TermRenderer's styles based on the
