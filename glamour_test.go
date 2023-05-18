@@ -15,7 +15,7 @@ const (
 
 func TestTermRendererWriter(t *testing.T) {
 	r, err := NewTermRenderer(
-		WithStandardStyle("dark"),
+		WithStandardStyle(DarkStyle),
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -152,7 +152,7 @@ func TestStyles(t *testing.T) {
 	}
 
 	_, err = NewTermRenderer(
-		WithStandardStyle("auto"),
+		WithStandardStyle(AutoStyle),
 	)
 	if err != nil {
 		t.Fatal(err)

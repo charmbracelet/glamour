@@ -18,6 +18,17 @@ import (
 	"github.com/charmbracelet/glamour/ansi"
 )
 
+// Default styles.
+const (
+	AsciiStyle   = "ascii"
+	AutoStyle    = "auto"
+	DarkStyle    = "dark"
+	DraculaStyle = "dracula"
+	LightStyle   = "light"
+	NoTTYStyle   = "notty"
+	PinkStyle    = "pink"
+)
+
 // A TermRendererOption sets an option on a TermRenderer.
 type TermRendererOption func(*TermRenderer) error
 
@@ -122,7 +133,7 @@ func WithStandardStyle(style string) TermRendererOption {
 // WithAutoStyle sets a TermRenderer's styles with either the standard dark
 // or light style, depending on the terminal's background color at run-time.
 func WithAutoStyle() TermRendererOption {
-	return WithStandardStyle("auto")
+	return WithStandardStyle(string(AutoStyle))
 }
 
 // WithEnvironmentConfig sets a TermRenderer's styles based on the
@@ -237,14 +248,14 @@ func (tr *TermRenderer) RenderBytes(in []byte) ([]byte, error) {
 func getEnvironmentStyle() string {
 	glamourStyle := os.Getenv("GLAMOUR_STYLE")
 	if len(glamourStyle) == 0 {
-		glamourStyle = "auto"
+		glamourStyle = AutoStyle
 	}
 
 	return glamourStyle
 }
 
 func getDefaultStyle(style string) (*ansi.StyleConfig, error) {
-	if style == "auto" {
+	if style == AutoStyle {
 		if termenv.HasDarkBackground() {
 			return &DarkStyleConfig, nil
 		}
