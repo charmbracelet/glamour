@@ -549,7 +549,7 @@ var (
 			IndentToken: stringPtr("│ "),
 		},
 		List: ansi.StyleList{
-			LevelIndent: 0,
+			LevelIndent: 2,
 		},
 		Heading: ansi.StyleBlock{
 			StylePrimitive: ansi.StylePrimitive{

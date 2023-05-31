@@ -8,7 +8,7 @@
   },
   "paragraph": {},
   "list": {
-    "level_indent": 2,
+    "level_indent": 2
   },
   "heading": {
     "block_suffix": "\n",
@@ -75,12 +75,10 @@
   "code": {
     "prefix": " ",
     "suffix": " ",
-    "color": "99",
-    "background_color": "0"
+    "color": "212",
+    "background_color": "236"
   },
-  "code_block": {
-    "color": "99"
-  },
+  "code_block": {},
   "table": {
     "center_separator": "┼",
     "column_separator": "│",
