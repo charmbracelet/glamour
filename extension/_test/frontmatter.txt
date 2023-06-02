@@ -1,0 +1,18 @@
+1
+//- - - - - - - - -//
+---
+title: A Title
+longText: |
+   Long text spanning multiple
+   lines of input
+number: 120
+---
+//- - - - - - - - -//
+<!--
+longText: Long text spanning multiple
+lines of input
+
+number: 120
+title: A Title
+-->
+//= = = = = = = = = = = = = = = = = = = = = = = =//
