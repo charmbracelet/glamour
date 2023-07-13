@@ -9,7 +9,7 @@ require (
 	github.com/muesli/termenv v0.15.2
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/yuin/goldmark v1.5.4
-	github.com/yuin/goldmark-emoji v1.0.1
+	github.com/yuin/goldmark-emoji v1.0.2
 )
 
 require (
