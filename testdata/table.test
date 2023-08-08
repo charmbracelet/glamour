@@ -1,5 +1,5 @@
                                                                                 
-      LABEL  | VALUE                                                            
-    ---------+--------                                                          
-      First  | foo                                                              
-      Second | bar                                                              
+      LABEL  | VALUE |       URL                                                
+    ---------+-------+-------------------                                       
+      First  | foo   | https://charm.sh                                         
+      Second | bar   | https://charm.sh                                         

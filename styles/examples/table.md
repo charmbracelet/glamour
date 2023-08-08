@@ -1,4 +1,4 @@
-| Label  | Value |
-| ------ | ----- |
-| First  | foo   |
-| Second | bar   |
+| Label  | Value | URL              |
+| ------ | ----- | ---------------- |
+| First  | foo   | https://charm.sh |
+| Second | bar   | https://charm.sh |

@@ -306,8 +306,13 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		s := ""
 		n := node.FirstChild()
 		for n != nil {
-			s += string(n.Text(source))
-			// s += string(n.LinkData.Destination)
+			switch t := n.(type) {
+			case *ast.AutoLink:
+				s += string(t.Label(source))
+			default:
+				s += string(n.Text(source))
+			}
+
 			n = n.NextSibling()
 		}
 
