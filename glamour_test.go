@@ -5,10 +5,12 @@ import (
 	"io/ioutil"
 	"strings"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 const (
-	generate = false
+	generate = true
 	markdown = "testdata/readme.markdown.in"
 	testFile = "testdata/readme.test"
 )
@@ -216,5 +218,45 @@ func TestCapitalization(t *testing.T) {
 
 	if string(td) != b {
 		t.Errorf("Rendered output doesn't match!\nExpected: `\n%s`\nGot: `\n%s`\n", td, b)
+	}
+}
+
+func TestWrapping(t *testing.T) {
+	tests := []struct {
+		name     string
+		mdpath   string
+		goldpath string
+	}{
+		{
+			name:     "chinese",
+			mdpath:   "testdata/issues/long-chinese-text.md",
+			goldpath: "testdata/issues/long-chinese-text.test",
+		},
+	}
+	for _, tc := range tests {
+		r, err := NewTermRenderer(
+			WithWordWrap(80),
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+		// get markdown contents
+		in, err := ioutil.ReadFile(tc.mdpath)
+		if err != nil {
+			t.Fatal(err)
+		}
+		got, err := r.RenderBytes(in)
+		if err != nil {
+			t.Fatal(err)
+		}
+		// get desired contents
+		want, err := ioutil.ReadFile(tc.goldpath)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if diff := cmp.Diff(got, want); diff != "" {
+			t.Fatalf("got != want.\nDiff:\n%s", string(diff))
+		}
 	}
 }
