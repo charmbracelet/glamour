@@ -228,35 +228,43 @@ func TestWrapping(t *testing.T) {
 		goldpath string
 	}{
 		{
-			name:     "chinese",
+			name:     "english short",
+			mdpath:   "testdata/issues/42.md",
+			goldpath: "testdata/issues/42.test",
+		},
+		{
+			name:     "chinese long",
 			mdpath:   "testdata/issues/long-chinese-text.md",
 			goldpath: "testdata/issues/long-chinese-text.test",
 		},
 	}
 	for _, tc := range tests {
-		r, err := NewTermRenderer(
-			WithWordWrap(80),
-		)
-		if err != nil {
-			t.Fatal(err)
-		}
-		// get markdown contents
-		in, err := ioutil.ReadFile(tc.mdpath)
-		if err != nil {
-			t.Fatal(err)
-		}
-		got, err := r.RenderBytes(in)
-		if err != nil {
-			t.Fatal(err)
-		}
-		// get desired contents
-		want, err := ioutil.ReadFile(tc.goldpath)
-		if err != nil {
-			t.Fatal(err)
-		}
+		t.Run(tc.name, func(t *testing.T) {
+			r, err := NewTermRenderer(
+				WithStyles(DarkStyleConfig),
+				WithWordWrap(80),
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+			// get markdown contents
+			in, err := ioutil.ReadFile(tc.mdpath)
+			if err != nil {
+				t.Fatal(err)
+			}
+			got, err := r.RenderBytes(in)
+			if err != nil {
+				t.Fatal(err)
+			}
+			// get desired contents
+			want, err := ioutil.ReadFile(tc.goldpath)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-		if diff := cmp.Diff(got, want); diff != "" {
-			t.Fatalf("got != want.\nDiff:\n%s", string(diff))
-		}
+			if diff := cmp.Diff(string(got), string(want)); diff != "" {
+				t.Fatalf("got != want\n-want +got:\ndiff:\n%s", diff)
+			}
+		})
 	}
 }
