@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	generate = true
+	generate = false
 	markdown = "testdata/readme.markdown.in"
 	testFile = "testdata/readme.test"
 )
