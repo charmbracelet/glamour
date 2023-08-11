@@ -224,22 +224,29 @@ func TestCapitalization(t *testing.T) {
 func TestWrapping(t *testing.T) {
 	tests := []struct {
 		name     string
+		locale   string
 		mdpath   string
 		goldpath string
 	}{
 		{
 			name:     "english short",
+			locale:   "",
 			mdpath:   "testdata/issues/42.md",
 			goldpath: "testdata/issues/42.test",
 		},
 		{
 			name:     "chinese long",
+			locale:   "C.UTF-8",
 			mdpath:   "testdata/issues/long-chinese-text.md",
 			goldpath: "testdata/issues/long-chinese-text.test",
 		},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			if tc.locale != "" {
+				testing.TB.Setenv(t, "LANG", tc.locale)
+				testing.TB.Setenv(t, "RUNEWIDTH_EASTASIAN", "0")
+			}
 			r, err := NewTermRenderer(
 				WithStyles(DarkStyleConfig),
 				WithWordWrap(80),
