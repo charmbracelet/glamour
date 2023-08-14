@@ -235,6 +235,12 @@ func TestWrapping(t *testing.T) {
 			goldpath: "testdata/issues/42.test",
 		},
 		{
+			name:     "chinese short",
+			locale:   "C.UTF-8",
+			mdpath:   "testdata/issues/short-chinese-text.md",
+			goldpath: "testdata/issues/short-chinese-text.test",
+		},
+		{
 			name:     "chinese long",
 			locale:   "C.UTF-8",
 			mdpath:   "testdata/issues/long-chinese-text.md",
@@ -270,7 +276,7 @@ func TestWrapping(t *testing.T) {
 			}
 
 			if diff := cmp.Diff(string(got), string(want)); diff != "" {
-				t.Fatalf("got != want\n-want +got:\ndiff:\n%s", string(diff))
+				t.Fatalf("got != want\n-want +got:\ndiff:\n%s", diff)
 			}
 		})
 	}
