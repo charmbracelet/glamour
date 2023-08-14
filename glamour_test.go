@@ -270,7 +270,7 @@ func TestWrapping(t *testing.T) {
 			}
 
 			if diff := cmp.Diff(string(got), string(want)); diff != "" {
-				t.Fatalf("got != want\n-want +got:\ndiff:\n%s", diff)
+				t.Fatalf("got != want\n-want +got:\ndiff:\n%s", string(diff))
 			}
 		})
 	}
