@@ -3,6 +3,7 @@ package glamour
 import (
 	"bytes"
 	"io/ioutil"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -44,7 +45,7 @@ func TestTermRendererWriter(t *testing.T) {
 
 	// generate
 	if generate {
-		err := ioutil.WriteFile(testFile, b, 0644)
+		err := ioutil.WriteFile(testFile, b, 0o644)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -222,37 +223,20 @@ func TestCapitalization(t *testing.T) {
 }
 
 func TestWrapping(t *testing.T) {
-	tests := []struct {
-		name     string
-		locale   string
-		mdpath   string
-		goldpath string
-	}{
-		{
-			name:     "english short",
-			locale:   "",
-			mdpath:   "testdata/issues/42.md",
-			goldpath: "testdata/issues/42.test",
-		},
-		{
-			name:     "chinese short",
-			locale:   "C.UTF-8",
-			mdpath:   "testdata/issues/short-chinese-text.md",
-			goldpath: "testdata/issues/short-chinese-text.test",
-		},
-		{
-			name:     "chinese long",
-			locale:   "C.UTF-8",
-			mdpath:   "testdata/issues/long-chinese-text.md",
-			goldpath: "testdata/issues/long-chinese-text.test",
-		},
+	langDir := "testdata/lang-support/"
+	files, err := filepath.Glob(langDir + "*.md")
+	if err != nil {
+		t.Fatal(err)
 	}
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			if tc.locale != "" {
-				testing.TB.Setenv(t, "LANG", tc.locale)
-				testing.TB.Setenv(t, "RUNEWIDTH_EASTASIAN", "0")
-			}
+	if len(files) == 0 {
+		t.Fatal("No files found, please resolve paths before trying again.")
+	}
+
+	for _, f := range files {
+		bn := strings.TrimSuffix(filepath.Base(f), ".md")
+		goldpath := filepath.Join(langDir, bn+".test")
+
+		t.Run(bn, func(t *testing.T) {
 			r, err := NewTermRenderer(
 				WithStyles(DarkStyleConfig),
 				WithWordWrap(80),
@@ -261,7 +245,7 @@ func TestWrapping(t *testing.T) {
 				t.Fatal(err)
 			}
 			// get markdown contents
-			in, err := ioutil.ReadFile(tc.mdpath)
+			in, err := ioutil.ReadFile(f)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -270,7 +254,7 @@ func TestWrapping(t *testing.T) {
 				t.Fatal(err)
 			}
 			// get desired contents
-			want, err := ioutil.ReadFile(tc.goldpath)
+			want, err := ioutil.ReadFile(goldpath)
 			if err != nil {
 				t.Fatal(err)
 			}
