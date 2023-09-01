@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/charmbracelet/lipgloss"
 	"github.com/muesli/termenv"
 	"github.com/yuin/goldmark"
 	emoji "github.com/yuin/goldmark-emoji"
@@ -25,6 +26,7 @@ const (
 )
 
 func TestRenderer(t *testing.T) {
+	lipgloss.SetColorProfile(termenv.TrueColor)
 	files, err := filepath.Glob(examplesDir + "*.md")
 	if err != nil {
 		t.Fatal(err)
@@ -98,6 +100,7 @@ func TestRenderer(t *testing.T) {
 }
 
 func TestRendererIssues(t *testing.T) {
+	lipgloss.SetColorProfile(termenv.TrueColor)
 	files, err := filepath.Glob(issuesDir + "*.md")
 	if err != nil {
 		t.Fatal(err)

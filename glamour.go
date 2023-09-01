@@ -16,6 +16,7 @@ import (
 	"github.com/yuin/goldmark/util"
 
 	"github.com/charmbracelet/glamour/ansi"
+	"github.com/charmbracelet/lipgloss"
 )
 
 // Default styles.
@@ -69,6 +70,7 @@ func RenderBytes(in []byte, stylePath string) ([]byte, error) {
 
 // NewTermRenderer returns a new TermRenderer the given options.
 func NewTermRenderer(options ...TermRendererOption) (*TermRenderer, error) {
+	lipgloss.SetColorProfile(termenv.TrueColor)
 	tr := &TermRenderer{
 		md: goldmark.New(
 			goldmark.WithExtensions(
@@ -254,6 +256,7 @@ func getEnvironmentStyle() string {
 	return glamourStyle
 }
 
+// TODO this can be handled in lipgloss
 func getDefaultStyle(style string) (*ansi.StyleConfig, error) {
 	if style == AutoStyle {
 		if termenv.HasDarkBackground() {

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/charmbracelet/lipgloss"
 	"github.com/muesli/termenv"
 )
 
@@ -37,46 +38,49 @@ func renderText(w io.Writer, p termenv.Profile, rules StylePrimitive, s string) 
 		return
 	}
 
-	out := termenv.String(s)
+	panic(s)
 
-	if rules.Upper != nil && *rules.Upper {
-		out = termenv.String(strings.ToUpper(s))
-	}
-	if rules.Lower != nil && *rules.Lower {
-		out = termenv.String(strings.ToLower(s))
-	}
-	if rules.Title != nil && *rules.Title {
-		out = termenv.String(strings.Title(s))
-	}
+	ls := lipgloss.NewStyle()
+
 	if rules.Color != nil {
-		out = out.Foreground(p.Color(*rules.Color))
+		ls = ls.Foreground(lipgloss.Color(*rules.Color))
 	}
 	if rules.BackgroundColor != nil {
-		out = out.Background(p.Color(*rules.BackgroundColor))
+		ls = ls.Background(lipgloss.Color(*rules.BackgroundColor))
 	}
 	if rules.Underline != nil && *rules.Underline {
-		out = out.Underline()
+		ls = ls.Underline(true)
 	}
 	if rules.Bold != nil && *rules.Bold {
-		out = out.Bold()
+		ls = ls.Bold(true)
 	}
 	if rules.Italic != nil && *rules.Italic {
-		out = out.Italic()
+		ls = ls.Italic(true)
 	}
 	if rules.CrossedOut != nil && *rules.CrossedOut {
-		out = out.CrossOut()
+		ls = ls.Strikethrough(true)
 	}
-	if rules.Overlined != nil && *rules.Overlined {
-		out = out.Overline()
+	// if s.Overlined != nil && *s.Overlined {
+	// 	s.Style = s.Style.Overline(true)
+	// }
+	// if s.Inverse != nil && *s.Inverse {
+	// 	s.Style = s.Style.Reverse()
+	// }
+	// if s.Blink != nil && *s.Blink {
+	// 	s.Style = s.Style.Blink()
+	// }
+
+	if rules.Upper != nil && *rules.Upper {
+		s = strings.ToUpper(s)
 	}
-	if rules.Inverse != nil && *rules.Inverse {
-		out = out.Reverse()
+	if rules.Lower != nil && *rules.Lower {
+		s = strings.ToLower(s)
 	}
-	if rules.Blink != nil && *rules.Blink {
-		out = out.Blink()
+	if rules.Title != nil && *rules.Title {
+		s = strings.Title(s)
 	}
 
-	_, _ = w.Write([]byte(out.String()))
+	_, _ = w.Write([]byte(ls.Render(s)))
 }
 
 func (e *BaseElement) Render(w io.Writer, ctx RenderContext) error {
