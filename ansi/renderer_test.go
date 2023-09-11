@@ -140,9 +140,11 @@ func TestRendererIssues(t *testing.T) {
 				),
 			)
 
+			// ansi renderer
 			ar := NewRenderer(options)
 			md.SetRenderer(
 				renderer.NewRenderer(
+					// making goldmark use the ansi renderer
 					renderer.WithNodeRenderers(util.Prioritized(ar, 1000))))
 
 			var buf bytes.Buffer

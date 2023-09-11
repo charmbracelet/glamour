@@ -38,8 +38,6 @@ func renderText(w io.Writer, p termenv.Profile, rules StylePrimitive, s string) 
 		return
 	}
 
-	panic(s)
-
 	ls := lipgloss.NewStyle()
 
 	if rules.Color != nil {

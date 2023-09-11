@@ -86,6 +86,7 @@ func (r *ANSIRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegisterer) {
 	reg.Register(east.KindEmoji, r.renderNode)
 }
 
+// This is used by the goldmark renderer
 func (r *ANSIRenderer) renderNode(w util.BufWriter, source []byte, node ast.Node, entering bool) (ast.WalkStatus, error) {
 	// _, _ = w.Write([]byte(node.Type.String()))
 	writeTo := io.Writer(w)
