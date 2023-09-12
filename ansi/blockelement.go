@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"io"
 
-	"github.com/muesli/reflow/wordwrap"
+	"github.com/charmbracelet/lipgloss"
 )
 
 // BlockElement provides a render buffer for children of a block element.
@@ -29,6 +29,8 @@ func (e *BlockElement) Render(w io.Writer, ctx RenderContext) error {
 func (e *BlockElement) Finish(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 
+	// TODO clean this
+	/*
 	if e.Margin {
 		mw := NewMarginWriter(ctx, w, bs.Current().Style)
 		_, err := mw.Write(
@@ -38,7 +40,7 @@ func (e *BlockElement) Finish(w io.Writer, ctx RenderContext) error {
 		}
 
 		if e.Newline {
-			_, err = mw.Write([]byte("\n"))
+			// _, err = mw.Write([]byte("\n"))
 			if err != nil {
 				return err
 			}
@@ -49,7 +51,14 @@ func (e *BlockElement) Finish(w io.Writer, ctx RenderContext) error {
 			return err
 		}
 	}
+*/
 
+	// TODO add margin
+	flow := lipgloss.NewStyle().Width(int(bs.Width(ctx)))
+	_, err := w.Write([]byte(flow.Render(bs.Current().Block.String())))
+	if err != nil {
+		return err
+	}
 	renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, e.Style.Suffix)
 	renderText(w, ctx.options.ColorProfile, bs.Parent().Style.StylePrimitive, e.Style.BlockSuffix)
 
