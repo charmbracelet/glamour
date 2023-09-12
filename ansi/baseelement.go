@@ -33,7 +33,7 @@ func formatToken(format string, token string) (string, error) {
 	return b.String(), err
 }
 
-func renderText(w io.Writer, p termenv.Profile, rules StylePrimitive, s string) {
+func renderText(w io.Writer, _ termenv.Profile, rules StylePrimitive, s string) {
 	if len(s) == 0 {
 		return
 	}
@@ -58,16 +58,6 @@ func renderText(w io.Writer, p termenv.Profile, rules StylePrimitive, s string) 
 	if rules.CrossedOut != nil && *rules.CrossedOut {
 		ls = ls.Strikethrough(true)
 	}
-	// if s.Overlined != nil && *s.Overlined {
-	// 	s.Style = s.Style.Overline(true)
-	// }
-	// if s.Inverse != nil && *s.Inverse {
-	// 	s.Style = s.Style.Reverse()
-	// }
-	// if s.Blink != nil && *s.Blink {
-	// 	s.Style = s.Style.Blink()
-	// }
-
 	if rules.Upper != nil && *rules.Upper {
 		s = strings.ToUpper(s)
 	}
