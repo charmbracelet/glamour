@@ -2,7 +2,6 @@ package ansi
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"strings"
 
@@ -41,9 +40,11 @@ func (e *ParagraphElement) Finish(w io.Writer, ctx RenderContext) error {
 		// flow := wordwrap.NewWriter(int(bs.Width(ctx)))
 		// flow.KeepNewlines = ctx.options.PreserveNewLines
 		flow := lipgloss.NewStyle().Width(int(bs.Width(ctx)))
-		fmt.Println("in paragraph finish")
+		// panic(ctx.options.WordWrap)
 		//		_, _ = flow.Write(bs.Current().Block.Bytes())
 		//		flow.Close()
+
+		//panic(flow.Render(bs.Current().Block.String()))
 
 		_, err := w.Write([]byte(flow.Render(bs.Current().Block.String())))
 		if err != nil {
@@ -51,11 +52,11 @@ func (e *ParagraphElement) Finish(w io.Writer, ctx RenderContext) error {
 		}
 		_, _ = w.Write([]byte("\n"))
 
-	//		_, err := mw.Write([]byte(flow.Render(bs.Current().Block.String()))))
-	//		if err != nil {
-	//			return err
-	//		}
-	//		_, _ = mw.Write([]byte("\n"))
+		//		_, err := mw.Write([]byte(flow.Render(bs.Current().Block.String()))))
+		//		if err != nil {
+		//			return err
+		//		}
+		//		_, _ = mw.Write([]byte("\n"))
 
 	}
 

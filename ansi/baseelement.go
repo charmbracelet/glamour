@@ -78,6 +78,8 @@ func renderText(w io.Writer, p termenv.Profile, rules StylePrimitive, s string) 
 		s = strings.Title(s)
 	}
 
+	s = strings.ReplaceAll(s, "\n", " ")
+
 	_, _ = w.Write([]byte(ls.Render(s)))
 }
 
