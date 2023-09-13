@@ -1,0 +1,163 @@
+diff --git a/ansi/baseelement.go b/ansi/baseelement.go
+index a2414b3..04d8cc4 100644
+--- a/ansi/baseelement.go
++++ b/ansi/baseelement.go
+@@ -78,6 +78,8 @@ func renderText(w io.Writer, p termenv.Profile, rules StylePrimitive, s string)
+ 		s = strings.Title(s)
+ 	}
+ 
++	s = strings.ReplaceAll(s, "\n", " ")
++
+ 	_, _ = w.Write([]byte(ls.Render(s)))
+ }
+ 
+diff --git a/ansi/blockelement.go b/ansi/blockelement.go
+index 08950ec..2223857 100644
+--- a/ansi/blockelement.go
++++ b/ansi/blockelement.go
+@@ -4,7 +4,7 @@ import (
+ 	"bytes"
+ 	"io"
+ 
+-	"github.com/charmbracelet/lipgloss"
++	"github.com/muesli/reflow/wordwrap"
+ )
+ 
+ // BlockElement provides a render buffer for children of a block element.
+@@ -29,8 +29,8 @@ func (e *BlockElement) Render(w io.Writer, ctx RenderContext) error {
+ func (e *BlockElement) Finish(w io.Writer, ctx RenderContext) error {
+ 	bs := ctx.blockStack
+ 
+-	// TODO clean this
+-	/*
++	// TODO this is where I need to change the margin handling
++
+ 	if e.Margin {
+ 		mw := NewMarginWriter(ctx, w, bs.Current().Style)
+ 		_, err := mw.Write(
+@@ -40,7 +40,7 @@ func (e *BlockElement) Finish(w io.Writer, ctx RenderContext) error {
+ 		}
+ 
+ 		if e.Newline {
+-			// _, err = mw.Write([]byte("\n"))
++			_, err = mw.Write([]byte("\n"))
+ 			if err != nil {
+ 				return err
+ 			}
+@@ -51,14 +51,17 @@ func (e *BlockElement) Finish(w io.Writer, ctx RenderContext) error {
+ 			return err
+ 		}
+ 	}
+-*/
+ 
+-	// TODO add margin
+-	flow := lipgloss.NewStyle().Width(int(bs.Width(ctx)))
+-	_, err := w.Write([]byte(flow.Render(bs.Current().Block.String())))
+-	if err != nil {
+-		return err
+-	}
++	/*
++		// TODO make bs.Width return an int not uint
++		layout := lipgloss.NewStyle().
++			MaxWidth(ctx.options.WordWrap).
++			MarginLeft(int(bs.Indent()))
++	*/
++	//		MarginLeft(1)
++
++	// TODO is it okay to convert this way
++	// _, _ = w.Write([]byte(layout.Render(string(bs.Current().Block.Bytes()))))
+ 	renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, e.Style.Suffix)
+ 	renderText(w, ctx.options.ColorProfile, bs.Parent().Style.StylePrimitive, e.Style.BlockSuffix)
+ 
+diff --git a/ansi/paragraph.go b/ansi/paragraph.go
+index 9f8489d..5688a9d 100644
+--- a/ansi/paragraph.go
++++ b/ansi/paragraph.go
+@@ -2,7 +2,6 @@ package ansi
+ 
+ import (
+ 	"bytes"
+-	"fmt"
+ 	"io"
+ 	"strings"
+ 
+@@ -41,21 +40,23 @@ func (e *ParagraphElement) Finish(w io.Writer, ctx RenderContext) error {
+ 		// flow := wordwrap.NewWriter(int(bs.Width(ctx)))
+ 		// flow.KeepNewlines = ctx.options.PreserveNewLines
+ 		flow := lipgloss.NewStyle().Width(int(bs.Width(ctx)))
+-		fmt.Println("in paragraph finish")
++		// panic(ctx.options.WordWrap)
+ 		//		_, _ = flow.Write(bs.Current().Block.Bytes())
+ 		//		flow.Close()
+ 
++		//panic(flow.Render(bs.Current().Block.String()))
++
+ 		_, err := w.Write([]byte(flow.Render(bs.Current().Block.String())))
+ 		if err != nil {
+ 			return err
+ 		}
+ 		_, _ = w.Write([]byte("\n"))
+ 
+-	//		_, err := mw.Write([]byte(flow.Render(bs.Current().Block.String()))))
+-	//		if err != nil {
+-	//			return err
+-	//		}
+-	//		_, _ = mw.Write([]byte("\n"))
++		//		_, err := mw.Write([]byte(flow.Render(bs.Current().Block.String()))))
++		//		if err != nil {
++		//			return err
++		//		}
++		//		_, _ = mw.Write([]byte("\n"))
+ 
+ 	}
+ 
+diff --git a/go.mod b/go.mod
+index de4d182..7908dde 100644
+--- a/go.mod
++++ b/go.mod
+@@ -10,7 +10,7 @@ require (
+ 	github.com/muesli/reflow v0.3.0
+ 	github.com/muesli/termenv v0.15.2
+ 	github.com/olekukonko/tablewriter v0.0.5
+-	github.com/yuin/goldmark v1.5.4
++	github.com/yuin/goldmark v1.5.6
+ 	github.com/yuin/goldmark-emoji v1.0.2
+ )
+ 
+diff --git a/go.sum b/go.sum
+index 4584013..9e30935 100644
+--- a/go.sum
++++ b/go.sum
+@@ -41,6 +41,8 @@ github.com/yuin/goldmark v1.3.7/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1
+ github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
+ github.com/yuin/goldmark v1.5.4 h1:2uY/xC0roWy8IBEGLgB1ywIoEJFGmRrX21YQcvGZzjU=
+ github.com/yuin/goldmark v1.5.4/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
++github.com/yuin/goldmark v1.5.6 h1:COmQAWTCcGetChm3Ig7G/t8AFAN00t+o8Mt4cf7JpwA=
++github.com/yuin/goldmark v1.5.6/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
+ github.com/yuin/goldmark-emoji v1.0.2 h1:c/RgTShNgHTtc6xdz2KKI74jJr6rWi7FPgnP9GAsO5s=
+ github.com/yuin/goldmark-emoji v1.0.2/go.mod h1:RhP/RWpexdp+KHs7ghKnifRoIs/Bq4nDS7tRbCkOwKY=
+ golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
+diff --git a/testdata/issues/42.md b/testdata/issues/42.md
+index 93624b3..226ebb4 100644
+--- a/testdata/issues/42.md
++++ b/testdata/issues/42.md
+@@ -1,5 +1,7 @@
++# Heading
++
+ If you want to make a more significant change, please first [open an
+ issue](https://github.com/twpayne/chezmoi/issues/new) to discuss the change that
+ you want to make. Dave Cheney gives a [good
+ rationale](https://dave.cheney.net/2019/02/18/talk-then-code) as to why this is
+-important.
++import.
+diff --git a/testdata/issues/42.test b/testdata/issues/42.test
+index 09f61ff..329910d 100644
+--- a/testdata/issues/42.test
++++ b/testdata/issues/42.test
+@@ -2,5 +2,5 @@
+ [38;5;252m[0m[38;5;252m[0m  [38;5;252mIf you want to make a more significant change, please first [0m[38;5;35;1mopen an issue[0m[38;5;252m[38;5;252m [0m[38;5;252m [0m[38;5;252m [0m[0m
+ [0m[38;5;30;4m[0m[38;5;30;4m[0m  [38;5;30;4mhttps://github.com/twpayne/chezmoi/issues/new[0m[38;5;252m to discuss the change[0m[38;5;252m that [0m[38;5;252myou[0m
+ [0m[38;5;252m[0m  [38;5;252mwant to make. Dave Cheney gives a [0m[38;5;35;1mgood rationale[0m[38;5;252m[38;5;252m [0m[38;5;252m [0m[38;5;252m [0m[38;5;252m [0m[38;5;252m [0m[38;5;252m [0m[38;5;252m [0m[38;5;252m [0m[38;5;252m [0m[38;5;252m [0m[38;5;252m [0m[38;5;252m [0m[38;5;252m [0m[38;5;252m [0m[38;5;252m [0m[38;5;252m [0m[38;5;252m [0m[38;5;252m [0m[38;5;252m [0m[38;5;252m [0m[38;5;252m [0m[38;5;252m [0m[38;5;252m [0m[38;5;252m [0m[38;5;252m [0m[38;5;252m [0m[38;5;252m [0m[38;5;252m [0m[0m
+-[0m[38;5;30;4m[0m[38;5;30;4m[0m  [38;5;30;4mhttps://dave.cheney.net/2019/02/18/talk-then-code[0m[38;5;252m as to why this[0m[38;5;252m is [0m[38;5;252mimportant.[0m
++[0m[38;5;30;4m[0m[38;5;30;4m[0m  [38;5;30;4mhttps://dave.cheney.net/2019/02/18/talk-then-code[0m[38;5;252m as to why this[0m[38;5;252m is [0m[38;5;252mimport.[0m
+ 
