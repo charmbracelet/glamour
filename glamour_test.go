@@ -113,6 +113,27 @@ func TestWithEmoji(t *testing.T) {
 	}
 }
 
+func TestDisableAutoEmailLinks(t *testing.T) {
+	r, err := NewTermRenderer(
+		WithDisableAutoEmailLinks(true),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	goModuleExample := "This is my favorite go module: golang.org/x/net@v0.0.1"
+
+	b, err := r.Render(goModuleExample)
+	if err != nil {
+		t.Fatal(err)
+	}
+	b = strings.TrimSpace(b)
+
+	if b != goModuleExample {
+		t.Errorf("Rendered output doesn't match!\nExpected: `\n%s`\nGot: `\n%s`\n", goModuleExample, b)
+	}
+}
+
 func TestWithPreservedNewLines(t *testing.T) {
 	r, err := NewTermRenderer(
 		WithPreservedNewLines(),

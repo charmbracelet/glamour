@@ -212,6 +212,14 @@ func WithEmoji() TermRendererOption {
 	}
 }
 
+// WithDisabledMailtoLinks sets TermRenderer's option to disable adding mailto links.
+func WithDisableAutoEmailLinks(v bool) TermRendererOption {
+	return func(tr *TermRenderer) error {
+		tr.ansiOptions.DisableAutoEmailLinks = v
+		return nil
+	}
+}
+
 func (tr *TermRenderer) Read(b []byte) (int, error) {
 	return tr.renderBuf.Read(b)
 }
