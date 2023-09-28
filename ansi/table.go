@@ -1,6 +1,7 @@
 package ansi
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 
@@ -8,6 +9,7 @@ import (
 	"github.com/charmbracelet/lipgloss/table"
 )
 
+// Add default padding to cells.
 var cellStyle = lipgloss.NewStyle().Padding(0, 1)
 
 // A TableElement is used to render tables.
@@ -98,7 +100,7 @@ func (e *TableHeadElement) Finish(w io.Writer, ctx RenderContext) error {
 	return nil
 }
 
-// StringToAny returns the headers as generic types for the lipgloss table.
+// StringToAny returns the rows as generic types for the lipgloss table.
 func StringToAny(s []string) []any {
 	out := make([]any, len(s))
 	for i, str := range s {
@@ -107,12 +109,16 @@ func StringToAny(s []string) []any {
 	return out
 }
 
-// TODO apply individual cell styling here if desired.
 func (e *TableCellElement) Render(w io.Writer, ctx RenderContext) error {
+	// Style the text
+	var tmp bytes.Buffer
+	renderText(&tmp, ctx.options.ColorProfile, ctx.options.Styles.Table.StylePrimitive, e.Text)
+
+	// Append to the current row
 	if e.Head {
-		ctx.table.headers = append(ctx.table.headers, e.Text)
+		ctx.table.headers = append(ctx.table.headers, tmp.String())
 	} else {
-		ctx.table.row = append(ctx.table.row, e.Text)
+		ctx.table.row = append(ctx.table.row, tmp.String())
 	}
 
 	return nil
