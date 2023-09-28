@@ -8,6 +8,8 @@ import (
 	"github.com/charmbracelet/lipgloss/table"
 )
 
+var cellStyle = lipgloss.NewStyle().Padding(0, 1)
+
 // A TableElement is used to render tables.
 type TableElement struct {
 	lipgloss *table.Table
@@ -35,16 +37,30 @@ func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
 
 	renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, rules.BlockPrefix)
 	renderText(w, ctx.options.ColorProfile, style, rules.Prefix)
-	ctx.table.lipgloss = table.New()
-	// TODO add indentation and margin for the table; parent should dictate this?
+	ctx.table.lipgloss = table.New().StyleFunc(func(row, col int) lipgloss.Style { return cellStyle })
+	// TODO add indentation and margin for the table; I think blockelement should handle this
 	return nil
+}
+
+func (ctx *RenderContext) SetBorders() {
+	rules := ctx.options.Styles.Table
+	customBorder := lipgloss.Border{
+		Top:    *rules.RowSeparator,
+		Bottom: *rules.RowSeparator,
+		Left:   *rules.ColumnSeparator,
+		Right:  *rules.ColumnSeparator,
+		Middle: *rules.CenterSeparator,
+	}
+	ctx.table.lipgloss.Border(customBorder)
+	ctx.table.lipgloss.BorderTop(false)
+	ctx.table.lipgloss.BorderLeft(false)
+	ctx.table.lipgloss.BorderRight(false)
+	ctx.table.lipgloss.BorderBottom(false)
 }
 
 func (e *TableElement) Finish(w io.Writer, ctx RenderContext) error {
 	rules := ctx.options.Styles.Table
-
-	// TODO create style with custom separators
-	ctx.table.lipgloss.Border(lipgloss.NormalBorder())
+	ctx.SetBorders()
 
 	// TODO is this hacky? what would be the better sol'n given that the writer we're receiving belongs to the ctx.BlockStack.Parent() and the original behaviour was using stylewriter to write to Current() block
 	ow := ctx.blockStack.Current().Block
@@ -65,13 +81,8 @@ func (e *TableRowElement) Finish(w io.Writer, ctx RenderContext) error {
 	if len(ctx.table.row) == 0 {
 		panic(fmt.Sprintf("got an empty row %#v", ctx.table.row))
 	}
+
 	ctx.table.lipgloss.Row(StringToAny(ctx.table.row)...)
-
-	// Append the current cell to our current row?
-	// Maybe we should just write to TableElement, then render our final table
-	// given the data in TableElement ctx.table.writer.Append(ctx.table.cell)
-
-	// reset working row
 	ctx.table.row = []string{}
 	return nil
 }
