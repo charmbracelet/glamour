@@ -10,10 +10,9 @@ import (
 
 // A TableElement is used to render tables.
 type TableElement struct {
-	lipgloss    *table.Table
-	styleWriter *StyleWriter
-	headers     []string
-	row        []string
+	lipgloss *table.Table
+	headers  []string
+	row      []string
 }
 
 // A TableRowElement is used to render a single row in a table.
@@ -31,44 +30,32 @@ type TableCellElement struct {
 func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 
-	// TODO add indentation and margin for the table
-	// 	var indentation uint
-	// 	var margin uint
 	rules := ctx.options.Styles.Table
-	// 	if rules.Indent != nil {
-	// 		indentation = *rules.Indent
-	// 	}
-	// 	if rules.Margin != nil {
-	// 		margin = *rules.Margin
-	// 	}
-
-	// iw := indent.NewWriterPipe(w, indentation+margin, func(wr io.Writer) {
-	// 	renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, " ")
-	// })
-
 	style := bs.With(rules.StylePrimitive)
-	ctx.table.styleWriter = NewStyleWriter(ctx, w, style)
 
 	renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, rules.BlockPrefix)
 	renderText(w, ctx.options.ColorProfile, style, rules.Prefix)
-	// 	ctx.table.writer = tablewriter.NewWriter(ctx.table.styleWriter)
 	ctx.table.lipgloss = table.New()
+	// TODO add indentation and margin for the table; parent should dictate this?
 	return nil
 }
 
 func (e *TableElement) Finish(w io.Writer, ctx RenderContext) error {
 	rules := ctx.options.Styles.Table
 
+	// TODO create style with custom separators
 	ctx.table.lipgloss.Border(lipgloss.NormalBorder())
 
-	// TODO remove styleWriter dep; not needed with lipgloss
-	ctx.table.styleWriter.Write([]byte(ctx.table.lipgloss.Render()))
+	// TODO is this hacky? what would be the better sol'n given that the writer we're receiving belongs to the ctx.BlockStack.Parent() and the original behaviour was using stylewriter to write to Current() block
+	ow := ctx.blockStack.Current().Block
+
+	// TODO should prefix, suffix, and margins etc all be handled in the parent writer?
+	renderText(ow, ctx.options.ColorProfile, ctx.blockStack.With(rules.StylePrimitive), rules.Suffix)
+	renderText(ow, ctx.options.ColorProfile, ctx.blockStack.Current().Style.StylePrimitive, rules.BlockSuffix)
+	ow.Write([]byte(ctx.table.lipgloss.Render()))
 
 	ctx.table.lipgloss = nil
-
-	renderText(ctx.table.styleWriter, ctx.options.ColorProfile, ctx.blockStack.With(rules.StylePrimitive), rules.Suffix)
-	renderText(ctx.table.styleWriter, ctx.options.ColorProfile, ctx.blockStack.Current().Style.StylePrimitive, rules.BlockSuffix)
-	return ctx.table.styleWriter.Close()
+	return nil
 }
 
 func (e *TableRowElement) Finish(w io.Writer, ctx RenderContext) error {
@@ -106,13 +93,10 @@ func StringToAny(s []string) []any {
 	for i, str := range s {
 		out[i] = str
 	}
-	fmt.Print(s)
-
-	fmt.Print(out)
 	return out
 }
 
-// TODO apply individual cell styling here if desired
+// TODO apply individual cell styling here if desired.
 func (e *TableCellElement) Render(w io.Writer, ctx RenderContext) error {
 	if e.Head {
 		ctx.table.headers = append(ctx.table.headers, e.Text)
