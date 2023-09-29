@@ -40,20 +40,25 @@ func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
 	renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, rules.BlockPrefix)
 	renderText(w, ctx.options.ColorProfile, style, rules.Prefix)
 	ctx.table.lipgloss = table.New().StyleFunc(func(row, col int) lipgloss.Style { return cellStyle })
-	// TODO add indentation and margin for the table; I think blockelement should handle this
 	return nil
 }
 
-func (ctx *RenderContext) SetBorders() {
+// setBorders sets the borders for the lipgloss table. It uses the default
+// border styles if no custom styles are set.
+func (ctx *RenderContext) setBorders() {
 	rules := ctx.options.Styles.Table
-	customBorder := lipgloss.Border{
+	border := lipgloss.NormalBorder()
+
+	if rules.RowSeparator != nil && rules.ColumnSeparator != nil {
+	border = lipgloss.Border{
 		Top:    *rules.RowSeparator,
 		Bottom: *rules.RowSeparator,
 		Left:   *rules.ColumnSeparator,
 		Right:  *rules.ColumnSeparator,
 		Middle: *rules.CenterSeparator,
 	}
-	ctx.table.lipgloss.Border(customBorder)
+	}
+	ctx.table.lipgloss.Border(border)
 	ctx.table.lipgloss.BorderTop(false)
 	ctx.table.lipgloss.BorderLeft(false)
 	ctx.table.lipgloss.BorderRight(false)
@@ -62,15 +67,14 @@ func (ctx *RenderContext) SetBorders() {
 
 func (e *TableElement) Finish(w io.Writer, ctx RenderContext) error {
 	rules := ctx.options.Styles.Table
-	ctx.SetBorders()
+	ctx.setBorders()
 
-	// TODO is this hacky? what would be the better sol'n given that the writer we're receiving belongs to the ctx.BlockStack.Parent() and the original behaviour was using stylewriter to write to Current() block
 	ow := ctx.blockStack.Current().Block
 
 	// TODO should prefix, suffix, and margins etc all be handled in the parent writer?
+	ow.Write([]byte(ctx.table.lipgloss.Render()))
 	renderText(ow, ctx.options.ColorProfile, ctx.blockStack.With(rules.StylePrimitive), rules.Suffix)
 	renderText(ow, ctx.options.ColorProfile, ctx.blockStack.Current().Style.StylePrimitive, rules.BlockSuffix)
-	ow.Write([]byte(ctx.table.lipgloss.Render()))
 
 	ctx.table.lipgloss = nil
 	return nil
