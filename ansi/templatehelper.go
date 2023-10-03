@@ -6,7 +6,7 @@ import (
 	"text/template"
 )
 
-// TemplateFuncMap contains a few useful template helpers
+// TemplateFuncMap contains a few useful template helpers.
 var (
 	TemplateFuncMap = template.FuncMap{
 		"Left": func(values ...interface{}) string {

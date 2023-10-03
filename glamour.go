@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/muesli/termenv"
@@ -28,6 +27,9 @@ const (
 	NoTTYStyle   = "notty"
 	PinkStyle    = "pink"
 )
+
+const defaultWidth = 80
+const highPriority = 1000
 
 // A TermRendererOption sets an option on a TermRenderer.
 type TermRendererOption func(*TermRenderer) error
@@ -80,7 +82,7 @@ func NewTermRenderer(options ...TermRendererOption) (*TermRenderer, error) {
 			),
 		),
 		ansiOptions: ansi.Options{
-			WordWrap:     80,
+			WordWrap:     defaultWidth,
 			ColorProfile: termenv.TrueColor,
 		},
 	}
@@ -93,7 +95,7 @@ func NewTermRenderer(options ...TermRendererOption) (*TermRenderer, error) {
 	tr.md.SetRenderer(
 		renderer.NewRenderer(
 			renderer.WithNodeRenderers(
-				util.Prioritized(ar, 1000),
+				util.Prioritized(ar, highPriority),
 			),
 		),
 	)
@@ -149,7 +151,7 @@ func WithStylePath(stylePath string) TermRendererOption {
 	return func(tr *TermRenderer) error {
 		styles, err := getDefaultStyle(stylePath)
 		if err != nil {
-			jsonBytes, err := ioutil.ReadFile(stylePath)
+			jsonBytes, err := os.ReadFile(stylePath)
 			if err != nil {
 				return err
 			}
@@ -180,7 +182,7 @@ func WithStylesFromJSONBytes(jsonBytes []byte) TermRendererOption {
 // WithStylesFromJSONFile sets a TermRenderer's styles from a JSON file.
 func WithStylesFromJSONFile(filename string) TermRendererOption {
 	return func(tr *TermRenderer) error {
-		jsonBytes, err := ioutil.ReadFile(filename)
+		jsonBytes, err := os.ReadFile(filename)
 		if err != nil {
 			return err
 		}
