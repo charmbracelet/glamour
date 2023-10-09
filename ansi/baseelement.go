@@ -1,113 +1,64 @@
 package ansi
 
 import (
-	"bytes"
 	"io"
-	"strings"
-	"text/template"
 
-	"github.com/muesli/termenv"
+	"github.com/charmbracelet/scrapbook"
 )
 
 // BaseElement renders a styled primitive element.
+// TODO do I still need these elements
 type BaseElement struct {
 	Token  string
 	Prefix string
 	Suffix string
-	Style  StylePrimitive
+	Style  scrapbook.Styler
 }
 
-func formatToken(format string, token string) (string, error) {
-	var b bytes.Buffer
+// func formatToken(format string, token string) (string, error) {
+// 	var b bytes.Buffer
+//
+// 	v := make(map[string]interface{})
+// 	v["text"] = token
+//
+// 	tmpl, err := template.New(format).Funcs(TemplateFuncMap).Parse(format)
+// 	if err != nil {
+// 		return "", err
+// 	}
+//
+// 	err = tmpl.Execute(&b, v)
+// 	return b.String(), err
+// }
 
-	v := make(map[string]interface{})
-	v["text"] = token
-
-	tmpl, err := template.New(format).Funcs(TemplateFuncMap).Parse(format)
-	if err != nil {
-		return "", err
-	}
-
-	err = tmpl.Execute(&b, v)
-	return b.String(), err
-}
-
-func renderText(w io.Writer, p termenv.Profile, rules StylePrimitive, s string) {
+func renderText(w io.Writer, styler scrapbook.Styler, s string) {
 	if len(s) == 0 {
 		return
 	}
-
-	out := termenv.String(s)
-
-	if rules.Upper != nil && *rules.Upper {
-		out = termenv.String(strings.ToUpper(s))
-	}
-	if rules.Lower != nil && *rules.Lower {
-		out = termenv.String(strings.ToLower(s))
-	}
-	if rules.Title != nil && *rules.Title {
-		out = termenv.String(strings.Title(s))
-	}
-	if rules.Color != nil {
-		out = out.Foreground(p.Color(*rules.Color))
-	}
-	if rules.BackgroundColor != nil {
-		out = out.Background(p.Color(*rules.BackgroundColor))
-	}
-	if rules.Underline != nil && *rules.Underline {
-		out = out.Underline()
-	}
-	if rules.Bold != nil && *rules.Bold {
-		out = out.Bold()
-	}
-	if rules.Italic != nil && *rules.Italic {
-		out = out.Italic()
-	}
-	if rules.CrossedOut != nil && *rules.CrossedOut {
-		out = out.CrossOut()
-	}
-	if rules.Overlined != nil && *rules.Overlined {
-		out = out.Overline()
-	}
-	if rules.Inverse != nil && *rules.Inverse {
-		out = out.Reverse()
-	}
-	if rules.Blink != nil && *rules.Blink {
-		out = out.Blink()
-	}
-
-	_, _ = w.Write([]byte(out.String()))
+	_, _ = w.Write([]byte(styler.Style().Render(s)))
 }
 
 func (e *BaseElement) Render(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
+	parentBlock := bs.Current()
 
-	renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, e.Prefix)
+	renderText(w, parentBlock.Style, e.Prefix)
 	defer func() {
-		renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, e.Suffix)
+		renderText(w, parentBlock.Style, e.Suffix)
 	}()
 
-	rules := bs.With(e.Style)
+	// TODO we're using the parent's style which should contain the rendering specs for the children...
+	rules := parentBlock.Style
 	// render unstyled prefix/suffix
-	renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, rules.BlockPrefix)
-	defer func() {
-		renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, rules.BlockSuffix)
-	}()
-
-	// render styled prefix/suffix
-	renderText(w, ctx.options.ColorProfile, rules, rules.Prefix)
-	defer func() {
-		renderText(w, ctx.options.ColorProfile, rules, rules.Suffix)
-	}()
+	// TODO handle prefix/suffix
 
 	s := e.Token
-	if len(rules.Format) > 0 {
-		var err error
-		s, err = formatToken(rules.Format, s)
-		if err != nil {
-			return err
-		}
-	}
-	renderText(w, ctx.options.ColorProfile, rules, s)
+	//if len(rules.Format) > 0 {
+	//	var err error
+	//	s, err = formatToken(rules.Format, s)
+	//	if err != nil {
+	//		return err
+	//	}
+	//}
+	renderText(w, rules, s)
 	return nil
 }

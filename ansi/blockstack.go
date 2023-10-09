@@ -29,41 +29,7 @@ func (s *BlockStack) Pop() {
 	*s = stack
 }
 
-// Indent returns the current indentation level of all elements in the stack.
-func (s BlockStack) Indent() uint {
-	var i uint
-
-	for _, v := range s {
-		if v.Style.Indent == nil {
-			continue
-		}
-		i += *v.Style.Indent
-	}
-
-	return i
-}
-
-// Margin returns the current margin level of all elements in the stack.
-func (s BlockStack) Margin() uint {
-	var i uint
-
-	for _, v := range s {
-		if v.Style.Margin == nil {
-			continue
-		}
-		i += *v.Style.Margin
-	}
-
-	return i
-}
-
-// Width returns the available rendering width.
-func (s BlockStack) Width(ctx RenderContext) uint {
-	if s.Indent()+s.Margin()*2 > uint(ctx.options.WordWrap) {
-		return 0
-	}
-	return uint(ctx.options.WordWrap) - s.Indent() - s.Margin()*2
-}
+// TODO do I need to return the available rendering width.
 
 // Parent returns the current BlockElement's parent.
 func (s BlockStack) Parent() BlockElement {
@@ -85,11 +51,4 @@ func (s BlockStack) Current() BlockElement {
 	}
 
 	return s[len(s)-1]
-}
-
-// With returns a StylePrimitive that inherits the current BlockElement's style.
-func (s BlockStack) With(child StylePrimitive) StylePrimitive {
-	sb := StyleBlock{}
-	sb.StylePrimitive = child
-	return cascadeStyle(s.Current().Style, sb, false).StylePrimitive
 }

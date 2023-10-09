@@ -2,12 +2,14 @@ package ansi
 
 import (
 	"io"
+	"strings"
 	"sync"
 
 	"github.com/alecthomas/chroma/v2"
 	"github.com/alecthomas/chroma/v2/quick"
 	"github.com/alecthomas/chroma/v2/styles"
-	"github.com/muesli/reflow/indent"
+	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/scrapbook"
 	"github.com/muesli/termenv"
 )
 
@@ -28,7 +30,7 @@ type CodeBlockElement struct {
 	Language string
 }
 
-func chromaStyle(style StylePrimitive) string {
+func chromaStyle(style scrapbook.StylePrimitive) string {
 	var s string
 
 	if style.Color != nil {
@@ -65,16 +67,12 @@ func chromaStyle(style StylePrimitive) string {
 func (e *CodeBlockElement) Render(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 
-	var indentation uint
-	var margin uint
+	var margin int
 	rules := ctx.options.Styles.CodeBlock
-	if rules.Indent != nil {
-		indentation = *rules.Indent
-	}
-	if rules.Margin != nil {
-		margin = *rules.Margin
-	}
 	theme := rules.Theme
+	if rules.Margin != nil {
+		margin = int(*rules.Margin)
+	}
 
 	if rules.Chroma != nil && ctx.options.ColorProfile != termenv.Ascii {
 		theme = chromaStyleTheme
@@ -120,25 +118,21 @@ func (e *CodeBlockElement) Render(w io.Writer, ctx RenderContext) error {
 		mutex.Unlock()
 	}
 
-	iw := indent.NewWriterPipe(w, indentation+margin, func(wr io.Writer) {
-		renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, " ")
-	})
-
+	var tmp strings.Builder
+	// TODO let's use a stringwriter with lipgloss.Join to set margins then write that to buffer
 	if len(theme) > 0 {
-		renderText(iw, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, rules.BlockPrefix)
-		err := quick.Highlight(iw, e.Code, e.Language, "terminal256", theme)
-		if err != nil {
-			return err
-		}
-		renderText(iw, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, rules.BlockSuffix)
-		return nil
+		// TODO no longer handling prefix and suffix...
+		err := quick.Highlight(&tmp, e.Code, e.Language, "terminal256", theme)
+		// TODO can this be cleaned up?
+		_, _ = w.Write([]byte(lipgloss.NewStyle().Margin(margin).Render(tmp.String())))
+		return err
 	}
 
 	// fallback rendering
 	el := &BaseElement{
 		Token: e.Code,
-		Style: rules.StylePrimitive,
+		Style: bs.Current().Style,
 	}
 
-	return el.Render(iw, ctx)
+	return el.Render(w, ctx)
 }

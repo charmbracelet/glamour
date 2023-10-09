@@ -3,7 +3,7 @@ package glamour
 //go:generate go run ./internal/generate-style-json
 
 import (
-	"github.com/charmbracelet/glamour/ansi"
+	"github.com/charmbracelet/scrapbook"
 )
 
 const defaultListIndent = 2
@@ -11,139 +11,139 @@ const defaultMargin = 2
 
 var (
 	// ASCIIStyleConfig uses only ASCII characters.
-	ASCIIStyleConfig = ansi.StyleConfig{
-		Document: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+	ASCIIStyleConfig = scrapbook.StyleConfig{
+		Document: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				BlockPrefix: "\n",
 				BlockSuffix: "\n",
 			},
 			Margin: uintPtr(defaultMargin),
 		},
-		BlockQuote: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{},
+		BlockQuote: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{},
 			Indent:         uintPtr(1),
 			IndentToken:    stringPtr("| "),
 		},
-		Paragraph: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{},
+		Paragraph: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{},
 		},
-		List: ansi.StyleList{
-			StyleBlock: ansi.StyleBlock{
-				StylePrimitive: ansi.StylePrimitive{},
+		List: scrapbook.StyleList{
+			StyleBlock: scrapbook.StyleBlock{
+				StylePrimitive: scrapbook.StylePrimitive{},
 			},
 			LevelIndent: 4,
 		},
-		Heading: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+		Heading: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				BlockSuffix: "\n",
 			},
 		},
-		H1: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+		H1: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				Prefix: "# ",
 			},
 		},
-		H2: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+		H2: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				Prefix: "## ",
 			},
 		},
-		H3: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+		H3: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				Prefix: "### ",
 			},
 		},
-		H4: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+		H4: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				Prefix: "#### ",
 			},
 		},
-		H5: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+		H5: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				Prefix: "##### ",
 			},
 		},
-		H6: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+		H6: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				Prefix: "###### ",
 			},
 		},
-		Strikethrough: ansi.StylePrimitive{
+		Strikethrough: scrapbook.StylePrimitive{
 			BlockPrefix: "~~",
 			BlockSuffix: "~~",
 		},
-		Emph: ansi.StylePrimitive{
+		Emph: scrapbook.StylePrimitive{
 			BlockPrefix: "*",
 			BlockSuffix: "*",
 		},
-		Strong: ansi.StylePrimitive{
+		Strong: scrapbook.StylePrimitive{
 			BlockPrefix: "**",
 			BlockSuffix: "**",
 		},
-		HorizontalRule: ansi.StylePrimitive{
+		HorizontalRule: scrapbook.StylePrimitive{
 			Format: "\n--------\n",
 		},
-		Item: ansi.StylePrimitive{
+		Item: scrapbook.StylePrimitive{
 			BlockPrefix: "• ",
 		},
-		Enumeration: ansi.StylePrimitive{
+		Enumeration: scrapbook.StylePrimitive{
 			BlockPrefix: ". ",
 		},
-		Task: ansi.StyleTask{
+		Task: scrapbook.StyleTask{
 			Ticked:   "[x] ",
 			Unticked: "[ ] ",
 		},
-		ImageText: ansi.StylePrimitive{
+		ImageText: scrapbook.StylePrimitive{
 			Format: "Image: {{.text}} →",
 		},
-		Code: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+		Code: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				BlockPrefix: "`",
 				BlockSuffix: "`",
 			},
 		},
-		CodeBlock: ansi.StyleCodeBlock{
-			StyleBlock: ansi.StyleBlock{
+		CodeBlock: scrapbook.StyleCodeBlock{
+			StyleBlock: scrapbook.StyleBlock{
 				Margin: uintPtr(defaultMargin),
 			},
 		},
-		Table: ansi.StyleTable{
+		Table: scrapbook.StyleTable{
 			CenterSeparator: stringPtr("+"),
 			ColumnSeparator: stringPtr("|"),
 			RowSeparator:    stringPtr("-"),
 		},
-		DefinitionDescription: ansi.StylePrimitive{
+		DefinitionDescription: scrapbook.StylePrimitive{
 			BlockPrefix: "\n* ",
 		},
 	}
 
 	// DarkStyleConfig is the default dark style.
-	DarkStyleConfig = ansi.StyleConfig{
-		Document: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+	DarkStyleConfig = scrapbook.StyleConfig{
+		Document: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				BlockPrefix: "\n",
 				BlockSuffix: "\n",
 				Color:       stringPtr("252"),
 			},
 			Margin: uintPtr(defaultMargin),
 		},
-		BlockQuote: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{},
+		BlockQuote: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{},
 			Indent:         uintPtr(1),
 			IndentToken:    stringPtr("│ "),
 		},
-		List: ansi.StyleList{
+		List: scrapbook.StyleList{
 			LevelIndent: defaultListIndent,
 		},
-		Heading: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+		Heading: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				BlockSuffix: "\n",
 				Color:       stringPtr("39"),
 				Bold:        boolPtr(true),
 			},
 		},
-		H1: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+		H1: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				Prefix:          " ",
 				Suffix:          " ",
 				Color:           stringPtr("228"),
@@ -151,212 +151,212 @@ var (
 				Bold:            boolPtr(true),
 			},
 		},
-		H2: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+		H2: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				Prefix: "## ",
 			},
 		},
-		H3: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+		H3: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				Prefix: "### ",
 			},
 		},
-		H4: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+		H4: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				Prefix: "#### ",
 			},
 		},
-		H5: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+		H5: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				Prefix: "##### ",
 			},
 		},
-		H6: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+		H6: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				Prefix: "###### ",
 				Color:  stringPtr("35"),
 				Bold:   boolPtr(false),
 			},
 		},
-		Strikethrough: ansi.StylePrimitive{
+		Strikethrough: scrapbook.StylePrimitive{
 			CrossedOut: boolPtr(true),
 		},
-		Emph: ansi.StylePrimitive{
+		Emph: scrapbook.StylePrimitive{
 			Italic: boolPtr(true),
 		},
-		Strong: ansi.StylePrimitive{
+		Strong: scrapbook.StylePrimitive{
 			Bold: boolPtr(true),
 		},
-		HorizontalRule: ansi.StylePrimitive{
+		HorizontalRule: scrapbook.StylePrimitive{
 			Color:  stringPtr("240"),
 			Format: "\n--------\n",
 		},
-		Item: ansi.StylePrimitive{
+		Item: scrapbook.StylePrimitive{
 			BlockPrefix: "• ",
 		},
-		Enumeration: ansi.StylePrimitive{
+		Enumeration: scrapbook.StylePrimitive{
 			BlockPrefix: ". ",
 		},
-		Task: ansi.StyleTask{
-			StylePrimitive: ansi.StylePrimitive{},
+		Task: scrapbook.StyleTask{
+			StylePrimitive: scrapbook.StylePrimitive{},
 			Ticked:         "[✓] ",
 			Unticked:       "[ ] ",
 		},
-		Link: ansi.StylePrimitive{
+		Link: scrapbook.StylePrimitive{
 			Color:     stringPtr("30"),
 			Underline: boolPtr(true),
 		},
-		LinkText: ansi.StylePrimitive{
+		LinkText: scrapbook.StylePrimitive{
 			Color: stringPtr("35"),
 			Bold:  boolPtr(true),
 		},
-		Image: ansi.StylePrimitive{
+		Image: scrapbook.StylePrimitive{
 			Color:     stringPtr("212"),
 			Underline: boolPtr(true),
 		},
-		ImageText: ansi.StylePrimitive{
+		ImageText: scrapbook.StylePrimitive{
 			Color:  stringPtr("243"),
 			Format: "Image: {{.text}} →",
 		},
-		Code: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+		Code: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				Prefix:          " ",
 				Suffix:          " ",
 				Color:           stringPtr("203"),
 				BackgroundColor: stringPtr("236"),
 			},
 		},
-		CodeBlock: ansi.StyleCodeBlock{
-			StyleBlock: ansi.StyleBlock{
-				StylePrimitive: ansi.StylePrimitive{
+		CodeBlock: scrapbook.StyleCodeBlock{
+			StyleBlock: scrapbook.StyleBlock{
+				StylePrimitive: scrapbook.StylePrimitive{
 					Color: stringPtr("244"),
 				},
 				Margin: uintPtr(defaultMargin),
 			},
-			Chroma: &ansi.Chroma{
-				Text: ansi.StylePrimitive{
+			Chroma: &scrapbook.Chroma{
+				Text: scrapbook.StylePrimitive{
 					Color: stringPtr("#C4C4C4"),
 				},
-				Error: ansi.StylePrimitive{
+				Error: scrapbook.StylePrimitive{
 					Color:           stringPtr("#F1F1F1"),
 					BackgroundColor: stringPtr("#F05B5B"),
 				},
-				Comment: ansi.StylePrimitive{
+				Comment: scrapbook.StylePrimitive{
 					Color: stringPtr("#676767"),
 				},
-				CommentPreproc: ansi.StylePrimitive{
+				CommentPreproc: scrapbook.StylePrimitive{
 					Color: stringPtr("#FF875F"),
 				},
-				Keyword: ansi.StylePrimitive{
+				Keyword: scrapbook.StylePrimitive{
 					Color: stringPtr("#00AAFF"),
 				},
-				KeywordReserved: ansi.StylePrimitive{
+				KeywordReserved: scrapbook.StylePrimitive{
 					Color: stringPtr("#FF5FD2"),
 				},
-				KeywordNamespace: ansi.StylePrimitive{
+				KeywordNamespace: scrapbook.StylePrimitive{
 					Color: stringPtr("#FF5F87"),
 				},
-				KeywordType: ansi.StylePrimitive{
+				KeywordType: scrapbook.StylePrimitive{
 					Color: stringPtr("#6E6ED8"),
 				},
-				Operator: ansi.StylePrimitive{
+				Operator: scrapbook.StylePrimitive{
 					Color: stringPtr("#EF8080"),
 				},
-				Punctuation: ansi.StylePrimitive{
+				Punctuation: scrapbook.StylePrimitive{
 					Color: stringPtr("#E8E8A8"),
 				},
-				Name: ansi.StylePrimitive{
+				Name: scrapbook.StylePrimitive{
 					Color: stringPtr("#C4C4C4"),
 				},
-				NameBuiltin: ansi.StylePrimitive{
+				NameBuiltin: scrapbook.StylePrimitive{
 					Color: stringPtr("#FF8EC7"),
 				},
-				NameTag: ansi.StylePrimitive{
+				NameTag: scrapbook.StylePrimitive{
 					Color: stringPtr("#B083EA"),
 				},
-				NameAttribute: ansi.StylePrimitive{
+				NameAttribute: scrapbook.StylePrimitive{
 					Color: stringPtr("#7A7AE6"),
 				},
-				NameClass: ansi.StylePrimitive{
+				NameClass: scrapbook.StylePrimitive{
 					Color:     stringPtr("#F1F1F1"),
 					Underline: boolPtr(true),
 					Bold:      boolPtr(true),
 				},
-				NameDecorator: ansi.StylePrimitive{
+				NameDecorator: scrapbook.StylePrimitive{
 					Color: stringPtr("#FFFF87"),
 				},
-				NameFunction: ansi.StylePrimitive{
+				NameFunction: scrapbook.StylePrimitive{
 					Color: stringPtr("#00D787"),
 				},
-				LiteralNumber: ansi.StylePrimitive{
+				LiteralNumber: scrapbook.StylePrimitive{
 					Color: stringPtr("#6EEFC0"),
 				},
-				LiteralString: ansi.StylePrimitive{
+				LiteralString: scrapbook.StylePrimitive{
 					Color: stringPtr("#C69669"),
 				},
-				LiteralStringEscape: ansi.StylePrimitive{
+				LiteralStringEscape: scrapbook.StylePrimitive{
 					Color: stringPtr("#AFFFD7"),
 				},
-				GenericDeleted: ansi.StylePrimitive{
+				GenericDeleted: scrapbook.StylePrimitive{
 					Color: stringPtr("#FD5B5B"),
 				},
-				GenericEmph: ansi.StylePrimitive{
+				GenericEmph: scrapbook.StylePrimitive{
 					Italic: boolPtr(true),
 				},
-				GenericInserted: ansi.StylePrimitive{
+				GenericInserted: scrapbook.StylePrimitive{
 					Color: stringPtr("#00D787"),
 				},
-				GenericStrong: ansi.StylePrimitive{
+				GenericStrong: scrapbook.StylePrimitive{
 					Bold: boolPtr(true),
 				},
-				GenericSubheading: ansi.StylePrimitive{
+				GenericSubheading: scrapbook.StylePrimitive{
 					Color: stringPtr("#777777"),
 				},
-				Background: ansi.StylePrimitive{
+				Background: scrapbook.StylePrimitive{
 					BackgroundColor: stringPtr("#373737"),
 				},
 			},
 		},
-		Table: ansi.StyleTable{
-			StyleBlock: ansi.StyleBlock{
-				StylePrimitive: ansi.StylePrimitive{},
+		Table: scrapbook.StyleTable{
+			StyleBlock: scrapbook.StyleBlock{
+				StylePrimitive: scrapbook.StylePrimitive{},
 			},
 			CenterSeparator: stringPtr("┼"),
 			ColumnSeparator: stringPtr("│"),
 			RowSeparator:    stringPtr("─"),
 		},
-		DefinitionDescription: ansi.StylePrimitive{
+		DefinitionDescription: scrapbook.StylePrimitive{
 			BlockPrefix: "\n🠶 ",
 		},
 	}
 
 	// LightStyleConfig is the default light style.
-	LightStyleConfig = ansi.StyleConfig{
-		Document: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+	LightStyleConfig = scrapbook.StyleConfig{
+		Document: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				BlockPrefix: "\n",
 				BlockSuffix: "\n",
 				Color:       stringPtr("234"),
 			},
 			Margin: uintPtr(defaultMargin),
 		},
-		BlockQuote: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{},
+		BlockQuote: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{},
 			Indent:         uintPtr(1),
 			IndentToken:    stringPtr("│ "),
 		},
-		List: ansi.StyleList{
+		List: scrapbook.StyleList{
 			LevelIndent: defaultListIndent,
 		},
-		Heading: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+		Heading: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				BlockSuffix: "\n",
 				Color:       stringPtr("27"),
 				Bold:        boolPtr(true),
 			},
 		},
-		H1: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+		H1: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				Prefix:          " ",
 				Suffix:          " ",
 				Color:           stringPtr("228"),
@@ -364,300 +364,300 @@ var (
 				Bold:            boolPtr(true),
 			},
 		},
-		H2: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+		H2: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				Prefix: "## ",
 			},
 		},
-		H3: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+		H3: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				Prefix: "### ",
 			},
 		},
-		H4: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+		H4: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				Prefix: "#### ",
 			},
 		},
-		H5: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+		H5: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				Prefix: "##### ",
 			},
 		},
-		H6: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+		H6: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				Prefix: "###### ",
 				Bold:   boolPtr(false),
 			},
 		},
-		Strikethrough: ansi.StylePrimitive{
+		Strikethrough: scrapbook.StylePrimitive{
 			CrossedOut: boolPtr(true),
 		},
-		Emph: ansi.StylePrimitive{
+		Emph: scrapbook.StylePrimitive{
 			Italic: boolPtr(true),
 		},
-		Strong: ansi.StylePrimitive{
+		Strong: scrapbook.StylePrimitive{
 			Bold: boolPtr(true),
 		},
-		HorizontalRule: ansi.StylePrimitive{
+		HorizontalRule: scrapbook.StylePrimitive{
 			Color:  stringPtr("249"),
 			Format: "\n--------\n",
 		},
-		Item: ansi.StylePrimitive{
+		Item: scrapbook.StylePrimitive{
 			BlockPrefix: "• ",
 		},
-		Enumeration: ansi.StylePrimitive{
+		Enumeration: scrapbook.StylePrimitive{
 			BlockPrefix: ". ",
 		},
-		Task: ansi.StyleTask{
-			StylePrimitive: ansi.StylePrimitive{},
+		Task: scrapbook.StyleTask{
+			StylePrimitive: scrapbook.StylePrimitive{},
 			Ticked:         "[✓] ",
 			Unticked:       "[ ] ",
 		},
-		Link: ansi.StylePrimitive{
+		Link: scrapbook.StylePrimitive{
 			Color:     stringPtr("36"),
 			Underline: boolPtr(true),
 		},
-		LinkText: ansi.StylePrimitive{
+		LinkText: scrapbook.StylePrimitive{
 			Color: stringPtr("29"),
 			Bold:  boolPtr(true),
 		},
-		Image: ansi.StylePrimitive{
+		Image: scrapbook.StylePrimitive{
 			Color:     stringPtr("205"),
 			Underline: boolPtr(true),
 		},
-		ImageText: ansi.StylePrimitive{
+		ImageText: scrapbook.StylePrimitive{
 			Color:  stringPtr("243"),
 			Format: "Image: {{.text}} →",
 		},
-		Code: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+		Code: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				Prefix:          " ",
 				Suffix:          " ",
 				Color:           stringPtr("203"),
 				BackgroundColor: stringPtr("254"),
 			},
 		},
-		CodeBlock: ansi.StyleCodeBlock{
-			StyleBlock: ansi.StyleBlock{
-				StylePrimitive: ansi.StylePrimitive{
+		CodeBlock: scrapbook.StyleCodeBlock{
+			StyleBlock: scrapbook.StyleBlock{
+				StylePrimitive: scrapbook.StylePrimitive{
 					Color: stringPtr("242"),
 				},
 				Margin: uintPtr(defaultMargin),
 			},
-			Chroma: &ansi.Chroma{
-				Text: ansi.StylePrimitive{
+			Chroma: &scrapbook.Chroma{
+				Text: scrapbook.StylePrimitive{
 					Color: stringPtr("#2A2A2A"),
 				},
-				Error: ansi.StylePrimitive{
+				Error: scrapbook.StylePrimitive{
 					Color:           stringPtr("#F1F1F1"),
 					BackgroundColor: stringPtr("#FF5555"),
 				},
-				Comment: ansi.StylePrimitive{
+				Comment: scrapbook.StylePrimitive{
 					Color: stringPtr("#8D8D8D"),
 				},
-				CommentPreproc: ansi.StylePrimitive{
+				CommentPreproc: scrapbook.StylePrimitive{
 					Color: stringPtr("#FF875F"),
 				},
-				Keyword: ansi.StylePrimitive{
+				Keyword: scrapbook.StylePrimitive{
 					Color: stringPtr("#279EFC"),
 				},
-				KeywordReserved: ansi.StylePrimitive{
+				KeywordReserved: scrapbook.StylePrimitive{
 					Color: stringPtr("#FF5FD2"),
 				},
-				KeywordNamespace: ansi.StylePrimitive{
+				KeywordNamespace: scrapbook.StylePrimitive{
 					Color: stringPtr("#FB406F"),
 				},
-				KeywordType: ansi.StylePrimitive{
+				KeywordType: scrapbook.StylePrimitive{
 					Color: stringPtr("#7049C2"),
 				},
-				Operator: ansi.StylePrimitive{
+				Operator: scrapbook.StylePrimitive{
 					Color: stringPtr("#FF2626"),
 				},
-				Punctuation: ansi.StylePrimitive{
+				Punctuation: scrapbook.StylePrimitive{
 					Color: stringPtr("#FA7878"),
 				},
-				NameBuiltin: ansi.StylePrimitive{
+				NameBuiltin: scrapbook.StylePrimitive{
 					Color: stringPtr("#0A1BB1"),
 				},
-				NameTag: ansi.StylePrimitive{
+				NameTag: scrapbook.StylePrimitive{
 					Color: stringPtr("#581290"),
 				},
-				NameAttribute: ansi.StylePrimitive{
+				NameAttribute: scrapbook.StylePrimitive{
 					Color: stringPtr("#8362CB"),
 				},
-				NameClass: ansi.StylePrimitive{
+				NameClass: scrapbook.StylePrimitive{
 					Color:     stringPtr("#212121"),
 					Underline: boolPtr(true),
 					Bold:      boolPtr(true),
 				},
-				NameConstant: ansi.StylePrimitive{
+				NameConstant: scrapbook.StylePrimitive{
 					Color: stringPtr("#581290"),
 				},
-				NameDecorator: ansi.StylePrimitive{
+				NameDecorator: scrapbook.StylePrimitive{
 					Color: stringPtr("#A3A322"),
 				},
-				NameFunction: ansi.StylePrimitive{
+				NameFunction: scrapbook.StylePrimitive{
 					Color: stringPtr("#019F57"),
 				},
-				LiteralNumber: ansi.StylePrimitive{
+				LiteralNumber: scrapbook.StylePrimitive{
 					Color: stringPtr("#22CCAE"),
 				},
-				LiteralString: ansi.StylePrimitive{
+				LiteralString: scrapbook.StylePrimitive{
 					Color: stringPtr("#7E5B38"),
 				},
-				LiteralStringEscape: ansi.StylePrimitive{
+				LiteralStringEscape: scrapbook.StylePrimitive{
 					Color: stringPtr("#00AEAE"),
 				},
-				GenericDeleted: ansi.StylePrimitive{
+				GenericDeleted: scrapbook.StylePrimitive{
 					Color: stringPtr("#FD5B5B"),
 				},
-				GenericEmph: ansi.StylePrimitive{
+				GenericEmph: scrapbook.StylePrimitive{
 					Italic: boolPtr(true),
 				},
-				GenericInserted: ansi.StylePrimitive{
+				GenericInserted: scrapbook.StylePrimitive{
 					Color: stringPtr("#00D787"),
 				},
-				GenericStrong: ansi.StylePrimitive{
+				GenericStrong: scrapbook.StylePrimitive{
 					Bold: boolPtr(true),
 				},
-				GenericSubheading: ansi.StylePrimitive{
+				GenericSubheading: scrapbook.StylePrimitive{
 					Color: stringPtr("#777777"),
 				},
-				Background: ansi.StylePrimitive{
+				Background: scrapbook.StylePrimitive{
 					BackgroundColor: stringPtr("#373737"),
 				},
 			},
 		},
-		Table: ansi.StyleTable{
-			StyleBlock: ansi.StyleBlock{
-				StylePrimitive: ansi.StylePrimitive{},
+		Table: scrapbook.StyleTable{
+			StyleBlock: scrapbook.StyleBlock{
+				StylePrimitive: scrapbook.StylePrimitive{},
 			},
 			CenterSeparator: stringPtr("┼"),
 			ColumnSeparator: stringPtr("│"),
 			RowSeparator:    stringPtr("─"),
 		},
-		DefinitionDescription: ansi.StylePrimitive{
+		DefinitionDescription: scrapbook.StylePrimitive{
 			BlockPrefix: "\n🠶 ",
 		},
 	}
 
 	// PinkStyleConfig is the default pink style.
-	PinkStyleConfig = ansi.StyleConfig{
-		Document: ansi.StyleBlock{
+	PinkStyleConfig = scrapbook.StyleConfig{
+		Document: scrapbook.StyleBlock{
 			Margin: uintPtr(defaultMargin),
 		},
-		BlockQuote: ansi.StyleBlock{
+		BlockQuote: scrapbook.StyleBlock{
 			Indent:      uintPtr(1),
 			IndentToken: stringPtr("│ "),
 		},
-		List: ansi.StyleList{
+		List: scrapbook.StyleList{
 			LevelIndent: defaultListIndent,
 		},
-		Heading: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+		Heading: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				BlockSuffix: "\n",
 				Color:       stringPtr("212"),
 				Bold:        boolPtr(true),
 			},
 		},
-		H1: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+		H1: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				BlockSuffix: "\n",
 				BlockPrefix: "\n",
 				Prefix:      "",
 			},
 		},
-		H2: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+		H2: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				Prefix: "▌ ",
 			},
 		},
-		H3: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+		H3: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				Prefix: "┃ ",
 			},
 		},
-		H4: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+		H4: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				Prefix: "│ ",
 			},
 		},
-		H5: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+		H5: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				Prefix: "┆ ",
 			},
 		},
-		H6: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+		H6: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				Prefix: "┊ ",
 				Bold:   boolPtr(false),
 			},
 		},
-		Text: ansi.StylePrimitive{},
-		Strikethrough: ansi.StylePrimitive{
+		Text: scrapbook.StylePrimitive{},
+		Strikethrough: scrapbook.StylePrimitive{
 			CrossedOut: boolPtr(true),
 		},
-		Emph: ansi.StylePrimitive{
+		Emph: scrapbook.StylePrimitive{
 			Italic: boolPtr(true),
 		},
-		Strong: ansi.StylePrimitive{
+		Strong: scrapbook.StylePrimitive{
 			Bold: boolPtr(true),
 		},
-		HorizontalRule: ansi.StylePrimitive{
+		HorizontalRule: scrapbook.StylePrimitive{
 			Color:  stringPtr("212"),
 			Format: "\n──────\n",
 		},
-		Item: ansi.StylePrimitive{
+		Item: scrapbook.StylePrimitive{
 			BlockPrefix: "• ",
 		},
-		Enumeration: ansi.StylePrimitive{
+		Enumeration: scrapbook.StylePrimitive{
 			BlockPrefix: ". ",
 		},
-		Task: ansi.StyleTask{
+		Task: scrapbook.StyleTask{
 			Ticked:   "[✓] ",
 			Unticked: "[ ] ",
 		},
-		Link: ansi.StylePrimitive{
+		Link: scrapbook.StylePrimitive{
 			Color:     stringPtr("99"),
 			Underline: boolPtr(true),
 		},
-		LinkText: ansi.StylePrimitive{
+		LinkText: scrapbook.StylePrimitive{
 			Bold: boolPtr(true),
 		},
-		Image: ansi.StylePrimitive{
+		Image: scrapbook.StylePrimitive{
 			Underline: boolPtr(true),
 		},
-		ImageText: ansi.StylePrimitive{
+		ImageText: scrapbook.StylePrimitive{
 			Format: "Image: {{.text}}",
 		},
-		Code: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+		Code: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				Color:           stringPtr("212"),
 				BackgroundColor: stringPtr("236"),
 				Prefix:          " ",
 				Suffix:          " ",
 			},
 		},
-		Table: ansi.StyleTable{
+		Table: scrapbook.StyleTable{
 			CenterSeparator: stringPtr("┼"),
 			ColumnSeparator: stringPtr("│"),
 			RowSeparator:    stringPtr("─"),
 		},
-		DefinitionList: ansi.StyleBlock{},
-		DefinitionTerm: ansi.StylePrimitive{},
-		DefinitionDescription: ansi.StylePrimitive{
+		DefinitionList: scrapbook.StyleBlock{},
+		DefinitionTerm: scrapbook.StylePrimitive{},
+		DefinitionDescription: scrapbook.StylePrimitive{
 			BlockPrefix: "\n🠶 ",
 		},
-		HTMLBlock: ansi.StyleBlock{},
-		HTMLSpan:  ansi.StyleBlock{},
+		HTMLBlock: scrapbook.StyleBlock{},
+		HTMLSpan:  scrapbook.StyleBlock{},
 	}
 
 	// NoTTYStyleConfig is the default notty style.
 	NoTTYStyleConfig = ASCIIStyleConfig
 
 	// DefaultStyles are the default styles.
-	DefaultStyles = map[string]*ansi.StyleConfig{
+	DefaultStyles = map[string]*scrapbook.StyleConfig{
 		AsciiStyle:   &ASCIIStyleConfig,
 		DarkStyle:    &DarkStyleConfig,
 		DraculaStyle: &DraculaStyleConfig,

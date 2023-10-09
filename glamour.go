@@ -15,6 +15,7 @@ import (
 	"github.com/yuin/goldmark/util"
 
 	"github.com/charmbracelet/glamour/ansi"
+	"github.com/charmbracelet/scrapbook"
 )
 
 // Default styles.
@@ -164,8 +165,9 @@ func WithStylePath(stylePath string) TermRendererOption {
 }
 
 // WithStyles sets a TermRenderer's styles.
-func WithStyles(styles ansi.StyleConfig) TermRendererOption {
+func WithStyles(styles scrapbook.StyleConfig) TermRendererOption {
 	return func(tr *TermRenderer) error {
+		// convert from StyleConfig to lipgloss styles struct
 		tr.ansiOptions.Styles = styles
 		return nil
 	}
@@ -175,18 +177,18 @@ func WithStyles(styles ansi.StyleConfig) TermRendererOption {
 // jsonBytes.
 func WithStylesFromJSONBytes(jsonBytes []byte) TermRendererOption {
 	return func(tr *TermRenderer) error {
-		return json.Unmarshal(jsonBytes, &tr.ansiOptions.Styles)
+		var err error
+		tr.ansiOptions.Styles, err = scrapbook.ImportJSONBytes(jsonBytes)
+		return err
 	}
 }
 
 // WithStylesFromJSONFile sets a TermRenderer's styles from a JSON file.
 func WithStylesFromJSONFile(filename string) TermRendererOption {
 	return func(tr *TermRenderer) error {
-		jsonBytes, err := os.ReadFile(filename)
-		if err != nil {
-			return err
-		}
-		return json.Unmarshal(jsonBytes, &tr.ansiOptions.Styles)
+		var err error
+		tr.ansiOptions.Styles, err = scrapbook.ImportJSONFile(filename)
+		return err
 	}
 }
 
@@ -256,7 +258,7 @@ func getEnvironmentStyle() string {
 	return glamourStyle
 }
 
-func getDefaultStyle(style string) (*ansi.StyleConfig, error) {
+func getDefaultStyle(style string) (*scrapbook.StyleConfig, error) {
 	if style == AutoStyle {
 		if termenv.HasDarkBackground() {
 			return &DarkStyleConfig, nil

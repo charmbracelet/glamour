@@ -2,10 +2,8 @@ package ansi
 
 import (
 	"bytes"
+	"fmt"
 	"io"
-
-	"github.com/muesli/reflow/indent"
-	"github.com/muesli/reflow/wordwrap"
 )
 
 // A HeadingElement is used to render headings.
@@ -29,31 +27,31 @@ func (e *HeadingElement) Render(w io.Writer, ctx RenderContext) error {
 
 	switch e.Level {
 	case h1:
-		rules = cascadeStyles(true, rules, ctx.options.Styles.H1)
+		rules = ctx.options.Styles.H1
 	case h2:
-		rules = cascadeStyles(true, rules, ctx.options.Styles.H2)
+		rules = ctx.options.Styles.H2
 	case h3:
-		rules = cascadeStyles(true, rules, ctx.options.Styles.H3)
+		rules = ctx.options.Styles.H3
 	case h4:
-		rules = cascadeStyles(true, rules, ctx.options.Styles.H4)
+		rules = ctx.options.Styles.H4
 	case h5:
-		rules = cascadeStyles(true, rules, ctx.options.Styles.H5)
+		rules = ctx.options.Styles.H5
 	case h6:
-		rules = cascadeStyles(true, rules, ctx.options.Styles.H6)
+		rules = ctx.options.Styles.H6
 	}
 
 	if !e.First {
-		renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, "\n")
+		renderText(w, bs.Current().Style.StylePrimitive, "\n")
 	}
 
 	be := BlockElement{
 		Block: &bytes.Buffer{},
-		Style: cascadeStyle(bs.Current().Style, rules, false),
+		Style: bs.Current().Style,
 	}
 	bs.Push(be)
 
-	renderText(w, ctx.options.ColorProfile, bs.Parent().Style.StylePrimitive, rules.BlockPrefix)
-	renderText(bs.Current().Block, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, rules.Prefix)
+	renderText(w, bs.Parent().Style.StylePrimitive, rules.BlockPrefix)
+	renderText(bs.Current().Block, bs.Current().Style.StylePrimitive, rules.Prefix)
 	return nil
 }
 
@@ -61,33 +59,12 @@ func (e *HeadingElement) Finish(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 	rules := bs.Current().Style
 
-	var indentation uint
-	var margin uint
-	if rules.Indent != nil {
-		indentation = *rules.Indent
-	}
-	if rules.Margin != nil {
-		margin = *rules.Margin
-	}
-
-	iw := indent.NewWriterPipe(w, indentation+margin, func(wr io.Writer) {
-		renderText(w, ctx.options.ColorProfile, bs.Parent().Style.StylePrimitive, " ")
-	})
-
-	flow := wordwrap.NewWriter(int(bs.Width(ctx) - indentation - margin*2))
-	_, err := flow.Write(bs.Current().Block.Bytes())
-	if err != nil {
-		return err
-	}
-	flow.Close()
-
-	_, err = iw.Write(flow.Bytes())
-	if err != nil {
-		return err
-	}
-
-	renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, rules.Suffix)
-	renderText(w, ctx.options.ColorProfile, bs.Parent().Style.StylePrimitive, rules.BlockSuffix)
+	// TODO set/handle width
+	val := (rules.Style().Render(bs.Current().Block.String()))
+	fmt.Print(val)
+	w.Write([]byte(val))
+	renderText(w, bs.Current().Style.StylePrimitive, rules.Suffix)
+	renderText(w, bs.Parent().Style.StylePrimitive, rules.BlockSuffix)
 
 	bs.Current().Block.Reset()
 	bs.Pop()

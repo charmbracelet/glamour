@@ -2,7 +2,7 @@ package ansi
 
 import (
 	"bytes"
-	"encoding/json"
+	"github.com/charmbracelet/scrapbook"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
@@ -48,7 +48,7 @@ func TestRenderer(t *testing.T) {
 			WordWrap:     80,
 			ColorProfile: termenv.TrueColor,
 		}
-		err = json.Unmarshal(b, &options.Styles)
+		options.Styles, err = scrapbook.ImportJSONBytes(b)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -121,7 +121,7 @@ func TestRendererIssues(t *testing.T) {
 				WordWrap:     80,
 				ColorProfile: termenv.TrueColor,
 			}
-			err = json.Unmarshal(b, &options.Styles)
+			options.Styles, err = scrapbook.ImportJSONBytes(b)
 			if err != nil {
 				t.Fatal(err)
 			}

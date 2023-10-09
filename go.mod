@@ -1,9 +1,11 @@
 module github.com/charmbracelet/glamour
 
-go 1.17
+go 1.21
 
 require (
 	github.com/alecthomas/chroma/v2 v2.8.0
+	github.com/charmbracelet/lipgloss v0.8.0
+	github.com/charmbracelet/scrapbook v0.0.0-00010101000000-000000000000
 	github.com/microcosm-cc/bluemonday v1.0.25
 	github.com/muesli/reflow v0.3.0
 	github.com/muesli/termenv v0.15.2
@@ -24,3 +26,5 @@ require (
 	golang.org/x/net v0.12.0 // indirect
 	golang.org/x/sys v0.10.0 // indirect
 )
+
+replace github.com/charmbracelet/scrapbook => ../scrapbook

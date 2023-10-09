@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/charmbracelet/scrapbook"
 	"github.com/muesli/termenv"
 	east "github.com/yuin/goldmark-emoji/ast"
 	"github.com/yuin/goldmark/ast"
@@ -19,7 +20,7 @@ type Options struct {
 	WordWrap         int
 	PreserveNewLines bool
 	ColorProfile     termenv.Profile
-	Styles           StyleConfig
+	Styles           scrapbook.StyleConfig
 }
 
 // ANSIRenderer renders markdown content as ANSI escaped sequences.
@@ -118,12 +119,14 @@ func (r *ANSIRenderer) renderNode(w util.BufWriter, source []byte, node ast.Node
 
 		// if we're finished rendering the entire document,
 		// flush to the real writer
+		// TODO could we lipgloss.Join all of the block elements in the block stack here?
 		if node.Type() == ast.TypeDocument {
 			writeTo = w
 		}
 
 		if e.Finisher != nil {
 			err := e.Finisher.Finish(writeTo, r.context)
+			// err := e.Finisher.Finish(writeTo, r.context)
 			if err != nil {
 				return ast.WalkStop, err
 			}

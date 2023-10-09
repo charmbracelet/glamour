@@ -1,218 +1,218 @@
 package glamour
 
-import "github.com/charmbracelet/glamour/ansi"
+import "github.com/charmbracelet/scrapbook"
 
-var DraculaStyleConfig = ansi.StyleConfig{
-	Document: ansi.StyleBlock{
-		StylePrimitive: ansi.StylePrimitive{
+var DraculaStyleConfig = scrapbook.StyleConfig{
+	Document: scrapbook.StyleBlock{
+		StylePrimitive: scrapbook.StylePrimitive{
 			BlockPrefix: "\n",
 			BlockSuffix: "\n",
 			Color:       stringPtr("#f8f8f2"),
 		},
 		Margin: uintPtr(2),
 	},
-	BlockQuote: ansi.StyleBlock{
-		StylePrimitive: ansi.StylePrimitive{
+	BlockQuote: scrapbook.StyleBlock{
+		StylePrimitive: scrapbook.StylePrimitive{
 			Color:  stringPtr("#f1fa8c"),
 			Italic: boolPtr(true),
 		},
 		Indent: uintPtr(2),
 	},
-	List: ansi.StyleList{
+	List: scrapbook.StyleList{
 		LevelIndent: 2,
-		StyleBlock: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+		StyleBlock: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				Color: stringPtr("#f8f8f2"),
 			},
 		},
 	},
-	Heading: ansi.StyleBlock{
-		StylePrimitive: ansi.StylePrimitive{
+	Heading: scrapbook.StyleBlock{
+		StylePrimitive: scrapbook.StylePrimitive{
 			BlockSuffix: "\n",
 			Color:       stringPtr("#bd93f9"),
 			Bold:        boolPtr(true),
 		},
 	},
-	H1: ansi.StyleBlock{
-		StylePrimitive: ansi.StylePrimitive{
+	H1: scrapbook.StyleBlock{
+		StylePrimitive: scrapbook.StylePrimitive{
 			Prefix: "# ",
 		},
 	},
-	H2: ansi.StyleBlock{
-		StylePrimitive: ansi.StylePrimitive{
+	H2: scrapbook.StyleBlock{
+		StylePrimitive: scrapbook.StylePrimitive{
 			Prefix: "## ",
 		},
 	},
-	H3: ansi.StyleBlock{
-		StylePrimitive: ansi.StylePrimitive{
+	H3: scrapbook.StyleBlock{
+		StylePrimitive: scrapbook.StylePrimitive{
 			Prefix: "### ",
 		},
 	},
-	H4: ansi.StyleBlock{
-		StylePrimitive: ansi.StylePrimitive{
+	H4: scrapbook.StyleBlock{
+		StylePrimitive: scrapbook.StylePrimitive{
 			Prefix: "#### ",
 		},
 	},
-	H5: ansi.StyleBlock{
-		StylePrimitive: ansi.StylePrimitive{
+	H5: scrapbook.StyleBlock{
+		StylePrimitive: scrapbook.StylePrimitive{
 			Prefix: "##### ",
 		},
 	},
-	H6: ansi.StyleBlock{
-		StylePrimitive: ansi.StylePrimitive{
+	H6: scrapbook.StyleBlock{
+		StylePrimitive: scrapbook.StylePrimitive{
 			Prefix: "###### ",
 		},
 	},
-	Strikethrough: ansi.StylePrimitive{
+	Strikethrough: scrapbook.StylePrimitive{
 		CrossedOut: boolPtr(true),
 	},
-	Emph: ansi.StylePrimitive{
+	Emph: scrapbook.StylePrimitive{
 		Color:  stringPtr("#f1fa8c"),
 		Italic: boolPtr(true),
 	},
-	Strong: ansi.StylePrimitive{
+	Strong: scrapbook.StylePrimitive{
 		Bold:  boolPtr(true),
 		Color: stringPtr("#ffb86c"),
 	},
-	HorizontalRule: ansi.StylePrimitive{
+	HorizontalRule: scrapbook.StylePrimitive{
 		Color:  stringPtr("#6272A4"),
 		Format: "\n--------\n",
 	},
-	Item: ansi.StylePrimitive{
+	Item: scrapbook.StylePrimitive{
 		BlockPrefix: "• ",
 	},
-	Enumeration: ansi.StylePrimitive{
+	Enumeration: scrapbook.StylePrimitive{
 		BlockPrefix: ". ",
 		Color:       stringPtr("#8be9fd"),
 	},
-	Task: ansi.StyleTask{
-		StylePrimitive: ansi.StylePrimitive{},
+	Task: scrapbook.StyleTask{
+		StylePrimitive: scrapbook.StylePrimitive{},
 		Ticked:         "[✓] ",
 		Unticked:       "[ ] ",
 	},
-	Link: ansi.StylePrimitive{
+	Link: scrapbook.StylePrimitive{
 		Color:     stringPtr("#8be9fd"),
 		Underline: boolPtr(true),
 	},
-	LinkText: ansi.StylePrimitive{
+	LinkText: scrapbook.StylePrimitive{
 		Color: stringPtr("#ff79c6"),
 	},
-	Image: ansi.StylePrimitive{
+	Image: scrapbook.StylePrimitive{
 		Color:     stringPtr("#8be9fd"),
 		Underline: boolPtr(true),
 	},
-	ImageText: ansi.StylePrimitive{
+	ImageText: scrapbook.StylePrimitive{
 		Color:  stringPtr("#ff79c6"),
 		Format: "Image: {{.text}} →",
 	},
-	Code: ansi.StyleBlock{
-		StylePrimitive: ansi.StylePrimitive{
+	Code: scrapbook.StyleBlock{
+		StylePrimitive: scrapbook.StylePrimitive{
 			Color: stringPtr("#50fa7b"),
 		},
 	},
-	CodeBlock: ansi.StyleCodeBlock{
-		StyleBlock: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
+	CodeBlock: scrapbook.StyleCodeBlock{
+		StyleBlock: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{
 				Color: stringPtr("#ffb86c"),
 			},
 			Margin: uintPtr(2),
 		},
-		Chroma: &ansi.Chroma{
-			Text: ansi.StylePrimitive{
+		Chroma: &scrapbook.Chroma{
+			Text: scrapbook.StylePrimitive{
 				Color: stringPtr("#f8f8f2"),
 			},
-			Error: ansi.StylePrimitive{
+			Error: scrapbook.StylePrimitive{
 				Color:           stringPtr("#f8f8f2"),
 				BackgroundColor: stringPtr("#ff5555"),
 			},
-			Comment: ansi.StylePrimitive{
+			Comment: scrapbook.StylePrimitive{
 				Color: stringPtr("#6272A4"),
 			},
-			CommentPreproc: ansi.StylePrimitive{
+			CommentPreproc: scrapbook.StylePrimitive{
 				Color: stringPtr("#ff79c6"),
 			},
-			Keyword: ansi.StylePrimitive{
+			Keyword: scrapbook.StylePrimitive{
 				Color: stringPtr("#ff79c6"),
 			},
-			KeywordReserved: ansi.StylePrimitive{
+			KeywordReserved: scrapbook.StylePrimitive{
 				Color: stringPtr("#ff79c6"),
 			},
-			KeywordNamespace: ansi.StylePrimitive{
+			KeywordNamespace: scrapbook.StylePrimitive{
 				Color: stringPtr("#ff79c6"),
 			},
-			KeywordType: ansi.StylePrimitive{
+			KeywordType: scrapbook.StylePrimitive{
 				Color: stringPtr("#8be9fd"),
 			},
-			Operator: ansi.StylePrimitive{
+			Operator: scrapbook.StylePrimitive{
 				Color: stringPtr("#ff79c6"),
 			},
-			Punctuation: ansi.StylePrimitive{
+			Punctuation: scrapbook.StylePrimitive{
 				Color: stringPtr("#f8f8f2"),
 			},
-			Name: ansi.StylePrimitive{
+			Name: scrapbook.StylePrimitive{
 				Color: stringPtr("#8be9fd"),
 			},
-			NameBuiltin: ansi.StylePrimitive{
+			NameBuiltin: scrapbook.StylePrimitive{
 				Color: stringPtr("#8be9fd"),
 			},
-			NameTag: ansi.StylePrimitive{
+			NameTag: scrapbook.StylePrimitive{
 				Color: stringPtr("#ff79c6"),
 			},
-			NameAttribute: ansi.StylePrimitive{
+			NameAttribute: scrapbook.StylePrimitive{
 				Color: stringPtr("#50fa7b"),
 			},
-			NameClass: ansi.StylePrimitive{
+			NameClass: scrapbook.StylePrimitive{
 				Color: stringPtr("#8be9fd"),
 			},
-			NameConstant: ansi.StylePrimitive{
+			NameConstant: scrapbook.StylePrimitive{
 				Color: stringPtr("#bd93f9"),
 			},
-			NameDecorator: ansi.StylePrimitive{
+			NameDecorator: scrapbook.StylePrimitive{
 				Color: stringPtr("#50fa7b"),
 			},
-			NameFunction: ansi.StylePrimitive{
+			NameFunction: scrapbook.StylePrimitive{
 				Color: stringPtr("#50fa7b"),
 			},
-			LiteralNumber: ansi.StylePrimitive{
+			LiteralNumber: scrapbook.StylePrimitive{
 				Color: stringPtr("#6EEFC0"),
 			},
-			LiteralString: ansi.StylePrimitive{
+			LiteralString: scrapbook.StylePrimitive{
 				Color: stringPtr("#f1fa8c"),
 			},
-			LiteralStringEscape: ansi.StylePrimitive{
+			LiteralStringEscape: scrapbook.StylePrimitive{
 				Color: stringPtr("#ff79c6"),
 			},
-			GenericDeleted: ansi.StylePrimitive{
+			GenericDeleted: scrapbook.StylePrimitive{
 				Color: stringPtr("#ff5555"),
 			},
-			GenericEmph: ansi.StylePrimitive{
+			GenericEmph: scrapbook.StylePrimitive{
 				Color:  stringPtr("#f1fa8c"),
 				Italic: boolPtr(true),
 			},
-			GenericInserted: ansi.StylePrimitive{
+			GenericInserted: scrapbook.StylePrimitive{
 				Color: stringPtr("#50fa7b"),
 			},
-			GenericStrong: ansi.StylePrimitive{
+			GenericStrong: scrapbook.StylePrimitive{
 				Color: stringPtr("#ffb86c"),
 				Bold:  boolPtr(true),
 			},
-			GenericSubheading: ansi.StylePrimitive{
+			GenericSubheading: scrapbook.StylePrimitive{
 				Color: stringPtr("#bd93f9"),
 			},
-			Background: ansi.StylePrimitive{
+			Background: scrapbook.StylePrimitive{
 				BackgroundColor: stringPtr("#282a36"),
 			},
 		},
 	},
-	Table: ansi.StyleTable{
-		StyleBlock: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{},
+	Table: scrapbook.StyleTable{
+		StyleBlock: scrapbook.StyleBlock{
+			StylePrimitive: scrapbook.StylePrimitive{},
 		},
 		CenterSeparator: stringPtr("┼"),
 		ColumnSeparator: stringPtr("│"),
 		RowSeparator:    stringPtr("─"),
 	},
-	DefinitionDescription: ansi.StylePrimitive{
+	DefinitionDescription: scrapbook.StylePrimitive{
 		BlockPrefix: "\n🠶 ",
 	},
 }

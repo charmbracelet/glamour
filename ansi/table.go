@@ -3,14 +3,12 @@ package ansi
 import (
 	"io"
 
-	"github.com/muesli/reflow/indent"
 	"github.com/olekukonko/tablewriter"
 )
 
 // A TableElement is used to render tables.
 type TableElement struct {
 	writer      *tablewriter.Table
-	styleWriter *StyleWriter
 	header      []string
 	cell        []string
 }
@@ -30,28 +28,8 @@ type TableCellElement struct {
 }
 
 func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
-	bs := ctx.blockStack
-
-	var indentation uint
-	var margin uint
-	rules := ctx.options.Styles.Table
-	if rules.Indent != nil {
-		indentation = *rules.Indent
-	}
-	if rules.Margin != nil {
-		margin = *rules.Margin
-	}
-
-	iw := indent.NewWriterPipe(w, indentation+margin, func(wr io.Writer) {
-		renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, " ")
-	})
-
-	style := bs.With(rules.StylePrimitive)
-	ctx.table.styleWriter = NewStyleWriter(ctx, iw, style)
-
-	renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, rules.BlockPrefix)
-	renderText(ctx.table.styleWriter, ctx.options.ColorProfile, style, rules.Prefix)
-	ctx.table.writer = tablewriter.NewWriter(ctx.table.styleWriter)
+	// TODO handle prefix
+	ctx.table.writer = tablewriter.NewWriter(w)
 	return nil
 }
 
@@ -72,9 +50,9 @@ func (e *TableElement) Finish(w io.Writer, ctx RenderContext) error {
 	ctx.table.writer.Render()
 	ctx.table.writer = nil
 
-	renderText(ctx.table.styleWriter, ctx.options.ColorProfile, ctx.blockStack.With(rules.StylePrimitive), rules.Suffix)
-	renderText(ctx.table.styleWriter, ctx.options.ColorProfile, ctx.blockStack.Current().Style.StylePrimitive, rules.BlockSuffix)
-	return ctx.table.styleWriter.Close()
+	// TODO handle suffix
+	w.Write(ctx.blockStack.Current().Block.Bytes())
+	return nil
 }
 
 func (e *TableRowElement) Finish(w io.Writer, ctx RenderContext) error {
