@@ -15,26 +15,16 @@ type BaseElement struct {
 	Style  scrapbook.Styler
 }
 
-// func formatToken(format string, token string) (string, error) {
-// 	var b bytes.Buffer
-//
-// 	v := make(map[string]interface{})
-// 	v["text"] = token
-//
-// 	tmpl, err := template.New(format).Funcs(TemplateFuncMap).Parse(format)
-// 	if err != nil {
-// 		return "", err
-// 	}
-//
-// 	err = tmpl.Execute(&b, v)
-// 	return b.String(), err
-// }
-
 func renderText(w io.Writer, styler scrapbook.Styler, s string) {
 	if len(s) == 0 {
 		return
 	}
-	_, _ = w.Write([]byte(styler.Style().Render(s)))
+	out := s
+	if styler != nil {
+	// styler is nil if we get a type of BaseElement with no styles.
+		out = styler.Style().Render(s)
+	}
+	_, _ = w.Write([]byte(out))
 }
 
 func (e *BaseElement) Render(w io.Writer, ctx RenderContext) error {
@@ -46,19 +36,9 @@ func (e *BaseElement) Render(w io.Writer, ctx RenderContext) error {
 		renderText(w, parentBlock.Style, e.Suffix)
 	}()
 
-	// TODO we're using the parent's style which should contain the rendering specs for the children...
-	rules := parentBlock.Style
-	// render unstyled prefix/suffix
 	// TODO handle prefix/suffix
 
 	s := e.Token
-	//if len(rules.Format) > 0 {
-	//	var err error
-	//	s, err = formatToken(rules.Format, s)
-	//	if err != nil {
-	//		return err
-	//	}
-	//}
-	renderText(w, rules, s)
+	renderText(w, e.Style, s)
 	return nil
 }
