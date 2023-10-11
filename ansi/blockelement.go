@@ -20,21 +20,20 @@ type BlockElement struct {
 func (e *BlockElement) Render(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 	bs.Push(*e)
-
-	// TODO handle prefix for blocks
 	return nil
 }
+
+// setMargins sets the margins given the prefix and suffix values being non-nil.
 
 func (e *BlockElement) Finish(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 	blockBuffer := bs.Current().Block
+	ls := e.Style.Style()
 
-	_, err := w.Write([]byte(e.Style.Style().Render(blockBuffer.String())))
+	_, err := w.Write([]byte(ls.Render(blockBuffer.String())))
 	if err != nil {
 		return err
 	}
-
-	// TODO handle suffix for blocks
 
 	blockBuffer.Reset()
 	bs.Pop()
