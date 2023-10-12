@@ -18,7 +18,7 @@ func (e *ParagraphElement) Render(w io.Writer, ctx RenderContext) error {
 	}
 	be := BlockElement{
 		Block: &bytes.Buffer{},
-		Style: bs.Current().Style,
+		Style: ctx.options.Styles.Paragraph,
 	}
 	bs.Push(be)
 
@@ -29,7 +29,7 @@ func (e *ParagraphElement) Render(w io.Writer, ctx RenderContext) error {
 func (e *ParagraphElement) Finish(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 
-	renderText(w, bs.Current().Style.StylePrimitive, bs.Current().Block.String())
+	renderText(w, bs.Current().Style, bs.Current().Block.String())
 	// TODO render suffix?
 
 	bs.Current().Block.Reset()

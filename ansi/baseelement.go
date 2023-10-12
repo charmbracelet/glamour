@@ -2,6 +2,7 @@ package ansi
 
 import (
 	"io"
+	"strings"
 
 	"github.com/charmbracelet/scrapbook"
 )
@@ -19,12 +20,12 @@ func renderText(w io.Writer, styler scrapbook.Styler, s string) {
 	if len(s) == 0 {
 		return
 	}
-	out := s
+	s = strings.ReplaceAll(s, "\n", " ")
 	if styler != nil {
-	// styler is nil if we get a type of BaseElement with no styles.
-		out = styler.Style().Render(s)
+		// styler is nil if we get a type of BaseElement with no styles.
+		s = styler.Style().Render(s)
 	}
-	_, _ = w.Write([]byte(out))
+	_, _ = w.Write([]byte(s))
 }
 
 func (e *BaseElement) Render(w io.Writer, ctx RenderContext) error {
