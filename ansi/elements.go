@@ -91,16 +91,22 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 
 	// Lists
 	case ast.KindList:
-		s := ctx.options.Styles.List.StyleBlock
-		if s.Indent == nil {
+		// TODO clean this up
+		s := ctx.options.Styles.List
+		// set the styles
+		item := ctx.options.Styles.Item
+		s.StyleBlock.StylePrimitive.BlockPrefix = item.BlockPrefix
+		s.StyleBlock.StylePrimitive.Prefix = item.Prefix
+
+		if s.StyleBlock.Indent == nil {
 			var i uint
-			s.Indent = &i
+			s.StyleBlock.Indent = &i
 		}
 		n := node.Parent()
 		for n != nil {
 			if n.Kind() == ast.KindList {
-				i := ctx.options.Styles.List.LevelIndent
-				s.Indent = &i
+				i := s.LevelIndent
+				s.StyleBlock.Indent = &i
 				break
 			}
 			n = n.Parent()
@@ -108,7 +114,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 
 		e := &BlockElement{
 			Block:   &bytes.Buffer{},
-			Style:   ctx.blockStack.Current().Style,
+			Style:   s.StyleBlock,
 			Margin:  true,
 			Newline: true,
 		}

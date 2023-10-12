@@ -31,6 +31,7 @@ func renderText(w io.Writer, styler scrapbook.Styler, s string) {
 func (e *BaseElement) Render(w io.Writer, ctx RenderContext) error {
 	block := ctx.blockStack.Current()
 
+	// Don't add text styling to filler text.
 	renderText(w, block.Style, e.Prefix)
 	defer func() {
 		renderText(w, block.Style, e.Suffix)
