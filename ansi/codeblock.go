@@ -65,8 +65,6 @@ func chromaStyle(style scrapbook.StylePrimitive) string {
 }
 
 func (e *CodeBlockElement) Render(w io.Writer, ctx RenderContext) error {
-	bs := ctx.blockStack
-
 	var margin int
 	rules := ctx.options.Styles.CodeBlock
 	theme := rules.Theme
@@ -129,9 +127,10 @@ func (e *CodeBlockElement) Render(w io.Writer, ctx RenderContext) error {
 	}
 
 	// fallback rendering
+	// TODO fix this styling
 	el := &BaseElement{
 		Token: e.Code,
-		Style: bs.Current().Style,
+		Style: ctx.options.Styles.Code.StylePrimitive,
 	}
 
 	return el.Render(w, ctx)

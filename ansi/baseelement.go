@@ -13,7 +13,7 @@ type BaseElement struct {
 	Token  string
 	Prefix string
 	Suffix string
-	Style  scrapbook.Styler
+	Style  scrapbook.StylePrimitive
 }
 
 func renderText(w io.Writer, styler scrapbook.Styler, s string) {
@@ -29,15 +29,19 @@ func renderText(w io.Writer, styler scrapbook.Styler, s string) {
 }
 
 func (e *BaseElement) Render(w io.Writer, ctx RenderContext) error {
-	bs := ctx.blockStack
-	parentBlock := bs.Current()
+	block := ctx.blockStack.Current()
 
-	renderText(w, parentBlock.Style, e.Prefix)
+	renderText(w, block.Style, e.Prefix)
 	defer func() {
-		renderText(w, parentBlock.Style, e.Suffix)
+		renderText(w, block.Style, e.Suffix)
 	}()
 
-	// TODO handle prefix/suffix
+	// We don't carry the text styles over to the prefixes. Also, don't make it
+	// a block style, we don't want margins and newlines applied to this text.
+	renderText(w, block.Style.StylePrimitive, e.Style.BlockPrefix)
+	defer func() {
+		renderText(w, block.Style.StylePrimitive, e.Style.BlockSuffix)
+	}()
 
 	s := e.Token
 	renderText(w, e.Style, s)
