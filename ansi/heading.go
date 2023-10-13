@@ -41,7 +41,7 @@ func (e *HeadingElement) Render(w io.Writer, ctx RenderContext) error {
 	}
 
 	if !e.First {
-		renderText(w, bs.Current().Style.StylePrimitive, "\n")
+		renderText(w, bs.Current().Style.StylePrimitive.Style(), "\n")
 	}
 
 	be := BlockElement{
@@ -50,8 +50,8 @@ func (e *HeadingElement) Render(w io.Writer, ctx RenderContext) error {
 	}
 	bs.Push(be)
 
-	renderText(w, bs.Parent().Style.StylePrimitive, rules.BlockPrefix)
-	renderText(bs.Current().Block, bs.Current().Style.StylePrimitive, rules.Prefix)
+	renderText(w, bs.Parent().Style.StylePrimitive.Style(), rules.BlockPrefix)
+	renderText(bs.Current().Block, bs.Current().Style.StylePrimitive.Style(), rules.Prefix)
 	return nil
 }
 
@@ -63,8 +63,8 @@ func (e *HeadingElement) Finish(w io.Writer, ctx RenderContext) error {
 	val := (rules.Style().Render(bs.Current().Block.String()))
 	fmt.Print(val)
 	w.Write([]byte(val))
-	renderText(w, bs.Current().Style.StylePrimitive, rules.Suffix)
-	renderText(w, bs.Parent().Style.StylePrimitive, rules.BlockSuffix)
+	renderText(w, bs.Current().Style.StylePrimitive.Style(), rules.Suffix)
+	renderText(w, bs.Parent().Style.StylePrimitive.Style(), rules.BlockSuffix)
 
 	bs.Current().Block.Reset()
 	bs.Pop()

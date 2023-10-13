@@ -7,10 +7,10 @@ import (
 	"path/filepath"
 
 	"github.com/charmbracelet/glamour"
-	"github.com/charmbracelet/glamour/ansi"
+	"github.com/charmbracelet/scrapbook"
 )
 
-func writeStyleJSON(filename string, styleConfig *ansi.StyleConfig) error {
+func writeStyleJSON(filename string, styleConfig *scrapbook.StyleConfig) error {
 	f, err := os.Create(filename)
 	if err != nil {
 		return err
