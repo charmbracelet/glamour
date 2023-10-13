@@ -3,7 +3,6 @@ package ansi
 import (
 	"bytes"
 	"io"
-	"strings"
 )
 
 // A ParagraphElement is used to render individual paragraphs.
@@ -29,9 +28,8 @@ func (e *ParagraphElement) Render(w io.Writer, ctx RenderContext) error {
 
 func (e *ParagraphElement) Finish(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
-	s := strings.ReplaceAll(bs.Current().Block.String(), "\n", " ")
 
-	renderText(w, bs.Current().Style.Style(), s)
+	renderText(w, bs.Current().Style.Style(), bs.Current().Block.String())
 	// TODO render suffix?
 
 	bs.Current().Block.Reset()
