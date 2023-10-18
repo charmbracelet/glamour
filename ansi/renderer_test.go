@@ -2,12 +2,14 @@ package ansi
 
 import (
 	"bytes"
-	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/scrapbook"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/scrapbook"
 
 	"github.com/muesli/termenv"
 	"github.com/yuin/goldmark"
@@ -79,7 +81,7 @@ func TestRenderer(t *testing.T) {
 
 		// generate
 		if generateExamples {
-			err = ioutil.WriteFile(tn, buf.Bytes(), 0644)
+			err = ioutil.WriteFile(tn, buf.Bytes(), 0o644)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -153,7 +155,7 @@ func TestRendererIssues(t *testing.T) {
 
 			// generate
 			if generateIssues {
-				err = ioutil.WriteFile(tn, buf.Bytes(), 0644)
+				err = ioutil.WriteFile(tn, buf.Bytes(), 0o644)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -171,5 +173,57 @@ func TestRendererIssues(t *testing.T) {
 					bn, string(td), buf.String())
 			}
 		})
+	}
+}
+
+func TestHeadings(t *testing.T) {
+	td, err := os.ReadFile("../testdata/heading.test")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	b, err := ioutil.ReadFile(filepath.Join(examplesDir, "heading.style"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	options := Options{
+		WordWrap:     80,
+		ColorProfile: termenv.TrueColor,
+	}
+	options.Styles, err = scrapbook.ImportJSONBytes(b)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	md := goldmark.New(
+		goldmark.WithExtensions(
+			extension.GFM,
+			extension.DefinitionList,
+			emoji.Emoji,
+		),
+		goldmark.WithParserOptions(
+			parser.WithAutoHeadingID(),
+		),
+	)
+
+	ar := NewRenderer(options)
+	md.SetRenderer(
+		renderer.NewRenderer(
+			renderer.WithNodeRenderers(util.Prioritized(ar, 1000))))
+
+	var buf bytes.Buffer
+	in, err := os.ReadFile(filepath.Join(examplesDir, "heading.md"))
+	if err != nil {
+		t.Error(err)
+	}
+	err = md.Convert(in, &buf)
+	if err != nil {
+		t.Error(err)
+	}
+	// TODO compare tn and buffer.String
+	if !bytes.Equal(td, buf.Bytes()) {
+		t.Errorf("Rendered output for headings don't match!\nExpected: `\n%s`\nGot: `\n%s`\n",
+			string(td), buf.String())
 	}
 }

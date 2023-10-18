@@ -57,19 +57,47 @@ func (e *HeadingElement) Finish(w io.Writer, ctx RenderContext) error {
 	blockStyle := block.Style().Margin(0)
 	headingStyle := heading.Style().Inherit(blockStyle)
 	style := subheading.Style().Inherit(headingStyle)
+	// We should just inherit colours???
 
 	if !e.First {
 		// renderText(w, bs.Current().Style.StylePrimitive.Style(), "\n")
 		w.Write([]byte("\n"))
 	}
 
+	/*
+		{
+		    "heading": {
+		        "color": "15",
+		        "background_color": "57"
+		    },
+		    "h1": {
+		        "prefix": "=> ",
+		        "suffix": " <=",
+		        "margin": 2,
+		        "bold": true,
+		        "background_color": "69"
+		    },
+		    "h2": {
+		        "prefix": "## ",
+		        "margin": 4
+		    },
+		    "h3": {
+		        "prefix": "### ",
+		        "margin": 6
+		    }
+		}
+	*/
+
+	// heading defines colour, background colour of all heading elements
+	// subheadings e.g. h1, h2, etc define the prefix, margin, and text styling of the element.
+	// not *always true*
+
 	w.Write([]byte(
-		style.Render(
-			subheading.BlockPrefix +
-				subheading.Prefix +
-				bs.Current().Block.String() +
-				subheading.Suffix +
-				subheading.BlockSuffix)))
+		heading.BlockPrefix +
+			style.Render(subheading.Prefix) +
+			style.Render(bs.Current().Block.String()) +
+			style.Render(subheading.Suffix) +
+			heading.BlockSuffix))
 	// TODO set/handle width
 	// val := (headingStyle.Render(bs.Current().Block.String()))
 	// w.Write([]byte(val))
