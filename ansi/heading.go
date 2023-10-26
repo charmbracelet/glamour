@@ -3,6 +3,8 @@ package ansi
 import (
 	"bytes"
 	"io"
+
+	"github.com/charmbracelet/lipgloss"
 )
 
 // A HeadingElement is used to render headings.
@@ -54,9 +56,15 @@ func (e *HeadingElement) Finish(w io.Writer, ctx RenderContext) error {
 		subheading = ctx.options.Styles.H6
 	}
 
+	// get margin as a style to wrap string
+	indent := lipgloss.NewStyle()
+	if subheading.Margin != nil {
+		indent = indent.MarginLeft(int(*subheading.Margin))
+	}
+	// apply other styles to the strings
 	blockStyle := block.Style().Margin(0)
 	headingStyle := heading.Style().Inherit(blockStyle)
-	style := subheading.Style().Inherit(headingStyle)
+	style := subheading.Style().Inherit(headingStyle).Margin(0)
 	// We should just inherit colours???
 
 	if !e.First {
@@ -93,11 +101,12 @@ func (e *HeadingElement) Finish(w io.Writer, ctx RenderContext) error {
 	// not *always true*
 
 	w.Write([]byte(
-		heading.BlockPrefix +
-			style.Render(subheading.Prefix) +
-			style.Render(bs.Current().Block.String()) +
-			style.Render(subheading.Suffix) +
-			heading.BlockSuffix))
+		indent.Render(
+			heading.BlockPrefix +
+				style.Render(subheading.Prefix) +
+				style.Render(bs.Current().Block.String()) +
+				style.Render(subheading.Suffix) +
+				heading.BlockSuffix)))
 	// TODO set/handle width
 	// val := (headingStyle.Render(bs.Current().Block.String()))
 	// w.Write([]byte(val))
