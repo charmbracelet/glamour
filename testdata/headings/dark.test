@@ -1,12 +1,12 @@
                                                                                     
-  [48;5;63m[1;38;5;228;48;5;63m First Heading [0m[0m                                                                   
+  [1;38;5;228;48;5;63m[1;38;5;228;48;5;63m First Heading [0m[0m                                                                   
                                                                                     
-  ## Second Heading                                                                 
+  [1;38;5;39m[1;38;5;39m## Second Heading[0m[0m                                                                 
                                                                                     
-  ### Third Heading...                                                              
+  [1;38;5;39m[1;38;5;39m### Third Heading...[0m[0m                                                              
                                                                                     
-  ####                                                                              
+  [1;38;5;39m[1;38;5;39m####                                                                              
   func                                                                              
-  category                                                                          
+  category[0m[0m                                                                          
                                                                                     
                                                                                     

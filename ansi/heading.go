@@ -60,24 +60,25 @@ func (e *HeadingElement) Finish(w io.Writer, ctx RenderContext) error {
 		subheading = ctx.options.Styles.H6
 	}
 
-	// get margin as a style to wrap string
+	// We indent this heading element by its most indented style rule.
 	indent := lipgloss.NewStyle()
 	if subheading.Margin != nil {
 		indent = indent.MarginLeft(int(*subheading.Margin))
+	} else if heading.Margin != nil {
+		indent = indent.MarginLeft(int(*heading.Margin))
 	}
-	// apply other styles to the strings
-	blockStyle := block.Style().Margin(0)
-	headingStyle := heading.Style().Inherit(blockStyle)
-	style := subheading.Style().Inherit(headingStyle).Margin(0)
+
+	// Need to inherit the style primitives here since we're dealing with text
+	// styling, not spacing.
+	headingStyle := heading.StylePrimitive.Style().Inherit(block.StylePrimitive.Style())
+	style := subheading.StylePrimitive.Style().Inherit(headingStyle)
 
 	if !e.First {
-		// renderText(w, bs.Current().Style.StylePrimitive.Style(), "\n")
 		w.Write([]byte("\n"))
 	}
 
-	// TODO apply text styles to prefix and subheading text
 	var styledText bytes.Buffer
-	renderText(&styledText, subheading.StylePrimitive.Style(),
+	renderText(&styledText, style,
 		subheading.Prefix+bs.Current().Block.String()+subheading.Suffix)
 
 	w.Write([]byte(
