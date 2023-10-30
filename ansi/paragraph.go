@@ -30,6 +30,9 @@ func (e *ParagraphElement) Finish(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 
 	renderText(w, bs.Current().Style.Style(), bs.Current().Block.String())
+	if _, err := w.Write([]byte("\n")); err != nil {
+		return err
+	}
 	// TODO render suffix?
 
 	bs.Current().Block.Reset()

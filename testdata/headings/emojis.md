@@ -1,3 +1,3 @@
-# Testing Emojis in Header
+# Testing Emojis in Header 🐙
 ## 🐙 ⚡ 🐱 = ❤️
 ## Hello World (no emojis D:)

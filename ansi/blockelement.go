@@ -35,6 +35,13 @@ func (e *BlockElement) Finish(w io.Writer, ctx RenderContext) error {
 		return err
 	}
 
+	if e.Newline {
+		_, err := w.Write([]byte("\n"))
+		if err != nil {
+			return err
+		}
+	}
+
 	blockBuffer.Reset()
 	bs.Pop()
 	return nil
