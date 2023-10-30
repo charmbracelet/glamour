@@ -245,7 +245,6 @@ func TestHeadings(t *testing.T) {
 
 			// if we don't have a test file, make one.
 			_, err = os.Stat(tn)
-
 			if generateHeadings || err != nil {
 				err = os.WriteFile(tn, buf.Bytes(), 0o644)
 				if err != nil {
@@ -258,7 +257,6 @@ func TestHeadings(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			// TODO compare tn and buffer.String
 			if !bytes.Equal(want, buf.Bytes()) {
 				t.Errorf("Rendered output for headings don't match!\nExpected: `\n%s`\nGot: `\n%s`\n",
 					string(want), buf.String())
