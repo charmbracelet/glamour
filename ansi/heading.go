@@ -38,6 +38,10 @@ func (e *HeadingElement) Render(w io.Writer, ctx RenderContext) error {
 func (e *HeadingElement) Finish(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 	block := bs.Current().Style
+
+	// heading defines colour, background colour of all heading elements
+	// subheadings e.g. h1, h2, etc define the prefix, margin, and text styling of the element.
+	// not *always true*
 	heading := ctx.options.Styles.Heading
 	subheading := ctx.options.Styles.Heading
 
@@ -65,53 +69,23 @@ func (e *HeadingElement) Finish(w io.Writer, ctx RenderContext) error {
 	blockStyle := block.Style().Margin(0)
 	headingStyle := heading.Style().Inherit(blockStyle)
 	style := subheading.Style().Inherit(headingStyle).Margin(0)
-	// We should just inherit colours???
 
 	if !e.First {
 		// renderText(w, bs.Current().Style.StylePrimitive.Style(), "\n")
 		w.Write([]byte("\n"))
 	}
 
-	/*
-		{
-		    "heading": {
-		        "color": "15",
-		        "background_color": "57"
-		    },
-		    "h1": {
-		        "prefix": "=> ",
-		        "suffix": " <=",
-		        "margin": 2,
-		        "bold": true,
-		        "background_color": "69"
-		    },
-		    "h2": {
-		        "prefix": "## ",
-		        "margin": 4
-		    },
-		    "h3": {
-		        "prefix": "### ",
-		        "margin": 6
-		    }
-		}
-	*/
-
-	// heading defines colour, background colour of all heading elements
-	// subheadings e.g. h1, h2, etc define the prefix, margin, and text styling of the element.
-	// not *always true*
+	// TODO apply text styles to prefix and subheading text
+	var styledText bytes.Buffer
+	renderText(&styledText, subheading.StylePrimitive.Style(),
+		subheading.Prefix+bs.Current().Block.String()+subheading.Suffix)
 
 	w.Write([]byte(
 		indent.Render(
 			heading.BlockPrefix +
-				style.Render(subheading.Prefix) +
-				style.Render(bs.Current().Block.String()) +
-				style.Render(subheading.Suffix) +
+				style.Render(styledText.String()) +
 				heading.BlockSuffix)))
 	// TODO set/handle width
-	// val := (headingStyle.Render(bs.Current().Block.String()))
-	// w.Write([]byte(val))
-	// renderText(w, bs.Current().Style.StylePrimitive.Style(), rules.Suffix)
-	// renderText(w, bs.Parent().Style.StylePrimitive.Style(), rules.BlockSuffix)
 
 	bs.Current().Block.Reset()
 	bs.Pop()
