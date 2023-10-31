@@ -74,14 +74,16 @@ func (e *HeadingElement) Finish(w io.Writer, ctx RenderContext) error {
 	style := subheading.StylePrimitive.Style().Inherit(headingStyle)
 
 	if !e.First {
-		w.Write([]byte("\n"))
+		if _, err := w.Write([]byte("\n")); err != nil {
+			return err
+		}
 	}
 
 	var styledText bytes.Buffer
 	renderText(&styledText, style,
 		subheading.Prefix+bs.Current().Block.String()+subheading.Suffix)
 
-	w.Write([]byte(
+	_, err := w.Write([]byte(
 		indent.Render(
 			heading.BlockPrefix +
 				style.Render(styledText.String()) +
@@ -90,5 +92,5 @@ func (e *HeadingElement) Finish(w io.Writer, ctx RenderContext) error {
 
 	bs.Current().Block.Reset()
 	bs.Pop()
-	return nil
+	return err
 }
