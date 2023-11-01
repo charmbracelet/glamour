@@ -28,7 +28,7 @@ func (e *BlockElement) Render(w io.Writer, ctx RenderContext) error {
 func (e *BlockElement) Finish(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 	blockBuffer := bs.Current().Block
-	ls := e.Style.Style().Width(ctx.options.WordWrap)
+	ls := e.Style.Style().Inherit(e.Style.StylePrimitive.Style()).Width(ctx.options.WordWrap)
 
 	_, err := w.Write([]byte(ls.Render(blockBuffer.String())))
 	if err != nil {

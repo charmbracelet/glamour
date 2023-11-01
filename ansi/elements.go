@@ -292,7 +292,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		// n := node.(*ast.CodeSpan)
 		e := &BlockElement{
 			Block: &bytes.Buffer{},
-			Style: ctx.blockStack.Current().Style,
+			Style: ctx.options.Styles.Code,
 		}
 		return Element{
 			Renderer: e,
