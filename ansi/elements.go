@@ -295,7 +295,8 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 
 	// Tables
 	case astext.KindTable:
-		te := &TableElement{}
+		table := node.(*astext.Table)
+		te := &TableElement{table: table}
 		return Element{
 			Entering: "\n",
 			Renderer: te,

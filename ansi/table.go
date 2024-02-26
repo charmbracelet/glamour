@@ -5,6 +5,7 @@ import (
 
 	"github.com/muesli/reflow/indent"
 	"github.com/olekukonko/tablewriter"
+	astext "github.com/yuin/goldmark/extension/ast"
 )
 
 // A TableElement is used to render tables.
@@ -13,6 +14,7 @@ type TableElement struct {
 	styleWriter *StyleWriter
 	header      []string
 	cell        []string
+	table       *astext.Table
 }
 
 // A TableRowElement is used to render a single row in a table.
@@ -51,7 +53,22 @@ func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
 
 	renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, rules.BlockPrefix)
 	renderText(ctx.table.styleWriter, ctx.options.ColorProfile, style, rules.Prefix)
-	ctx.table.writer = tablewriter.NewWriter(ctx.table.styleWriter)
+	table := tablewriter.NewWriter(ctx.table.styleWriter)
+
+	alignments := make([]int, len(e.table.Alignments))
+	for i, a := range e.table.Alignments {
+		switch a {
+		case astext.AlignLeft:
+			alignments[i] = tablewriter.ALIGN_LEFT
+		case astext.AlignCenter:
+			alignments[i] = tablewriter.ALIGN_CENTER
+		case astext.AlignRight:
+			alignments[i] = tablewriter.ALIGN_RIGHT
+		}
+	}
+	table.SetColumnAlignment(alignments)
+
+	ctx.table.writer = table
 	return nil
 }
 
