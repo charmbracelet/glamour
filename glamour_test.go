@@ -2,7 +2,8 @@ package glamour
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
+	"os"
 	"strings"
 	"testing"
 )
@@ -21,7 +22,7 @@ func TestTermRendererWriter(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	in, err := ioutil.ReadFile(markdown)
+	in, err := os.ReadFile(markdown)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,14 +36,14 @@ func TestTermRendererWriter(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	b, err := ioutil.ReadAll(r)
+	b, err := io.ReadAll(r)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// generate
 	if generate {
-		err := ioutil.WriteFile(testFile, b, 0644)
+		err := os.WriteFile(testFile, b, 0644)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -50,7 +51,7 @@ func TestTermRendererWriter(t *testing.T) {
 	}
 
 	// verify
-	td, err := ioutil.ReadFile(testFile)
+	td, err := os.ReadFile(testFile)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -69,7 +70,7 @@ func TestTermRenderer(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	in, err := ioutil.ReadFile(markdown)
+	in, err := os.ReadFile(markdown)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -80,7 +81,7 @@ func TestTermRenderer(t *testing.T) {
 	}
 
 	// verify
-	td, err := ioutil.ReadFile(testFile)
+	td, err := os.ReadFile(testFile)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -121,7 +122,7 @@ func TestWithPreservedNewLines(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	in, err := ioutil.ReadFile("testdata/preserved_newline.in")
+	in, err := os.ReadFile("testdata/preserved_newline.in")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -132,7 +133,7 @@ func TestWithPreservedNewLines(t *testing.T) {
 	}
 
 	// verify
-	td, err := ioutil.ReadFile("testdata/preserved_newline.test")
+	td, err := os.ReadFile("testdata/preserved_newline.test")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -167,7 +168,7 @@ func TestStyles(t *testing.T) {
 }
 
 func TestRenderHelpers(t *testing.T) {
-	in, err := ioutil.ReadFile(markdown)
+	in, err := os.ReadFile(markdown)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -178,7 +179,7 @@ func TestRenderHelpers(t *testing.T) {
 	}
 
 	// verify
-	td, err := ioutil.ReadFile(testFile)
+	td, err := os.ReadFile(testFile)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -209,7 +210,7 @@ func TestCapitalization(t *testing.T) {
 	}
 
 	// expected outcome
-	td, err := ioutil.ReadFile("testdata/capitalization.test")
+	td, err := os.ReadFile("testdata/capitalization.test")
 	if err != nil {
 		t.Fatal(err)
 	}
