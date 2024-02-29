@@ -3,8 +3,11 @@ package glamour
 import (
 	"bytes"
 	"io/ioutil"
+	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 const (
@@ -42,7 +45,7 @@ func TestTermRendererWriter(t *testing.T) {
 
 	// generate
 	if generate {
-		err := ioutil.WriteFile(testFile, b, 0644)
+		err := ioutil.WriteFile(testFile, b, 0o644)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -216,5 +219,49 @@ func TestCapitalization(t *testing.T) {
 
 	if string(td) != b {
 		t.Errorf("Rendered output doesn't match!\nExpected: `\n%s`\nGot: `\n%s`\n", td, b)
+	}
+}
+
+func TestWrapping(t *testing.T) {
+	langDir := "testdata/lang-support/"
+	files, err := filepath.Glob(langDir + "*.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(files) == 0 {
+		t.Fatal("No files found, please resolve paths before trying again.")
+	}
+
+	for _, f := range files {
+		bn := strings.TrimSuffix(filepath.Base(f), ".md")
+		goldpath := filepath.Join(langDir, bn+".test")
+
+		t.Run(bn, func(t *testing.T) {
+			r, err := NewTermRenderer(
+				WithStyles(DarkStyleConfig),
+				WithWordWrap(80),
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+			// get markdown contents
+			in, err := ioutil.ReadFile(f)
+			if err != nil {
+				t.Fatal(err)
+			}
+			got, err := r.RenderBytes(in)
+			if err != nil {
+				t.Fatal(err)
+			}
+			// get desired contents
+			want, err := ioutil.ReadFile(goldpath)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if diff := cmp.Diff(string(got), string(want)); diff != "" {
+				t.Fatalf("got != want\n-want +got:\ndiff:\n%s", diff)
+			}
+		})
 	}
 }
