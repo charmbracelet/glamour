@@ -7,6 +7,7 @@ import (
 )
 
 const defaultListIndent = 2
+const defaultListLevelIndent = 4
 const defaultMargin = 2
 
 var (
@@ -31,7 +32,7 @@ var (
 			StyleBlock: ansi.StyleBlock{
 				StylePrimitive: ansi.StylePrimitive{},
 			},
-			LevelIndent: 4,
+			LevelIndent: defaultListLevelIndent,
 		},
 		Heading: ansi.StyleBlock{
 			StylePrimitive: ansi.StylePrimitive{
