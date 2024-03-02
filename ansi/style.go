@@ -138,11 +138,11 @@ type StyleConfig struct {
 	HTMLSpan  StyleBlock `json:"html_span,omitempty"`
 }
 
-func cascadeStyles(toBlock bool, s ...StyleBlock) StyleBlock {
+func cascadeStyles(s ...StyleBlock) StyleBlock {
 	var r StyleBlock
 
 	for _, v := range s {
-		r = cascadeStyle(r, v, toBlock)
+		r = cascadeStyle(r, v, true)
 	}
 	return r
 }

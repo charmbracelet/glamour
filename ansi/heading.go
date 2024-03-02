@@ -29,17 +29,17 @@ func (e *HeadingElement) Render(w io.Writer, ctx RenderContext) error {
 
 	switch e.Level {
 	case h1:
-		rules = cascadeStyles(true, rules, ctx.options.Styles.H1)
+		rules = cascadeStyles(rules, ctx.options.Styles.H1)
 	case h2:
-		rules = cascadeStyles(true, rules, ctx.options.Styles.H2)
+		rules = cascadeStyles(rules, ctx.options.Styles.H2)
 	case h3:
-		rules = cascadeStyles(true, rules, ctx.options.Styles.H3)
+		rules = cascadeStyles(rules, ctx.options.Styles.H3)
 	case h4:
-		rules = cascadeStyles(true, rules, ctx.options.Styles.H4)
+		rules = cascadeStyles(rules, ctx.options.Styles.H4)
 	case h5:
-		rules = cascadeStyles(true, rules, ctx.options.Styles.H5)
+		rules = cascadeStyles(rules, ctx.options.Styles.H5)
 	case h6:
-		rules = cascadeStyles(true, rules, ctx.options.Styles.H6)
+		rules = cascadeStyles(rules, ctx.options.Styles.H6)
 	}
 
 	if !e.First {
