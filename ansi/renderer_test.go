@@ -3,7 +3,7 @@ package ansi
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -35,11 +35,11 @@ func TestRenderer(t *testing.T) {
 		sn := filepath.Join(examplesDir, bn+".style")
 		tn := filepath.Join("../testdata", bn+".test")
 
-		in, err := ioutil.ReadFile(f)
+		in, err := os.ReadFile(f)
 		if err != nil {
 			t.Fatal(err)
 		}
-		b, err := ioutil.ReadFile(sn)
+		b, err := os.ReadFile(sn)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -77,7 +77,7 @@ func TestRenderer(t *testing.T) {
 
 		// generate
 		if generateExamples {
-			err = ioutil.WriteFile(tn, buf.Bytes(), 0644)
+			err = os.WriteFile(tn, buf.Bytes(), 0644)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -85,7 +85,7 @@ func TestRenderer(t *testing.T) {
 		}
 
 		// verify
-		td, err := ioutil.ReadFile(tn)
+		td, err := os.ReadFile(tn)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -108,11 +108,11 @@ func TestRendererIssues(t *testing.T) {
 		t.Run(bn, func(t *testing.T) {
 			tn := filepath.Join(issuesDir, bn+".test")
 
-			in, err := ioutil.ReadFile(f)
+			in, err := os.ReadFile(f)
 			if err != nil {
 				t.Fatal(err)
 			}
-			b, err := ioutil.ReadFile("../styles/dark.json")
+			b, err := os.ReadFile("../styles/dark.json")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -150,7 +150,7 @@ func TestRendererIssues(t *testing.T) {
 
 			// generate
 			if generateIssues {
-				err = ioutil.WriteFile(tn, buf.Bytes(), 0644)
+				err = os.WriteFile(tn, buf.Bytes(), 0644)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -158,7 +158,7 @@ func TestRendererIssues(t *testing.T) {
 			}
 
 			// verify
-			td, err := ioutil.ReadFile(tn)
+			td, err := os.ReadFile(tn)
 			if err != nil {
 				t.Fatal(err)
 			}

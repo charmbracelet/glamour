@@ -16,11 +16,9 @@ const (
 	chromaStyleTheme = "charm"
 )
 
-var (
-	// mutex for synchronizing access to the chroma style registry.
-	// Related https://github.com/alecthomas/chroma/pull/650
-	mutex = sync.Mutex{}
-)
+// mutex for synchronizing access to the chroma style registry.
+// Related https://github.com/alecthomas/chroma/pull/650
+var mutex = sync.Mutex{}
 
 // A CodeBlockElement is used to render code blocks.
 type CodeBlockElement struct {
