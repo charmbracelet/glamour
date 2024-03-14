@@ -10,6 +10,7 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/yuin/goldmark v1.5.4
 	github.com/yuin/goldmark-emoji v1.0.2
+	golang.org/x/term v0.10.0
 )
 
 require (
