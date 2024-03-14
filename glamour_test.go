@@ -2,6 +2,7 @@ package glamour
 
 import (
 	"bytes"
+	"errors"
 	"io"
 	"os"
 	"strings"
@@ -43,7 +44,7 @@ func TestTermRendererWriter(t *testing.T) {
 
 	// generate
 	if generate {
-		err := os.WriteFile(testFile, b, 0644)
+		err := os.WriteFile(testFile, b, 0o644)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -164,6 +165,46 @@ func TestStyles(t *testing.T) {
 	)
 	if err != nil {
 		t.Fatal(err)
+	}
+}
+
+// TestCustomStyle checks the expected errors with custom styling. We need to
+// support built-in styles and custom style sheets.
+func TestCustomStyle(t *testing.T) {
+	md := "testdata/example.md"
+	tests := []struct {
+		name      string
+		stylePath string
+		err       error
+		expected  string
+	}{
+		{name: "style exists", stylePath: "testdata/custom.style", err: nil, expected: "testdata/custom.style"},
+		{name: "style doesn't exist", stylePath: "testdata/notfound.style", err: os.ErrNotExist, expected: AutoStyle},
+		{name: "style is empty", stylePath: "", err: nil, expected: AutoStyle},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Setenv("GLAMOUR_STYLE", tc.stylePath)
+			g, err := NewTermRenderer(
+				WithEnvironmentConfig(),
+			)
+			if !errors.Is(err, tc.err) {
+				t.Fatal(err)
+			}
+			if !errors.Is(tc.err, os.ErrNotExist) {
+				w, err := NewTermRenderer(WithStylePath(tc.expected))
+				if err != nil {
+					t.Fatal(err)
+				}
+				text, _ := os.ReadFile(md)
+				want, err := w.RenderBytes(text)
+				got, err := g.RenderBytes(text)
+				if !bytes.Equal(want, got) {
+					t.Error("Wrong style used")
+				}
+			}
+		})
 	}
 }
 
