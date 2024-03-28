@@ -46,17 +46,18 @@ func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
 // setBorders sets the borders for the lipgloss table. It uses the default
 // border styles if no custom styles are set.
 func (ctx *RenderContext) setBorders() {
+	// TODO restore ability to use custom tables
 	rules := ctx.options.Styles.Table
 	border := lipgloss.NormalBorder()
 
 	if rules.RowSeparator != nil && rules.ColumnSeparator != nil {
-	border = lipgloss.Border{
-		Top:    *rules.RowSeparator,
-		Bottom: *rules.RowSeparator,
-		Left:   *rules.ColumnSeparator,
-		Right:  *rules.ColumnSeparator,
-		Middle: *rules.CenterSeparator,
-	}
+		border = lipgloss.Border{
+			Top:    *rules.RowSeparator,
+			Bottom: *rules.RowSeparator,
+			Left:   *rules.ColumnSeparator,
+			Right:  *rules.ColumnSeparator,
+			Middle: *rules.CenterSeparator,
+		}
 	}
 	ctx.table.lipgloss.Border(border)
 	ctx.table.lipgloss.BorderTop(false)
@@ -88,7 +89,7 @@ func (e *TableRowElement) Finish(w io.Writer, ctx RenderContext) error {
 		panic(fmt.Sprintf("got an empty row %#v", ctx.table.row))
 	}
 
-	ctx.table.lipgloss.Row(StringToAny(ctx.table.row)...)
+	ctx.table.lipgloss.Row(ctx.table.row...)
 	ctx.table.row = []string{}
 	return nil
 }
@@ -98,19 +99,9 @@ func (e *TableHeadElement) Finish(w io.Writer, ctx RenderContext) error {
 		return nil
 	}
 
-	headers := StringToAny(ctx.table.headers)
-	ctx.table.lipgloss.Headers(headers...)
+	ctx.table.lipgloss.Headers(ctx.table.headers...)
 	ctx.table.headers = []string{}
 	return nil
-}
-
-// StringToAny returns the rows as generic types for the lipgloss table.
-func StringToAny(s []string) []any {
-	out := make([]any, len(s))
-	for i, str := range s {
-		out[i] = str
-	}
-	return out
 }
 
 func (e *TableCellElement) Render(w io.Writer, ctx RenderContext) error {
