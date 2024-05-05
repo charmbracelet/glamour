@@ -118,8 +118,12 @@ func (e *CodeBlockElement) Render(w io.Writer, ctx RenderContext) error {
 		mutex.Unlock()
 	}
 
+	ic := " "
+	if rules.IndentToken != nil {
+		ic = *rules.IndentToken
+	}
 	iw := indent.NewWriterPipe(w, indentation+margin, func(wr io.Writer) {
-		renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, " ")
+		renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, ic)
 	})
 
 	if len(theme) > 0 {
