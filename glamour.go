@@ -123,6 +123,13 @@ func WithBaseURL(baseURL string) TermRendererOption {
 	}
 }
 
+func WithFrontMatterRenderer(r renderer.Renderer) TermRendererOption {
+	return func(termRenderer *TermRenderer) error {
+		termRenderer.md.Renderer().AddOptions(renderer.WithNodeRenderers(util.Prioritized(r, 99)))
+		return nil
+	}
+}
+
 func WithFrontMatterHandler(consumer ext.FrontmatterResultConsumer) TermRendererOption {
 	return func(termRenderer *TermRenderer) error {
 		termRenderer.frontMatterHandler = consumer
