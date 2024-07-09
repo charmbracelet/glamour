@@ -260,3 +260,15 @@ func TestCapitalization(t *testing.T) {
 		t.Errorf("Rendered output doesn't match!\nExpected: `\n%s`\nGot: `\n%s`\n", td, b)
 	}
 }
+
+func FuzzData(f *testing.F) {
+	f.Fuzz(func(t *testing.T, data []byte) {
+		func() int {
+			_, err := RenderBytes(data, DarkStyle)
+			if err != nil {
+				return 0
+			}
+			return 1
+		}()
+	})
+}
