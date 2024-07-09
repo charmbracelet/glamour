@@ -38,8 +38,7 @@ func (e *BlockElement) Finish(w io.Writer, ctx RenderContext) error {
 		}
 
 		if e.Newline {
-			_, err = mw.Write([]byte("\n"))
-			if err != nil {
+			if _, err := io.WriteString(mw, "\n"); err != nil {
 				return err
 			}
 		}
