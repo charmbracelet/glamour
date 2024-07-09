@@ -34,8 +34,6 @@ type Element struct {
 // NewElement returns the appropriate render Element for a given node.
 func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 	ctx := tr.context
-	// fmt.Print(strings.Repeat("  ", ctx.blockStack.Len()), node.Type(), node.Kind())
-	// defer fmt.Println()
 
 	switch node.Kind() {
 	// Document
@@ -295,7 +293,8 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 
 	// Tables
 	case astext.KindTable:
-		te := &TableElement{}
+		table := node.(*astext.Table)
+		te := &TableElement{table: table}
 		return Element{
 			Entering: "\n",
 			Renderer: te,
@@ -306,8 +305,13 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		s := ""
 		n := node.FirstChild()
 		for n != nil {
-			s += string(n.Text(source))
-			// s += string(n.LinkData.Destination)
+			switch t := n.(type) {
+			case *ast.AutoLink:
+				s += string(t.Label(source))
+			default:
+				s += string(n.Text(source))
+			}
+
 			n = n.NextSibling()
 		}
 

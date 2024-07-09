@@ -76,7 +76,7 @@ func renderText(w io.Writer, p termenv.Profile, rules StylePrimitive, s string) 
 		out = out.Blink()
 	}
 
-	_, _ = w.Write([]byte(out.String()))
+	_, _ = io.WriteString(w, out.String())
 }
 
 func (e *BaseElement) Render(w io.Writer, ctx RenderContext) error {

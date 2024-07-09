@@ -6,6 +6,10 @@ import (
 	"github.com/charmbracelet/glamour/ansi"
 )
 
+const defaultListIndent = 2
+const defaultListLevelIndent = 4
+const defaultMargin = 2
+
 var (
 	// ASCIIStyleConfig uses only ASCII characters.
 	ASCIIStyleConfig = ansi.StyleConfig{
@@ -14,7 +18,7 @@ var (
 				BlockPrefix: "\n",
 				BlockSuffix: "\n",
 			},
-			Margin: uintPtr(2),
+			Margin: uintPtr(defaultMargin),
 		},
 		BlockQuote: ansi.StyleBlock{
 			StylePrimitive: ansi.StylePrimitive{},
@@ -28,7 +32,7 @@ var (
 			StyleBlock: ansi.StyleBlock{
 				StylePrimitive: ansi.StylePrimitive{},
 			},
-			LevelIndent: 4,
+			LevelIndent: defaultListLevelIndent,
 		},
 		Heading: ansi.StyleBlock{
 			StylePrimitive: ansi.StylePrimitive{
@@ -101,7 +105,7 @@ var (
 		},
 		CodeBlock: ansi.StyleCodeBlock{
 			StyleBlock: ansi.StyleBlock{
-				Margin: uintPtr(2),
+				Margin: uintPtr(defaultMargin),
 			},
 		},
 		Table: ansi.StyleTable{
@@ -122,7 +126,7 @@ var (
 				BlockSuffix: "\n",
 				Color:       stringPtr("252"),
 			},
-			Margin: uintPtr(2),
+			Margin: uintPtr(defaultMargin),
 		},
 		BlockQuote: ansi.StyleBlock{
 			StylePrimitive: ansi.StylePrimitive{},
@@ -130,7 +134,7 @@ var (
 			IndentToken:    stringPtr("│ "),
 		},
 		List: ansi.StyleList{
-			LevelIndent: 2,
+			LevelIndent: defaultListIndent,
 		},
 		Heading: ansi.StyleBlock{
 			StylePrimitive: ansi.StylePrimitive{
@@ -228,7 +232,7 @@ var (
 				StylePrimitive: ansi.StylePrimitive{
 					Color: stringPtr("244"),
 				},
-				Margin: uintPtr(2),
+				Margin: uintPtr(defaultMargin),
 			},
 			Chroma: &ansi.Chroma{
 				Text: ansi.StylePrimitive{
@@ -335,7 +339,7 @@ var (
 				BlockSuffix: "\n",
 				Color:       stringPtr("234"),
 			},
-			Margin: uintPtr(2),
+			Margin: uintPtr(defaultMargin),
 		},
 		BlockQuote: ansi.StyleBlock{
 			StylePrimitive: ansi.StylePrimitive{},
@@ -343,7 +347,7 @@ var (
 			IndentToken:    stringPtr("│ "),
 		},
 		List: ansi.StyleList{
-			LevelIndent: 2,
+			LevelIndent: defaultListIndent,
 		},
 		Heading: ansi.StyleBlock{
 			StylePrimitive: ansi.StylePrimitive{
@@ -440,7 +444,7 @@ var (
 				StylePrimitive: ansi.StylePrimitive{
 					Color: stringPtr("242"),
 				},
-				Margin: uintPtr(2),
+				Margin: uintPtr(defaultMargin),
 			},
 			Chroma: &ansi.Chroma{
 				Text: ansi.StylePrimitive{
@@ -542,14 +546,14 @@ var (
 	// PinkStyleConfig is the default pink style.
 	PinkStyleConfig = ansi.StyleConfig{
 		Document: ansi.StyleBlock{
-			Margin: uintPtr(2),
+			Margin: uintPtr(defaultMargin),
 		},
 		BlockQuote: ansi.StyleBlock{
 			Indent:      uintPtr(1),
 			IndentToken: stringPtr("│ "),
 		},
 		List: ansi.StyleList{
-			LevelIndent: 0,
+			LevelIndent: defaultListIndent,
 		},
 		Heading: ansi.StyleBlock{
 			StylePrimitive: ansi.StylePrimitive{
@@ -651,120 +655,16 @@ var (
 	}
 
 	// NoTTYStyleConfig is the default notty style.
-	NoTTYStyleConfig = ansi.StyleConfig{
-		Document: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
-				BlockPrefix: "\n",
-				BlockSuffix: "\n",
-			},
-			Margin: uintPtr(2),
-		},
-		BlockQuote: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{},
-			Indent:         uintPtr(1),
-			IndentToken:    stringPtr("│ "),
-		},
-		Paragraph: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{},
-		},
-		List: ansi.StyleList{
-			StyleBlock: ansi.StyleBlock{
-				StylePrimitive: ansi.StylePrimitive{},
-			},
-			LevelIndent: 4,
-		},
-		Heading: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
-				BlockSuffix: "\n",
-			},
-		},
-		H1: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
-				Prefix: "# ",
-			},
-		},
-		H2: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
-				Prefix: "## ",
-			},
-		},
-		H3: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
-				Prefix: "### ",
-			},
-		},
-		H4: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
-				Prefix: "#### ",
-			},
-		},
-		H5: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
-				Prefix: "##### ",
-			},
-		},
-		H6: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
-				Prefix: "###### ",
-			},
-		},
-		Strikethrough: ansi.StylePrimitive{
-			BlockPrefix: "~~",
-			BlockSuffix: "~~",
-		},
-		Emph: ansi.StylePrimitive{
-			BlockPrefix: "*",
-			BlockSuffix: "*",
-		},
-		Strong: ansi.StylePrimitive{
-			BlockPrefix: "**",
-			BlockSuffix: "**",
-		},
-		HorizontalRule: ansi.StylePrimitive{
-			Format: "\n--------\n",
-		},
-		Item: ansi.StylePrimitive{
-			BlockPrefix: "• ",
-		},
-		Enumeration: ansi.StylePrimitive{
-			BlockPrefix: ". ",
-		},
-		Task: ansi.StyleTask{
-			Ticked:   "[✓] ",
-			Unticked: "[ ] ",
-		},
-		ImageText: ansi.StylePrimitive{
-			Format: "Image: {{.text}} →",
-		},
-		Code: ansi.StyleBlock{
-			StylePrimitive: ansi.StylePrimitive{
-				BlockPrefix: "`",
-				BlockSuffix: "`",
-			},
-		},
-		CodeBlock: ansi.StyleCodeBlock{
-			StyleBlock: ansi.StyleBlock{
-				Margin: uintPtr(2),
-			},
-		},
-		Table: ansi.StyleTable{
-			CenterSeparator: stringPtr("┼"),
-			ColumnSeparator: stringPtr("│"),
-			RowSeparator:    stringPtr("─"),
-		},
-		DefinitionDescription: ansi.StylePrimitive{
-			BlockPrefix: "\n🠶 ",
-		},
-	}
+	NoTTYStyleConfig = ASCIIStyleConfig
 
 	// DefaultStyles are the default styles.
 	DefaultStyles = map[string]*ansi.StyleConfig{
-		"ascii":   &ASCIIStyleConfig,
-		"dark":    &DarkStyleConfig,
-		"light":   &LightStyleConfig,
-		"pink":    &PinkStyleConfig,
-		"notty":   &NoTTYStyleConfig,
-		"dracula": &DraculaStyleConfig,
+		AsciiStyle:   &ASCIIStyleConfig,
+		DarkStyle:    &DarkStyleConfig,
+		DraculaStyle: &DraculaStyleConfig,
+		LightStyle:   &LightStyleConfig,
+		NoTTYStyle:   &NoTTYStyleConfig,
+		PinkStyle:    &PinkStyleConfig,
 	}
 )
 

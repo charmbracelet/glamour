@@ -10,7 +10,7 @@ type LinkElement struct {
 	Text    string
 	BaseURL string
 	URL     string
-	Child   ElementRenderer // FIXME
+	Child   ElementRenderer
 }
 
 func (e *LinkElement) Render(w io.Writer, ctx RenderContext) error {

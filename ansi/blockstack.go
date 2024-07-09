@@ -57,7 +57,7 @@ func (s BlockStack) Margin() uint {
 	return i
 }
 
-// Width returns the available rendering width
+// Width returns the available rendering width.
 func (s BlockStack) Width(ctx RenderContext) uint {
 	if s.Indent()+s.Margin()*2 > uint(ctx.options.WordWrap) {
 		return 0

@@ -4,9 +4,9 @@ import (
 	"io"
 	"sync"
 
-	"github.com/alecthomas/chroma"
-	"github.com/alecthomas/chroma/quick"
-	"github.com/alecthomas/chroma/styles"
+	"github.com/alecthomas/chroma/v2"
+	"github.com/alecthomas/chroma/v2/quick"
+	"github.com/alecthomas/chroma/v2/styles"
 	"github.com/muesli/reflow/indent"
 	"github.com/muesli/termenv"
 )
@@ -16,11 +16,9 @@ const (
 	chromaStyleTheme = "charm"
 )
 
-var (
-	// mutex for synchronizing access to the chroma style registry.
-	// Related https://github.com/alecthomas/chroma/pull/650
-	mutex = sync.Mutex{}
-)
+// mutex for synchronizing access to the chroma style registry.
+// Related https://github.com/alecthomas/chroma/pull/650
+var mutex = sync.Mutex{}
 
 // A CodeBlockElement is used to render code blocks.
 type CodeBlockElement struct {
@@ -120,8 +118,12 @@ func (e *CodeBlockElement) Render(w io.Writer, ctx RenderContext) error {
 		mutex.Unlock()
 	}
 
+	ic := " "
+	if rules.IndentToken != nil {
+		ic = *rules.IndentToken
+	}
 	iw := indent.NewWriterPipe(w, indentation+margin, func(wr io.Writer) {
-		renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, " ")
+		renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, ic)
 	})
 
 	if len(theme) > 0 {
