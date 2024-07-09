@@ -103,7 +103,7 @@ func (r *ANSIRenderer) renderNode(w util.BufWriter, source []byte, node ast.Node
 			writeTo = io.Writer(bs.Current().Block)
 		}
 
-		_, _ = writeTo.Write([]byte(e.Entering))
+		_, _ = io.WriteString(writeTo, e.Entering)
 		if e.Renderer != nil {
 			err := e.Renderer.Render(writeTo, r.context)
 			if err != nil {
@@ -128,7 +128,8 @@ func (r *ANSIRenderer) renderNode(w util.BufWriter, source []byte, node ast.Node
 				return ast.WalkStop, err
 			}
 		}
-		_, _ = bs.Current().Block.Write([]byte(e.Exiting))
+
+		_, _ = io.WriteString(bs.Current().Block, e.Exiting)
 	}
 
 	return ast.WalkContinue, nil
