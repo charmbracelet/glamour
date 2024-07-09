@@ -77,7 +77,7 @@ func TestRenderer(t *testing.T) {
 
 		// generate
 		if generateExamples {
-			err = os.WriteFile(tn, buf.Bytes(), 0644)
+			err = os.WriteFile(tn, buf.Bytes(), 0o644)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -150,7 +150,7 @@ func TestRendererIssues(t *testing.T) {
 
 			// generate
 			if generateIssues {
-				err = os.WriteFile(tn, buf.Bytes(), 0644)
+				err = os.WriteFile(tn, buf.Bytes(), 0o644)
 				if err != nil {
 					t.Fatal(err)
 				}
