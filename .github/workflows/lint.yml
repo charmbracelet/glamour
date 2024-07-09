@@ -20,7 +20,7 @@ jobs:
           go-version: stable
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v4
+        uses: golangci/golangci-lint-action@v6
         with:
           # Optional: golangci-lint command line arguments.
           args: --issues-exit-code=0
