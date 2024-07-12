@@ -18,8 +18,8 @@ import (
 )
 
 const (
-	generateExamples = false
-	generateIssues   = false
+	generateExamples = true
+	generateIssues   = true
 	examplesDir      = "../styles/examples/"
 	issuesDir        = "../testdata/issues/"
 )

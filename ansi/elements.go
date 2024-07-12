@@ -176,16 +176,18 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 
 	case ast.KindEmphasis:
 		n := node.(*ast.Emphasis)
-		s := string(n.Text(source))
-		style := ctx.options.Styles.Emph
-		if n.Level > 1 {
-			style = ctx.options.Styles.Strong
+		var children []ElementRenderer
+		if n.HasChildren() {
+			nn := n.FirstChild()
+			for nn != nil {
+				children = append(children, tr.NewElement(nn, source).Renderer)
+				nn = nn.NextSibling()
+			}
 		}
-
 		return Element{
-			Renderer: &BaseElement{
-				Token: html.UnescapeString(s),
-				Style: style,
+			Renderer: &EmphasisElement{
+				Level:    n.Level,
+				Children: children,
 			},
 		}
 
@@ -213,26 +215,42 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 	// Links
 	case ast.KindLink:
 		n := node.(*ast.Link)
+		var children []ElementRenderer
+		if n.HasChildren() {
+			nn := n.FirstChild()
+			for nn != nil {
+				children = append(children, tr.NewElement(nn, source).Renderer)
+				nn = nn.NextSibling()
+			}
+		}
 		return Element{
 			Renderer: &LinkElement{
-				Text:    textFromChildren(node, source),
-				BaseURL: ctx.options.BaseURL,
-				URL:     string(n.Destination),
+				BaseURL:  ctx.options.BaseURL,
+				URL:      string(n.Destination),
+				Children: children,
 			},
 		}
 	case ast.KindAutoLink:
 		n := node.(*ast.AutoLink)
 		u := string(n.URL(source))
-		label := string(n.Label(source))
 		if n.AutoLinkType == ast.AutoLinkEmail && !strings.HasPrefix(strings.ToLower(u), "mailto:") {
 			u = "mailto:" + u
 		}
 
+		var children []ElementRenderer
+		if n.HasChildren() {
+			nn := n.FirstChild()
+			for nn != nil {
+				children = append(children, tr.NewElement(nn, source).Renderer)
+				nn = nn.NextSibling()
+			}
+		}
+
 		return Element{
 			Renderer: &LinkElement{
-				Text:    label,
-				BaseURL: ctx.options.BaseURL,
-				URL:     u,
+				Children: children,
+				BaseURL:  ctx.options.BaseURL,
+				URL:      u,
 			},
 		}
 
