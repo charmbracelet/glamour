@@ -16,6 +16,7 @@ import (
 // Options is used to configure an ANSIRenderer.
 type Options struct {
 	BaseURL          string
+	LinkTextOnly     bool
 	WordWrap         int
 	PreserveNewLines bool
 	ColorProfile     termenv.Profile

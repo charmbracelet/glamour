@@ -52,25 +52,29 @@ func (e *LinkElement) Render(w io.Writer, ctx RenderContext) error {
 		}
 	*/
 
-	u, err := url.Parse(e.URL)
-	if err == nil &&
-		"#"+u.Fragment != e.URL { // if the URL only consists of an anchor, ignore it
-		pre := " "
-		style := ctx.options.Styles.Link
-		if !textRendered {
-			pre = ""
-			style.BlockPrefix = ""
-			style.BlockSuffix = ""
-		}
+	// render url if linktext not rendered yet or both should be rendered
+	if !textRendered || !ctx.options.LinkTextOnly {
 
-		el := &BaseElement{
-			Token:  resolveRelativeURL(e.BaseURL, e.URL),
-			Prefix: pre,
-			Style:  style,
-		}
-		err := el.Render(w, ctx)
-		if err != nil {
-			return err
+		u, err := url.Parse(e.URL)
+		if err == nil &&
+			"#"+u.Fragment != e.URL { // if the URL only consists of an anchor, ignore it
+			pre := " "
+			style := ctx.options.Styles.Link
+			if !textRendered {
+				pre = ""
+				style.BlockPrefix = ""
+				style.BlockSuffix = ""
+			}
+
+			el := &BaseElement{
+				Token:  resolveRelativeURL(e.BaseURL, e.URL),
+				Prefix: pre,
+				Style:  style,
+			}
+			err := el.Render(w, ctx)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
