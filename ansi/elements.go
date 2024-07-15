@@ -17,6 +17,10 @@ type ElementRenderer interface {
 	Render(w io.Writer, ctx RenderContext) error
 }
 
+type StyleOverriderElementRenderer interface {
+	StyleOverrideRender(w io.Writer, ctx RenderContext, style StylePrimitive) error
+}
+
 // ElementFinisher is called when leaving a markdown node.
 type ElementFinisher interface {
 	Finish(w io.Writer, ctx RenderContext) error
@@ -415,22 +419,4 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		fmt.Println("Warning: unhandled element", node.Kind().String())
 		return Element{}
 	}
-}
-
-func textFromChildren(node ast.Node, source []byte) string {
-	var s string
-	for c := node.FirstChild(); c != nil; c = c.NextSibling() {
-		if c.Kind() == ast.KindText {
-			cn := c.(*ast.Text)
-			s += string(cn.Segment.Value(source))
-
-			if cn.HardLineBreak() || (cn.SoftLineBreak()) {
-				s += "\n"
-			}
-		} else {
-			s += string(c.Text(source))
-		}
-	}
-
-	return s
 }

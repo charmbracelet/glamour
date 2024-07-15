@@ -15,16 +15,23 @@ type LinkElement struct {
 
 func (e *LinkElement) Render(w io.Writer, ctx RenderContext) error {
 	for _, child := range e.Children {
-		var b bytes.Buffer
-		if err := child.Render(&b, ctx); err != nil {
-			return err
-		}
-		el := &BaseElement{
-			Token: b.String(),
-			Style: ctx.options.Styles.LinkText,
-		}
-		if err := el.Render(w, ctx); err != nil {
-			return err
+		if r, ok := child.(StyleOverriderElementRenderer); ok {
+			st := ctx.options.Styles.LinkText
+			if err := r.StyleOverrideRender(w, ctx, st); err != nil {
+				return err
+			}
+		} else {
+			var b bytes.Buffer
+			if err := child.Render(&b, ctx); err != nil {
+				return err
+			}
+			el := &BaseElement{
+				Token: b.String(),
+				Style: ctx.options.Styles.LinkText,
+			}
+			if err := el.Render(w, ctx); err != nil {
+				return err
+			}
 		}
 	}
 

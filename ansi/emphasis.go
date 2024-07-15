@@ -1,8 +1,6 @@
 package ansi
 
 import (
-	"bytes"
-	"html"
 	"io"
 )
 
@@ -18,18 +16,17 @@ func (e *EmphasisElement) Render(w io.Writer, ctx RenderContext) error {
 		style = ctx.options.Styles.Strong
 	}
 
-	var b bytes.Buffer
 	for _, child := range e.Children {
-		if err := child.Render(&b, ctx); err != nil {
-			return err
+		if r, ok := child.(StyleOverriderElementRenderer); ok {
+			if err := r.StyleOverrideRender(w, ctx, style); err != nil {
+				return err
+			}
+		} else {
+			if err := child.Render(w, ctx); err != nil {
+				return err
+			}
 		}
 	}
 
-	el := Element{
-		Renderer: &BaseElement{
-			Token: html.UnescapeString(b.String()),
-			Style: style,
-		},
-	}
-	return el.Renderer.Render(w, ctx)
+	return nil
 }

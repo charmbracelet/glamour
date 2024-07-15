@@ -18,12 +18,10 @@ type TableElement struct {
 }
 
 // A TableRowElement is used to render a single row in a table.
-type TableRowElement struct {
-}
+type TableRowElement struct{}
 
 // A TableHeadElement is used to render a table's head element.
-type TableHeadElement struct {
-}
+type TableHeadElement struct{}
 
 // A TableCellElement is used to render a single cell in a row.
 type TableCellElement struct {
