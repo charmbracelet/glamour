@@ -24,7 +24,7 @@ func (e *EmphasisElement) StyleOverrideRender(w io.Writer, ctx RenderContext, st
 	if e.Level > 1 {
 		base = ctx.options.Styles.Strong
 	}
-	return e.doRender(w, ctx, cascadeStylePrimitive(base, style, false))
+	return e.doRender(w, ctx, cascadeStylePrimitives(base, style))
 }
 
 func (e *EmphasisElement) doRender(w io.Writer, ctx RenderContext, style StylePrimitive) error {

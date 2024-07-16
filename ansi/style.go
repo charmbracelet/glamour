@@ -140,9 +140,16 @@ type StyleConfig struct {
 
 func cascadeStyles(s ...StyleBlock) StyleBlock {
 	var r StyleBlock
-
 	for _, v := range s {
 		r = cascadeStyle(r, v, true)
+	}
+	return r
+}
+
+func cascadeStylePrimitives(s ...StylePrimitive) StylePrimitive {
+	var r StylePrimitive
+	for _, v := range s {
+		r = cascadeStylePrimitive(r, v, true)
 	}
 	return r
 }

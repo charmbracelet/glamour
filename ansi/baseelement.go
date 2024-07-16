@@ -80,46 +80,35 @@ func renderText(w io.Writer, p termenv.Profile, rules StylePrimitive, s string) 
 
 func (e *BaseElement) StyleOverrideRender(w io.Writer, ctx RenderContext, style StylePrimitive) error {
 	bs := ctx.blockStack
-	st1 := cascadeStyles(bs.Current().Style, StyleBlock{
-		StylePrimitive: style,
-	})
-	st2 := cascadeStyles(
-		StyleBlock{
-			StylePrimitive: bs.With(e.Style),
-		},
-		StyleBlock{
-			StylePrimitive: style,
-		},
-	)
+	st1 := cascadeStylePrimitives(bs.Current().Style.StylePrimitive, style)
+	st2 := cascadeStylePrimitives(bs.With(e.Style), style)
 
 	return e.doRender(w, ctx.options.ColorProfile, st1, st2)
 }
 
 func (e *BaseElement) Render(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
-	st1 := bs.Current().Style
-	st2 := StyleBlock{
-		StylePrimitive: bs.With(e.Style),
-	}
+	st1 := bs.Current().Style.StylePrimitive
+	st2 := bs.With(e.Style)
 	return e.doRender(w, ctx.options.ColorProfile, st1, st2)
 }
 
-func (e *BaseElement) doRender(w io.Writer, p termenv.Profile, st1, st2 StyleBlock) error {
-	renderText(w, p, st1.StylePrimitive, e.Prefix)
+func (e *BaseElement) doRender(w io.Writer, p termenv.Profile, st1, st2 StylePrimitive) error {
+	renderText(w, p, st1, e.Prefix)
 	defer func() {
-		renderText(w, p, st1.StylePrimitive, e.Suffix)
+		renderText(w, p, st1, e.Suffix)
 	}()
 
 	// render unstyled prefix/suffix
-	renderText(w, p, st1.StylePrimitive, st2.BlockPrefix)
+	renderText(w, p, st1, st2.BlockPrefix)
 	defer func() {
-		renderText(w, p, st1.StylePrimitive, st2.BlockSuffix)
+		renderText(w, p, st1, st2.BlockSuffix)
 	}()
 
 	// render styled prefix/suffix
-	renderText(w, p, st2.StylePrimitive, st2.Prefix)
+	renderText(w, p, st2, st2.Prefix)
 	defer func() {
-		renderText(w, p, st2.StylePrimitive, st2.Suffix)
+		renderText(w, p, st2, st2.Suffix)
 	}()
 
 	s := e.Token
@@ -130,6 +119,6 @@ func (e *BaseElement) doRender(w io.Writer, p termenv.Profile, st1, st2 StyleBlo
 			return err
 		}
 	}
-	renderText(w, p, st2.StylePrimitive, s)
+	renderText(w, p, st2, s)
 	return nil
 }
