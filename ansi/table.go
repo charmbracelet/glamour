@@ -1,8 +1,10 @@
 package ansi
 
 import (
+	"bytes"
 	"io"
 
+	"github.com/charmbracelet/x/ansi"
 	"github.com/muesli/reflow/indent"
 	"github.com/olekukonko/tablewriter"
 	astext "github.com/yuin/goldmark/extension/ast"
@@ -25,8 +27,8 @@ type TableHeadElement struct{}
 
 // A TableCellElement is used to render a single cell in a row.
 type TableCellElement struct {
-	Text string
-	Head bool
+	Children []ElementRenderer
+	Head     bool
 }
 
 func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
@@ -113,10 +115,17 @@ func (e *TableHeadElement) Finish(w io.Writer, ctx RenderContext) error {
 }
 
 func (e *TableCellElement) Render(w io.Writer, ctx RenderContext) error {
+	var b bytes.Buffer
+	for _, child := range e.Children {
+		if err := child.Render(&b, ctx); err != nil {
+			return err
+		}
+	}
+
 	if e.Head {
-		ctx.table.header = append(ctx.table.header, e.Text)
+		ctx.table.header = append(ctx.table.header, ansi.Strip(b.String()))
 	} else {
-		ctx.table.cell = append(ctx.table.cell, e.Text)
+		ctx.table.cell = append(ctx.table.cell, ansi.Strip(b.String()))
 	}
 
 	return nil
