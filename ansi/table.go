@@ -122,6 +122,7 @@ func (e *TableCellElement) Render(w io.Writer, ctx RenderContext) error {
 		}
 	}
 
+	// TODO: figure this out
 	if e.Head {
 		ctx.table.header = append(ctx.table.header, ansi.Strip(b.String()))
 	} else {
