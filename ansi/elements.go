@@ -233,15 +233,22 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 	case ast.KindAutoLink:
 		n := node.(*ast.AutoLink)
 		u := string(n.URL(source))
-		if n.AutoLinkType == ast.AutoLinkEmail && !strings.HasPrefix(strings.ToLower(u), "mailto:") {
-			u = "mailto:" + u
-		}
 
 		var children []ElementRenderer
 		nn := n.FirstChild()
 		for nn != nil {
 			children = append(children, tr.NewElement(nn, source).Renderer)
 			nn = nn.NextSibling()
+		}
+
+		if len(children) == 0 {
+			children = append(children, &BaseElement{
+				Token: u,
+			})
+		}
+
+		if n.AutoLinkType == ast.AutoLinkEmail && !strings.HasPrefix(strings.ToLower(u), "mailto:") {
+			u = "mailto:" + u
 		}
 
 		return Element{
