@@ -119,6 +119,28 @@ func (e *BaseElement) doRender(w io.Writer, p termenv.Profile, st1, st2 StylePri
 			return err
 		}
 	}
-	renderText(w, p, st2, s)
+	renderText(w, p, st2, escapeReplacer.Replace(s))
 	return nil
 }
+
+// https://www.markdownguide.org/basic-syntax/#characters-you-can-escape
+var escapeReplacer = strings.NewReplacer(
+	"\\\\", "\\",
+	"\\`", "`",
+	"\\*", "*",
+	"\\_", "_",
+	"\\{", "{",
+	"\\}", "}",
+	"\\[", "[",
+	"\\]", "]",
+	"\\<", "<",
+	"\\>", ">",
+	"\\(", "(",
+	"\\)", ")",
+	"\\#", "#",
+	"\\+", "+",
+	"\\-", "-",
+	"\\.", ".",
+	"\\!", "!",
+	"\\|", "|",
+)
