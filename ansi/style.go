@@ -147,7 +147,7 @@ func cascadeStyles(s ...StyleBlock) StyleBlock {
 	return r
 }
 
-func cascadeStyle(parent StyleBlock, child StyleBlock, toBlock bool) StyleBlock {
+func cascadeStylePrimitive(parent, child StylePrimitive, toBlock bool) StylePrimitive {
 	s := child
 
 	s.Color = parent.Color
@@ -166,8 +166,6 @@ func cascadeStyle(parent StyleBlock, child StyleBlock, toBlock bool) StyleBlock 
 	s.Blink = parent.Blink
 
 	if toBlock {
-		s.Indent = parent.Indent
-		s.Margin = parent.Margin
 		s.BlockPrefix = parent.BlockPrefix
 		s.BlockSuffix = parent.BlockSuffix
 		s.Prefix = parent.Prefix
@@ -179,12 +177,6 @@ func cascadeStyle(parent StyleBlock, child StyleBlock, toBlock bool) StyleBlock 
 	}
 	if child.BackgroundColor != nil {
 		s.BackgroundColor = child.BackgroundColor
-	}
-	if child.Indent != nil {
-		s.Indent = child.Indent
-	}
-	if child.Margin != nil {
-		s.Margin = child.Margin
 	}
 	if child.Underline != nil {
 		s.Underline = child.Underline
@@ -236,6 +228,22 @@ func cascadeStyle(parent StyleBlock, child StyleBlock, toBlock bool) StyleBlock 
 	}
 	if child.Format != "" {
 		s.Format = child.Format
+	}
+
+	return s
+}
+
+func cascadeStyle(parent StyleBlock, child StyleBlock, toBlock bool) StyleBlock {
+	s := child
+	s.StylePrimitive = cascadeStylePrimitive(parent.StylePrimitive, child.StylePrimitive, toBlock)
+
+	if toBlock {
+		s.Indent = parent.Indent
+		s.Margin = parent.Margin
+	}
+
+	if child.Indent != nil {
+		s.Indent = child.Indent
 	}
 
 	return s

@@ -181,12 +181,10 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 	case ast.KindEmphasis:
 		n := node.(*ast.Emphasis)
 		var children []ElementRenderer
-		if n.HasChildren() {
-			nn := n.FirstChild()
-			for nn != nil {
-				children = append(children, tr.NewElement(nn, source).Renderer)
-				nn = nn.NextSibling()
-			}
+		nn := n.FirstChild()
+		for nn != nil {
+			children = append(children, tr.NewElement(nn, source).Renderer)
+			nn = nn.NextSibling()
 		}
 		return Element{
 			Renderer: &EmphasisElement{
@@ -220,12 +218,10 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 	case ast.KindLink:
 		n := node.(*ast.Link)
 		var children []ElementRenderer
-		if n.HasChildren() {
-			nn := n.FirstChild()
-			for nn != nil {
-				children = append(children, tr.NewElement(nn, source).Renderer)
-				nn = nn.NextSibling()
-			}
+		nn := n.FirstChild()
+		for nn != nil {
+			children = append(children, tr.NewElement(nn, source).Renderer)
+			nn = nn.NextSibling()
 		}
 		return Element{
 			Renderer: &LinkElement{
@@ -242,12 +238,10 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		}
 
 		var children []ElementRenderer
-		if n.HasChildren() {
-			nn := n.FirstChild()
-			for nn != nil {
-				children = append(children, tr.NewElement(nn, source).Renderer)
-				nn = nn.NextSibling()
-			}
+		nn := n.FirstChild()
+		for nn != nil {
+			children = append(children, tr.NewElement(nn, source).Renderer)
+			nn = nn.NextSibling()
 		}
 
 		return Element{
@@ -324,23 +318,17 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		}
 
 	case astext.KindTableCell:
-		s := ""
-		n := node.FirstChild()
-		for n != nil {
-			switch t := n.(type) {
-			case *ast.AutoLink:
-				s += string(t.Label(source))
-			default:
-				s += string(n.Text(source))
-			}
-
-			n = n.NextSibling()
+		n := node.(*astext.TableCell)
+		var children []ElementRenderer
+		nn := n.FirstChild()
+		for nn != nil {
+			children = append(children, tr.NewElement(nn, source).Renderer)
+			nn = nn.NextSibling()
 		}
-
 		return Element{
 			Renderer: &TableCellElement{
-				Text: s,
-				Head: node.Parent().Kind() == astext.KindTableHeader,
+				Children: children,
+				Head:     node.Parent().Kind() == astext.KindTableHeader,
 			},
 		}
 
