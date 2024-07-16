@@ -5,6 +5,7 @@ go 1.21
 require (
 	github.com/alecthomas/chroma/v2 v2.14.0
 	github.com/charmbracelet/x/ansi v0.1.4
+	github.com/charmbracelet/x/exp/golden v0.0.0-20240715153702-9ba8adf781c4
 	github.com/microcosm-cc/bluemonday v1.0.27
 	github.com/muesli/reflow v0.3.0
 	github.com/muesli/termenv v0.15.3-0.20240618155329-98d742f6907a
@@ -15,6 +16,7 @@ require (
 
 require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
+	github.com/aymanbagabas/go-udiff v0.2.0 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/dlclark/regexp2 v1.11.0 // indirect
 	github.com/gorilla/css v1.0.1 // indirect
