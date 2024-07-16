@@ -375,13 +375,13 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 			Newline: true,
 		}
 		return Element{
-			Entering: "\n",
 			Renderer: e,
 			Finisher: e,
 		}
 
 	case astext.KindDefinitionTerm:
 		return Element{
+			Entering: "\n",
 			Renderer: &BaseElement{
 				Style: ctx.options.Styles.DefinitionTerm,
 			},
@@ -389,6 +389,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 
 	case astext.KindDefinitionDescription:
 		return Element{
+			Exiting: "\n",
 			Renderer: &BaseElement{
 				Style: ctx.options.Styles.DefinitionDescription,
 			},
