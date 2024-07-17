@@ -30,12 +30,6 @@ type TableCellElement struct {
 	Head     bool
 }
 
-// TODO: move this to the styles thingy?
-var (
-	cellStyle   = lipgloss.NewStyle().Padding(0, 1)
-	headerStyle = lipgloss.NewStyle().Padding(0, 1).Bold(true)
-)
-
 func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 
@@ -57,11 +51,17 @@ func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
 
 	renderText(iw, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, rules.BlockPrefix)
 	renderText(iw, ctx.options.ColorProfile, style, rules.Prefix)
+	width := int(ctx.blockStack.Width(ctx))
 	ctx.table.lipgloss = table.New().
+		Width(width).
 		StyleFunc(func(row, col int) lipgloss.Style {
-			st := cellStyle
+			st := lipgloss.NewStyle().
+				MaxWidth(width)
+			if m := ctx.options.Styles.Table.Margin; m != nil {
+				st = st.Margin(0, int(*m))
+			}
 			if row == 0 {
-				st = headerStyle
+				st = st.Bold(true).Width(20)
 			}
 
 			switch e.table.Alignments[col] {
@@ -74,8 +74,7 @@ func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
 			}
 
 			return st
-		}).
-		Width(int(ctx.blockStack.Width(ctx)))
+		})
 
 	return nil
 }
@@ -100,9 +99,33 @@ func (e *TableElement) setBorders(ctx RenderContext) {
 	ctx.table.lipgloss.BorderBottom(false)
 }
 
-func (e *TableElement) Finish(w io.Writer, ctx RenderContext) error {
+func (e *TableElement) setStyles(ctx RenderContext) {
+	ctx.table.lipgloss.StyleFunc(func(row, col int) lipgloss.Style {
+		st := lipgloss.NewStyle()
+		if m := ctx.options.Styles.Table.Margin; m != nil {
+			st = st.Padding(0, int(*m))
+		}
+		if row == 0 {
+			st = st.Bold(true)
+		}
+
+		switch e.table.Alignments[col] {
+		case astext.AlignCenter:
+			st = st.Align(lipgloss.Center)
+		case astext.AlignRight:
+			st = st.Align(lipgloss.Right)
+		case astext.AlignLeft:
+			st = st.Align(lipgloss.Left)
+		}
+
+		return st
+	})
+}
+
+func (e *TableElement) Finish(_ io.Writer, ctx RenderContext) error {
 	rules := ctx.options.Styles.Table
 
+	e.setStyles(ctx)
 	e.setBorders(ctx)
 
 	ow := ctx.blockStack.Current().Block
@@ -116,7 +139,7 @@ func (e *TableElement) Finish(w io.Writer, ctx RenderContext) error {
 	return nil
 }
 
-func (e *TableRowElement) Finish(w io.Writer, ctx RenderContext) error {
+func (e *TableRowElement) Finish(_ io.Writer, ctx RenderContext) error {
 	if ctx.table.lipgloss == nil {
 		return nil
 	}
@@ -126,7 +149,7 @@ func (e *TableRowElement) Finish(w io.Writer, ctx RenderContext) error {
 	return nil
 }
 
-func (e *TableHeadElement) Finish(w io.Writer, ctx RenderContext) error {
+func (e *TableHeadElement) Finish(_ io.Writer, ctx RenderContext) error {
 	if ctx.table.lipgloss == nil {
 		return nil
 	}
@@ -136,7 +159,7 @@ func (e *TableHeadElement) Finish(w io.Writer, ctx RenderContext) error {
 	return nil
 }
 
-func (e *TableCellElement) Render(w io.Writer, ctx RenderContext) error {
+func (e *TableCellElement) Render(_ io.Writer, ctx RenderContext) error {
 	var b bytes.Buffer
 	style := ctx.options.Styles.Table.StylePrimitive
 	for _, child := range e.Children {

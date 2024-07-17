@@ -304,12 +304,13 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		}
 
 	case ast.KindCodeSpan:
-		e := &BaseElement{
-			Token: string(node.Text(source)),
-			Style: cascadeStyle(ctx.blockStack.Current().Style, ctx.options.Styles.Code, false).StylePrimitive,
-		}
+		n := node.(*ast.CodeSpan)
+		s := string(n.Text(source))
 		return Element{
-			Renderer: e,
+			Renderer: &CodeSpanElement{
+				Text:  html.UnescapeString(s),
+				Style: cascadeStyle(ctx.blockStack.Current().Style, ctx.options.Styles.Code, false).StylePrimitive,
+			},
 		}
 
 	// Tables
@@ -320,6 +321,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		}
 		return Element{
 			Entering: "\n",
+			Exiting:  "\n",
 			Renderer: te,
 			Finisher: te,
 		}
@@ -332,11 +334,13 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 			children = append(children, tr.NewElement(nn, source).Renderer)
 			nn = nn.NextSibling()
 		}
+
+		r := &TableCellElement{
+			Children: children,
+			Head:     node.Parent().Kind() == astext.KindTableHeader,
+		}
 		return Element{
-			Renderer: &TableCellElement{
-				Children: children,
-				Head:     node.Parent().Kind() == astext.KindTableHeader,
-			},
+			Renderer: r,
 		}
 
 	case astext.KindTableHeader:

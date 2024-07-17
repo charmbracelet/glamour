@@ -6,9 +6,11 @@ import (
 	"github.com/charmbracelet/glamour/ansi"
 )
 
-const defaultListIndent = 2
-const defaultListLevelIndent = 4
-const defaultMargin = 2
+const (
+	defaultListIndent      = 2
+	defaultListLevelIndent = 4
+	defaultMargin          = 2
+)
 
 var (
 	// ASCIIStyleConfig uses only ASCII characters.
