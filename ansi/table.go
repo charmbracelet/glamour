@@ -145,14 +145,15 @@ func (e *TableCellElement) Render(w io.Writer, ctx RenderContext) error {
 				return err
 			}
 		} else {
-			if err := child.Render(&b, ctx); err != nil {
+			var bb bytes.Buffer
+			if err := child.Render(&bb, ctx); err != nil {
 				return err
 			}
 			el := &BaseElement{
-				Token: b.String(),
+				Token: bb.String(),
 				Style: style,
 			}
-			if err := el.Render(w, ctx); err != nil {
+			if err := el.Render(&b, ctx); err != nil {
 				return err
 			}
 		}
