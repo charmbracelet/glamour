@@ -304,14 +304,12 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		}
 
 	case ast.KindCodeSpan:
-		// n := node.(*ast.CodeSpan)
-		e := &BlockElement{
-			Block: &bytes.Buffer{},
-			Style: cascadeStyle(ctx.blockStack.Current().Style, ctx.options.Styles.Code, false),
+		e := &BaseElement{
+			Token: string(node.Text(source)),
+			Style: cascadeStyle(ctx.blockStack.Current().Style, ctx.options.Styles.Code, false).StylePrimitive,
 		}
 		return Element{
 			Renderer: e,
-			Finisher: e,
 		}
 
 	// Tables
