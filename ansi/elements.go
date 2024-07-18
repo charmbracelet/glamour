@@ -67,8 +67,11 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 
 	// Paragraph
 	case ast.KindParagraph:
-		if node.Parent() != nil && node.Parent().Kind() == ast.KindListItem {
-			return Element{}
+		if node.Parent() != nil {
+			kind := node.Parent().Kind()
+			if kind == ast.KindListItem {
+				return Element{}
+			}
 		}
 		return Element{
 			Renderer: &ParagraphElement{

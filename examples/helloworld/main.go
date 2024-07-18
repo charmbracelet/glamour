@@ -3,15 +3,18 @@ package main
 import (
 	"fmt"
 
-	_ "embed"
-
 	"github.com/charmbracelet/glamour"
 )
 
-//go:embed input.md
-var input []byte
-
 func main() {
-	out, _ := glamour.Render(string(input), "dark")
+	in := `# Hello World
+
+This is a simple example of Markdown rendering with Glamour!
+Check out the [other examples](https://github.com/charmbracelet/glamour/tree/master/examples) too.
+
+Bye!
+`
+
+	out, _ := glamour.Render(in, "dark")
 	fmt.Print(out)
 }
