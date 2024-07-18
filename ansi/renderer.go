@@ -136,10 +136,6 @@ func (r *ANSIRenderer) renderNode(w util.BufWriter, source []byte, node ast.Node
 }
 
 func isChild(node ast.Node) bool {
-	if node.Parent() != nil && node.Parent().Kind() == ast.KindBlockquote {
-		// skip paragraph within blockquote to avoid reflowing text
-		return true
-	}
 	for n := node.Parent(); n != nil; n = n.Parent() {
 		// These types are already rendered by their parent
 		switch n.Kind() {

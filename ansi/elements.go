@@ -80,10 +80,9 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 	// Blockquote
 	case ast.KindBlockquote:
 		e := &BlockElement{
-			Block:   &bytes.Buffer{},
-			Style:   cascadeStyle(ctx.blockStack.Current().Style, ctx.options.Styles.BlockQuote, false),
-			Margin:  true,
-			Newline: true,
+			Block:  &bytes.Buffer{},
+			Style:  cascadeStyle(ctx.blockStack.Current().Style, ctx.options.Styles.BlockQuote, false),
+			Margin: true,
 		}
 		return Element{
 			Entering: "\n",
