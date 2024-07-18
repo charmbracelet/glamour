@@ -61,7 +61,7 @@ func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
 				st = st.Margin(0, int(*m))
 			}
 			if row == 0 {
-				st = st.Bold(true).Width(20)
+				st = st.Bold(true)
 			}
 
 			switch e.table.Alignments[col] {
