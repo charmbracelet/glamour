@@ -52,30 +52,34 @@ func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
 	renderText(iw, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, rules.BlockPrefix)
 	renderText(iw, ctx.options.ColorProfile, style, rules.Prefix)
 	width := int(ctx.blockStack.Width(ctx))
-	ctx.table.lipgloss = table.New().
-		Width(width).
-		StyleFunc(func(row, col int) lipgloss.Style {
-			st := lipgloss.NewStyle()
-			if m := ctx.options.Styles.Table.Margin; m != nil {
-				st = st.Margin(0, int(*m))
-			}
-			if row == 0 {
-				st = st.Bold(true)
-			}
-
-			switch e.table.Alignments[col] {
-			case astext.AlignLeft:
-				st = st.Align(lipgloss.Left)
-			case astext.AlignCenter:
-				st = st.Align(lipgloss.Center)
-			case astext.AlignRight:
-				st = st.Align(lipgloss.Right)
-			}
-
-			return st
-		})
+	ctx.table.lipgloss = table.New().Width(width)
 
 	return nil
+}
+
+func (e *TableElement) setStyles(ctx RenderContext) {
+	ctx.table.lipgloss = ctx.table.lipgloss.StyleFunc(func(row, col int) lipgloss.Style {
+		st := lipgloss.NewStyle()
+		if m := ctx.options.Styles.Table.Margin; m != nil {
+			st = st.Padding(0, int(*m))
+		} else {
+			st = st.Padding(0, 1)
+		}
+		if row == 0 {
+			st = st.Bold(true)
+		}
+
+		switch e.table.Alignments[col] {
+		case astext.AlignLeft:
+			st = st.Align(lipgloss.Left)
+		case astext.AlignCenter:
+			st = st.Align(lipgloss.Center)
+		case astext.AlignRight:
+			st = st.Align(lipgloss.Right)
+		}
+
+		return st
+	})
 }
 
 func (e *TableElement) setBorders(ctx RenderContext) {
@@ -101,6 +105,7 @@ func (e *TableElement) setBorders(ctx RenderContext) {
 func (e *TableElement) Finish(_ io.Writer, ctx RenderContext) error {
 	rules := ctx.options.Styles.Table
 
+	e.setStyles(ctx)
 	e.setBorders(ctx)
 
 	ow := ctx.blockStack.Current().Block
