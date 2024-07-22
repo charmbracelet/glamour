@@ -55,8 +55,7 @@ func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
 	ctx.table.lipgloss = table.New().
 		Width(width).
 		StyleFunc(func(row, col int) lipgloss.Style {
-			st := lipgloss.NewStyle().
-				MaxWidth(width)
+			st := lipgloss.NewStyle()
 			if m := ctx.options.Styles.Table.Margin; m != nil {
 				st = st.Margin(0, int(*m))
 			}
@@ -99,33 +98,9 @@ func (e *TableElement) setBorders(ctx RenderContext) {
 	ctx.table.lipgloss.BorderBottom(false)
 }
 
-func (e *TableElement) setStyles(ctx RenderContext) {
-	ctx.table.lipgloss.StyleFunc(func(row, col int) lipgloss.Style {
-		st := lipgloss.NewStyle()
-		if m := ctx.options.Styles.Table.Margin; m != nil {
-			st = st.Padding(0, int(*m))
-		}
-		if row == 0 {
-			st = st.Bold(true)
-		}
-
-		switch e.table.Alignments[col] {
-		case astext.AlignCenter:
-			st = st.Align(lipgloss.Center)
-		case astext.AlignRight:
-			st = st.Align(lipgloss.Right)
-		case astext.AlignLeft:
-			st = st.Align(lipgloss.Left)
-		}
-
-		return st
-	})
-}
-
 func (e *TableElement) Finish(_ io.Writer, ctx RenderContext) error {
 	rules := ctx.options.Styles.Table
 
-	e.setStyles(ctx)
 	e.setBorders(ctx)
 
 	ow := ctx.blockStack.Current().Block
