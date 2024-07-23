@@ -59,11 +59,9 @@ func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
 
 func (e *TableElement) setStyles(ctx RenderContext) {
 	ctx.table.lipgloss = ctx.table.lipgloss.StyleFunc(func(row, col int) lipgloss.Style {
-		st := lipgloss.NewStyle()
+		st := lipgloss.NewStyle().Inline(true)
 		if m := ctx.options.Styles.Table.Margin; m != nil {
 			st = st.Padding(0, int(*m))
-		} else {
-			st = st.Padding(0, 1)
 		}
 		if row == 0 {
 			st = st.Bold(true)
@@ -71,11 +69,11 @@ func (e *TableElement) setStyles(ctx RenderContext) {
 
 		switch e.table.Alignments[col] {
 		case astext.AlignLeft:
-			st = st.Align(lipgloss.Left)
+			st = st.Align(lipgloss.Left).PaddingRight(0)
 		case astext.AlignCenter:
 			st = st.Align(lipgloss.Center)
 		case astext.AlignRight:
-			st = st.Align(lipgloss.Right)
+			st = st.Align(lipgloss.Right).PaddingLeft(0)
 		}
 
 		return st
