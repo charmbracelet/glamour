@@ -6,9 +6,11 @@ import (
 	"github.com/charmbracelet/glamour/ansi"
 )
 
-const defaultListIndent = 2
-const defaultListLevelIndent = 4
-const defaultMargin = 2
+const (
+	defaultListIndent      = 2
+	defaultListLevelIndent = 4
+	defaultMargin          = 2
+)
 
 var (
 	// ASCIIStyleConfig uses only ASCII characters.
@@ -108,11 +110,7 @@ var (
 				Margin: uintPtr(defaultMargin),
 			},
 		},
-		Table: ansi.StyleTable{
-			CenterSeparator: stringPtr("+"),
-			ColumnSeparator: stringPtr("|"),
-			RowSeparator:    stringPtr("-"),
-		},
+		Table: ansi.StyleTable{},
 		DefinitionDescription: ansi.StylePrimitive{
 			BlockPrefix: "\n* ",
 		},
@@ -322,9 +320,6 @@ var (
 			StyleBlock: ansi.StyleBlock{
 				StylePrimitive: ansi.StylePrimitive{},
 			},
-			CenterSeparator: stringPtr("┼"),
-			ColumnSeparator: stringPtr("│"),
-			RowSeparator:    stringPtr("─"),
 		},
 		DefinitionDescription: ansi.StylePrimitive{
 			BlockPrefix: "\n🠶 ",
@@ -534,9 +529,6 @@ var (
 			StyleBlock: ansi.StyleBlock{
 				StylePrimitive: ansi.StylePrimitive{},
 			},
-			CenterSeparator: stringPtr("┼"),
-			ColumnSeparator: stringPtr("│"),
-			RowSeparator:    stringPtr("─"),
 		},
 		DefinitionDescription: ansi.StylePrimitive{
 			BlockPrefix: "\n🠶 ",
@@ -640,11 +632,7 @@ var (
 				Suffix:          " ",
 			},
 		},
-		Table: ansi.StyleTable{
-			CenterSeparator: stringPtr("┼"),
-			ColumnSeparator: stringPtr("│"),
-			RowSeparator:    stringPtr("─"),
-		},
+		Table:          ansi.StyleTable{},
 		DefinitionList: ansi.StyleBlock{},
 		DefinitionTerm: ansi.StylePrimitive{},
 		DefinitionDescription: ansi.StylePrimitive{

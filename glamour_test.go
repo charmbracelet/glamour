@@ -7,13 +7,11 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/charmbracelet/x/exp/golden"
 )
 
-const (
-	generate = false
-	markdown = "testdata/readme.markdown.in"
-	testFile = "testdata/readme.test"
-)
+const markdown = "testdata/readme.markdown.in"
 
 func TestTermRendererWriter(t *testing.T) {
 	r, err := NewTermRenderer(
@@ -42,25 +40,7 @@ func TestTermRendererWriter(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// generate
-	if generate {
-		err := os.WriteFile(testFile, b, 0o644)
-		if err != nil {
-			t.Fatal(err)
-		}
-		return
-	}
-
-	// verify
-	td, err := os.ReadFile(testFile)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if !bytes.Equal(td, b) {
-		t.Errorf("Rendered output doesn't match!\nExpected: `\n%s`\nGot: `\n%s`\n",
-			string(td), b)
-	}
+	golden.RequireEqual(t, b)
 }
 
 func TestTermRenderer(t *testing.T) {
@@ -81,16 +61,7 @@ func TestTermRenderer(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// verify
-	td, err := os.ReadFile(testFile)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if !bytes.Equal(td, []byte(b)) {
-		t.Errorf("Rendered output doesn't match!\nExpected: `\n%s`\nGot: `\n%s`\n",
-			string(td), b)
-	}
+	golden.RequireEqual(t, []byte(b))
 }
 
 func TestWithEmoji(t *testing.T) {
@@ -133,16 +104,7 @@ func TestWithPreservedNewLines(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// verify
-	td, err := os.ReadFile("testdata/preserved_newline.test")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if !bytes.Equal(td, []byte(b)) {
-		t.Errorf("Rendered output doesn't match!\nExpected: `\n%s`\nGot: `\n%s`\n",
-			string(td), b)
-	}
+	golden.RequireEqual(t, []byte(b))
 }
 
 func TestStyles(t *testing.T) {
@@ -219,16 +181,7 @@ func TestRenderHelpers(t *testing.T) {
 		t.Error(err)
 	}
 
-	// verify
-	td, err := os.ReadFile(testFile)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if b != string(td) {
-		t.Errorf("Rendered output doesn't match!\nExpected: `\n%s`\nGot: `\n%s`\n",
-			string(td), b)
-	}
+	golden.RequireEqual(t, []byte(b))
 }
 
 func TestCapitalization(t *testing.T) {
@@ -250,15 +203,7 @@ func TestCapitalization(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// expected outcome
-	td, err := os.ReadFile("testdata/capitalization.test")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if string(td) != b {
-		t.Errorf("Rendered output doesn't match!\nExpected: `\n%s`\nGot: `\n%s`\n", td, b)
-	}
+	golden.RequireEqual(t, []byte(b))
 }
 
 func FuzzData(f *testing.F) {

@@ -79,11 +79,7 @@
     "background_color": "236"
   },
   "code_block": {},
-  "table": {
-    "center_separator": "┼",
-    "column_separator": "│",
-    "row_separator": "─"
-  },
+  "table": {},
   "definition_list": {},
   "definition_term": {},
   "definition_description": {
