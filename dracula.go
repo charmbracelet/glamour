@@ -208,9 +208,6 @@ var DraculaStyleConfig = ansi.StyleConfig{
 		StyleBlock: ansi.StyleBlock{
 			StylePrimitive: ansi.StylePrimitive{},
 		},
-		CenterSeparator: stringPtr("┼"),
-		ColumnSeparator: stringPtr("│"),
-		RowSeparator:    stringPtr("─"),
 	},
 	DefinitionDescription: ansi.StylePrimitive{
 		BlockPrefix: "\n🠶 ",
