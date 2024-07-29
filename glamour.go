@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 
+	ext "github.com/charmbracelet/glamour/extension"
 	"github.com/muesli/termenv"
 	"github.com/yuin/goldmark"
 	emoji "github.com/yuin/goldmark-emoji"
@@ -39,10 +40,11 @@ type TermRendererOption func(*TermRenderer) error
 // TermRenderer can be used to render markdown content, posing a depth of
 // customization and styles to fit your needs.
 type TermRenderer struct {
-	md          goldmark.Markdown
-	ansiOptions ansi.Options
-	buf         bytes.Buffer
-	renderBuf   bytes.Buffer
+	md                 goldmark.Markdown
+	ansiOptions        ansi.Options
+	buf                bytes.Buffer
+	renderBuf          bytes.Buffer
+	frontMatterHandler ext.FrontmatterResultConsumer
 }
 
 // Render initializes a new TermRenderer and renders a markdown with a specific
@@ -71,6 +73,12 @@ func RenderBytes(in []byte, stylePath string) ([]byte, error) {
 	return r.RenderBytes(in)
 }
 
+func (tr *TermRenderer) HandleFrontmatter(frontmatter map[string]interface{}) {
+	if tr.frontMatterHandler != nil {
+		tr.frontMatterHandler.HandleFrontmatter(frontmatter)
+	}
+}
+
 // NewTermRenderer returns a new TermRenderer the given options.
 func NewTermRenderer(options ...TermRendererOption) (*TermRenderer, error) {
 	tr := &TermRenderer{
@@ -78,6 +86,7 @@ func NewTermRenderer(options ...TermRendererOption) (*TermRenderer, error) {
 			goldmark.WithExtensions(
 				extension.GFM,
 				extension.DefinitionList,
+				ext.DefaultFrontMatterParser,
 			),
 			goldmark.WithParserOptions(
 				parser.WithAutoHeadingID(),
@@ -88,6 +97,8 @@ func NewTermRenderer(options ...TermRendererOption) (*TermRenderer, error) {
 			ColorProfile: termenv.TrueColor,
 		},
 	}
+	// register Termrenderer as Callback for Frontmatter
+	ext.DefaultFrontMatterParser.Handler = tr
 	for _, o := range options {
 		if err := o(tr); err != nil {
 			return nil, err
@@ -108,6 +119,20 @@ func NewTermRenderer(options ...TermRendererOption) (*TermRenderer, error) {
 func WithBaseURL(baseURL string) TermRendererOption {
 	return func(tr *TermRenderer) error {
 		tr.ansiOptions.BaseURL = baseURL
+		return nil
+	}
+}
+
+func WithFrontMatterRenderer(r renderer.Renderer) TermRendererOption {
+	return func(termRenderer *TermRenderer) error {
+		termRenderer.md.Renderer().AddOptions(renderer.WithNodeRenderers(util.Prioritized(r, 99)))
+		return nil
+	}
+}
+
+func WithFrontMatterHandler(consumer ext.FrontmatterResultConsumer) TermRendererOption {
+	return func(termRenderer *TermRenderer) error {
+		termRenderer.frontMatterHandler = consumer
 		return nil
 	}
 }
