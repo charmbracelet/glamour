@@ -13,6 +13,7 @@ import (
 	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/renderer"
 	"github.com/yuin/goldmark/util"
+	"golang.org/x/term"
 
 	"github.com/charmbracelet/glamour/ansi"
 )
@@ -260,6 +261,9 @@ func getEnvironmentStyle() string {
 
 func getDefaultStyle(style string) (*ansi.StyleConfig, error) {
 	if style == AutoStyle {
+		if !term.IsTerminal(int(os.Stdout.Fd())) {
+			return &NoTTYStyleConfig, nil
+		}
 		if termenv.HasDarkBackground() {
 			return &DarkStyleConfig, nil
 		}

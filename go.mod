@@ -9,6 +9,7 @@ require (
 	github.com/charmbracelet/x/exp/golden v0.0.0-20240715153702-9ba8adf781c4
 	github.com/microcosm-cc/bluemonday v1.0.27
 	github.com/muesli/reflow v0.3.0
+	golang.org/x/term v0.10.0
 	github.com/muesli/termenv v0.15.3-0.20240618155329-98d742f6907a
 	github.com/yuin/goldmark v1.7.4
 	github.com/yuin/goldmark-emoji v1.0.3
