@@ -6,7 +6,7 @@
   },
   "block_quote": {
     "indent": 1,
-    "indent_token": "│ "
+    "indent_token": "| "
   },
   "paragraph": {},
   "list": {
@@ -56,7 +56,7 @@
     "block_prefix": ". "
   },
   "task": {
-    "ticked": "[✓] ",
+    "ticked": "[x] ",
     "unticked": "[ ] "
   },
   "link": {},
@@ -72,15 +72,11 @@
   "code_block": {
     "margin": 2
   },
-  "table": {
-    "center_separator": "┼",
-    "column_separator": "│",
-    "row_separator": "─"
-  },
+  "table": {},
   "definition_list": {},
   "definition_term": {},
   "definition_description": {
-    "block_prefix": "\n🠶 "
+    "block_prefix": "\n* "
   },
   "html_block": {},
   "html_span": {}

@@ -20,13 +20,14 @@ import (
 
 // Default styles.
 const (
-	AsciiStyle   = "ascii"
-	AutoStyle    = "auto"
-	DarkStyle    = "dark"
-	DraculaStyle = "dracula"
-	LightStyle   = "light"
-	NoTTYStyle   = "notty"
-	PinkStyle    = "pink"
+	AsciiStyle      = "ascii"
+	AutoStyle       = "auto"
+	DarkStyle       = "dark"
+	DraculaStyle    = "dracula"
+	TokyoNightStyle = "tokyo-night"
+	LightStyle      = "light"
+	NoTTYStyle      = "notty"
+	PinkStyle       = "pink"
 )
 
 const (
