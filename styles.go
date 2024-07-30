@@ -231,6 +231,7 @@ var (
 					Color: stringPtr("244"),
 				},
 				Margin: uintPtr(defaultMargin),
+				IndentToken:    stringPtr("| "),
 			},
 			Chroma: &ansi.Chroma{
 				Text: ansi.StylePrimitive{
