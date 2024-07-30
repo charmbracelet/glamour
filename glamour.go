@@ -29,8 +29,10 @@ const (
 	PinkStyle    = "pink"
 )
 
-const defaultWidth = 80
-const highPriority = 1000
+const (
+	defaultWidth = 80
+	highPriority = 1000
+)
 
 // A TermRendererOption sets an option on a TermRenderer.
 type TermRendererOption func(*TermRenderer) error
