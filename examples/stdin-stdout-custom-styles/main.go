@@ -28,7 +28,6 @@ func main() {
 
 	// Create a new renderer.
 	r, err := glamour.NewTermRenderer(
-		//		glamour.WithAutoStyle(),
 		glamour.WithEnvironmentConfig(),
 		glamour.WithWordWrap(defaultWidth),
 	)
