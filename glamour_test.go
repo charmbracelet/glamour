@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	styles "github.com/charmbracelet/glamour/styles"
 	"github.com/charmbracelet/x/exp/golden"
 )
 
@@ -15,7 +16,7 @@ const markdown = "testdata/readme.markdown.in"
 
 func TestTermRendererWriter(t *testing.T) {
 	r, err := NewTermRenderer(
-		WithStandardStyle(DarkStyle),
+		WithStandardStyle(styles.DarkStyle),
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -116,7 +117,7 @@ func TestStyles(t *testing.T) {
 	}
 
 	_, err = NewTermRenderer(
-		WithStandardStyle(AutoStyle),
+		WithStandardStyle(styles.AutoStyle),
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -141,8 +142,8 @@ func TestCustomStyle(t *testing.T) {
 		expected  string
 	}{
 		{name: "style exists", stylePath: "testdata/custom.style", err: nil, expected: "testdata/custom.style"},
-		{name: "style doesn't exist", stylePath: "testdata/notfound.style", err: os.ErrNotExist, expected: AutoStyle},
-		{name: "style is empty", stylePath: "", err: nil, expected: AutoStyle},
+		{name: "style doesn't exist", stylePath: "testdata/notfound.style", err: os.ErrNotExist, expected: styles.AutoStyle},
+		{name: "style is empty", stylePath: "", err: nil, expected: styles.AutoStyle},
 	}
 
 	for _, tc := range tests {
@@ -186,7 +187,7 @@ func TestRenderHelpers(t *testing.T) {
 
 func TestCapitalization(t *testing.T) {
 	p := true
-	style := DarkStyleConfig
+	style := styles.DarkStyleConfig
 	style.H1.Upper = &p
 	style.H2.Title = &p
 	style.H3.Lower = &p
@@ -209,7 +210,7 @@ func TestCapitalization(t *testing.T) {
 func FuzzData(f *testing.F) {
 	f.Fuzz(func(t *testing.T, data []byte) {
 		func() int {
-			_, err := RenderBytes(data, DarkStyle)
+			_, err := RenderBytes(data, styles.DarkStyle)
 			if err != nil {
 				return 0
 			}

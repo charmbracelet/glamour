@@ -6,8 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/charmbracelet/glamour"
 	"github.com/charmbracelet/glamour/ansi"
+	styles "github.com/charmbracelet/glamour/styles"
 )
 
 func writeStyleJSON(filename string, styleConfig *ansi.StyleConfig) error {
@@ -22,7 +22,7 @@ func writeStyleJSON(filename string, styleConfig *ansi.StyleConfig) error {
 }
 
 func run() error {
-	for style, styleConfig := range glamour.DefaultStyles {
+	for style, styleConfig := range styles.DefaultStyles {
 		if err := writeStyleJSON(filepath.Join("styles", style+".json"), styleConfig); err != nil {
 			return err
 		}
