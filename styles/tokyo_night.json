@@ -20,7 +20,8 @@
     "bold": true
   },
   "h1": {
-    "prefix": "# "
+    "prefix": "# ",
+    "bold": true
   },
   "h2": {
     "prefix": "## "
@@ -142,6 +143,7 @@
       },
       "name_other": {},
       "literal": {},
+      "literal_number": {},
       "literal_date": {},
       "literal_string": {
         "color": "#e0af68"

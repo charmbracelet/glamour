@@ -1,6 +1,6 @@
-package glamour
+package styles
 
-//go:generate go run ./internal/generate-style-json
+//go:generate go run ../internal/generate-style-json
 
 import (
 	"github.com/charmbracelet/glamour/ansi"
@@ -10,6 +10,18 @@ const (
 	defaultListIndent      = 2
 	defaultListLevelIndent = 4
 	defaultMargin          = 2
+)
+
+// Default styles.
+const (
+	AsciiStyle      = "ascii"
+	AutoStyle       = "auto"
+	DarkStyle       = "dark"
+	DraculaStyle    = "dracula"
+	TokyoNightStyle = "tokyo-night"
+	LightStyle      = "light"
+	NoTTYStyle      = "notty"
+	PinkStyle       = "pink"
 )
 
 var (
@@ -647,12 +659,15 @@ var (
 
 	// DefaultStyles are the default styles.
 	DefaultStyles = map[string]*ansi.StyleConfig{
-		AsciiStyle:   &ASCIIStyleConfig,
-		DarkStyle:    &DarkStyleConfig,
-		DraculaStyle: &DraculaStyleConfig,
-		LightStyle:   &LightStyleConfig,
-		NoTTYStyle:   &NoTTYStyleConfig,
-		PinkStyle:    &PinkStyleConfig,
+		AsciiStyle: &ASCIIStyleConfig,
+		DarkStyle:  &DarkStyleConfig,
+		LightStyle: &LightStyleConfig,
+		NoTTYStyle: &NoTTYStyleConfig,
+		PinkStyle:  &PinkStyleConfig,
+
+		// Popular themes
+		DraculaStyle:    &DraculaStyleConfig,
+		TokyoNightStyle: &TokyoNightStyleConfig,
 	}
 )
 

@@ -1,7 +1,8 @@
-package glamour
+package styles
 
 import "github.com/charmbracelet/glamour/ansi"
 
+// DraculaStyleConfig is the dracula style.
 var DraculaStyleConfig = ansi.StyleConfig{
 	Document: ansi.StyleBlock{
 		StylePrimitive: ansi.StylePrimitive{

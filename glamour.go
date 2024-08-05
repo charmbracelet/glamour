@@ -16,17 +16,7 @@ import (
 	"golang.org/x/term"
 
 	"github.com/charmbracelet/glamour/ansi"
-)
-
-// Default styles.
-const (
-	AsciiStyle   = "ascii"
-	AutoStyle    = "auto"
-	DarkStyle    = "dark"
-	DraculaStyle = "dracula"
-	LightStyle   = "light"
-	NoTTYStyle   = "notty"
-	PinkStyle    = "pink"
+	styles "github.com/charmbracelet/glamour/styles"
 )
 
 const (
@@ -138,7 +128,7 @@ func WithStandardStyle(style string) TermRendererOption {
 // WithAutoStyle sets a TermRenderer's styles with either the standard dark
 // or light style, depending on the terminal's background color at run-time.
 func WithAutoStyle() TermRendererOption {
-	return WithStandardStyle(AutoStyle)
+	return WithStandardStyle(styles.AutoStyle)
 }
 
 // WithEnvironmentConfig sets a TermRenderer's styles based on the
@@ -253,24 +243,24 @@ func (tr *TermRenderer) RenderBytes(in []byte) ([]byte, error) {
 func getEnvironmentStyle() string {
 	glamourStyle := os.Getenv("GLAMOUR_STYLE")
 	if len(glamourStyle) == 0 {
-		glamourStyle = AutoStyle
+		glamourStyle = styles.AutoStyle
 	}
 
 	return glamourStyle
 }
 
 func getDefaultStyle(style string) (*ansi.StyleConfig, error) {
-	if style == AutoStyle {
+	if style == styles.AutoStyle {
 		if !term.IsTerminal(int(os.Stdout.Fd())) {
-			return &NoTTYStyleConfig, nil
+			return &styles.NoTTYStyleConfig, nil
 		}
 		if termenv.HasDarkBackground() {
-			return &DarkStyleConfig, nil
+			return &styles.DarkStyleConfig, nil
 		}
-		return &LightStyleConfig, nil
+		return &styles.LightStyleConfig, nil
 	}
 
-	styles, ok := DefaultStyles[style]
+	styles, ok := styles.DefaultStyles[style]
 	if !ok {
 		return nil, fmt.Errorf("%s: style not found", style)
 	}
