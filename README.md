@@ -1,7 +1,7 @@
 # Glamour
 
 <p>
-    <img src="https://stuff.charm.sh/glamour/glamour-github-header.png" width="245" alt="Glamour Title Treatment"><br>
+    <img src="https://github.com/user-attachments/assets/23aabf2a-8bd8-4e7b-bb50-993bce32541d" width="300" alt="Glamour Title Treatment"><br>
     <a href="https://github.com/charmbracelet/glamour/releases"><img src="https://img.shields.io/github/release/charmbracelet/glamour.svg" alt="Latest Release"></a>
     <a href="https://pkg.go.dev/github.com/charmbracelet/glamour?tab=doc"><img src="https://godoc.org/github.com/golang/gddo?status.svg" alt="GoDoc"></a>
     <a href="https://github.com/charmbracelet/glamour/actions"><img src="https://github.com/charmbracelet/glamour/workflows/build/badge.svg" alt="Build Status"></a>
