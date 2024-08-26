@@ -11,7 +11,7 @@
 
 Stylesheet-based markdown rendering for your CLI apps.
 
-![Glamour dark style example](https://stuff.charm.sh/glamour/glamour-example.png)
+<img width="845" src="https://github.com/user-attachments/assets/ec2ead40-c467-48cc-b6a8-f0f13709eeab" alt="Glamour example">
 
 `glamour` lets you render [markdown](https://en.wikipedia.org/wiki/Markdown)
 documents & templates on [ANSI](https://en.wikipedia.org/wiki/ANSI_escape_code)
@@ -59,6 +59,7 @@ You can find all available default styles in our [gallery](https://github.com/ch
 Want to create your own style? [Learn how!](https://github.com/charmbracelet/glamour/tree/master/styles)
 
 There are a few options for using a custom style:
+
 1. Call `glamour.Render(inputText, "desiredStyle")`
 1. Set the `GLAMOUR_STYLE` environment variable to your desired default style or a file location for a style and call `glamour.RenderWithEnvironmentConfig(inputText)`
 1. Set the `GLAMOUR_STYLE` environment variable and pass `glamour.WithEnvironmentConfig()` to your custom renderer
@@ -66,8 +67,9 @@ There are a few options for using a custom style:
 ## Glamourous Projects
 
 Check out these projects, which use `glamour`:
+
 - [Glow](https://github.com/charmbracelet/glow), a markdown renderer for
-the command-line.
+  the command-line.
 - [GitHub CLI](https://github.com/cli/cli), GitHub’s official command line tool.
 - [GitLab CLI](https://gitlab.com/gitlab-org/cli), GitLab's official command line tool.
 - [Gitea CLI](https://gitea.com/gitea/tea), Gitea's official command line tool.
@@ -77,15 +79,15 @@ the command-line.
 
 We’d love to hear your thoughts on this project. Feel free to drop us a note!
 
-* [Twitter](https://twitter.com/charmcli)
-* [The Fediverse](https://mastodon.social/@charmcli)
-* [Discord](https://charm.sh/chat)
+- [Twitter](https://twitter.com/charmcli)
+- [The Fediverse](https://mastodon.social/@charmcli)
+- [Discord](https://charm.sh/chat)
 
 ## License
 
 [MIT](https://github.com/charmbracelet/glamour/raw/master/LICENSE)
 
-***
+---
 
 Part of [Charm](https://charm.sh).
 
