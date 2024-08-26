@@ -51,16 +51,15 @@ Remember that to compile Haskell you’ll need `ghc`.
 ```haskell
 module Main where
 
-import Data.Function ( (&) )
-import Data.List ( intercalculate )
+import Data.List (intercalate)
 
 hello :: String -> String
-hello s =
-    "Hello, " ++ s ++ "."
+hello s = "Hello, " <> s <> "."
 
 main :: IO ()
-main =
-    map hello [ "artichoke", "alcachofa" ] & intercalculate "\n" & putStrLn
+main = putStrLn
+     $ intercalate "\n"
+     $ hello <$> [ "artichoke", "alcachofa" ]
 ```
 
 ***
