@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/alecthomas/chroma/v2 v2.14.0
 	github.com/charmbracelet/lipgloss v0.13.0
-	github.com/charmbracelet/x/ansi v0.3.0
+	github.com/charmbracelet/x/ansi v0.3.1
 	github.com/charmbracelet/x/exp/golden v0.0.0-20240806155701-69247e0abc2a
 	github.com/microcosm-cc/bluemonday v1.0.27
 	github.com/muesli/reflow v0.3.0
