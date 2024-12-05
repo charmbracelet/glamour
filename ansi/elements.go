@@ -250,6 +250,13 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		}
 
 		if n.AutoLinkType == ast.AutoLinkEmail && !strings.HasPrefix(strings.ToLower(u), "mailto:") {
+			if tr.context.options.DisableAutoEmailLinks {
+				return Element{
+					Renderer: &BaseElement{
+						Token: label,
+					},
+				}
+			}
 			u = "mailto:" + u
 		}
 
