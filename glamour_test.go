@@ -8,8 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	styles "github.com/charmbracelet/glamour/styles"
 	"github.com/charmbracelet/x/exp/golden"
+
+	styles "github.com/charmbracelet/glamour/styles"
 )
 
 const markdown = "testdata/readme.markdown.in"

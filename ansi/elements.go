@@ -282,12 +282,14 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 			line := n.Lines().At(i)
 			s += string(line.Value(source))
 		}
+		e := &CodeBlockElement{
+			Code:     s,
+			Language: string(n.Language(source)),
+		}
 		return Element{
 			Entering: "\n",
-			Renderer: &CodeBlockElement{
-				Code:     s,
-				Language: string(n.Language(source)),
-			},
+			Renderer: e,
+			Finisher: e,
 		}
 
 	case ast.KindCodeBlock:
@@ -298,11 +300,13 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 			line := n.Lines().At(i)
 			s += string(line.Value(source))
 		}
+		e := &CodeBlockElement{
+			Code: s,
+		}
 		return Element{
 			Entering: "\n",
-			Renderer: &CodeBlockElement{
-				Code: s,
-			},
+			Renderer: e,
+			Finisher: e,
 		}
 
 	case ast.KindCodeSpan:

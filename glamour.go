@@ -16,7 +16,7 @@ import (
 	"golang.org/x/term"
 
 	"github.com/charmbracelet/glamour/ansi"
-	styles "github.com/charmbracelet/glamour/styles"
+	"github.com/charmbracelet/glamour/styles"
 )
 
 const (

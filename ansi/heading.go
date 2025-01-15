@@ -59,7 +59,7 @@ func (e *HeadingElement) Render(w io.Writer, ctx RenderContext) error {
 func (e *HeadingElement) Finish(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 	rules := bs.Current().Style
-	mw := NewMarginWriter(ctx, w, rules)
+	mw := NewMarginWriter(ctx, w, rules, true)
 
 	flow := wordwrap.NewWriter(int(bs.Width(ctx)))
 	_, err := flow.Write(bs.Current().Block.Bytes())
