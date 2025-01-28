@@ -26,8 +26,8 @@ func (e *ParagraphElement) Render(w io.Writer, ctx RenderContext) error {
 	}
 	bs.Push(be)
 
-	renderText(w, ctx.options.ColorProfile, bs.Parent().Style.StylePrimitive, rules.BlockPrefix)
-	renderText(bs.Current().Block, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, rules.Prefix)
+	renderText(w, bs.Parent().Style.StylePrimitive, rules.BlockPrefix)
+	renderText(bs.Current().Block, bs.Current().Style.StylePrimitive, rules.Prefix)
 	return nil
 }
 
@@ -49,8 +49,8 @@ func (e *ParagraphElement) Finish(w io.Writer, ctx RenderContext) error {
 		_, _ = io.WriteString(mw, "\n")
 	}
 
-	renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, rules.Suffix)
-	renderText(w, ctx.options.ColorProfile, bs.Parent().Style.StylePrimitive, rules.BlockSuffix)
+	renderText(w, bs.Current().Style.StylePrimitive, rules.Suffix)
+	renderText(w, bs.Parent().Style.StylePrimitive, rules.BlockSuffix)
 
 	bs.Current().Block.Reset()
 	bs.Pop()

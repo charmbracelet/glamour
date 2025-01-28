@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/muesli/termenv"
 	"github.com/yuin/goldmark"
 	emoji "github.com/yuin/goldmark-emoji"
 	"github.com/yuin/goldmark/extension"
@@ -17,6 +16,7 @@ import (
 
 	"github.com/charmbracelet/glamour/ansi"
 	styles "github.com/charmbracelet/glamour/styles"
+	"github.com/charmbracelet/lipgloss/v2"
 )
 
 const (
@@ -75,8 +75,7 @@ func NewTermRenderer(options ...TermRendererOption) (*TermRenderer, error) {
 			),
 		),
 		ansiOptions: ansi.Options{
-			WordWrap:     defaultWidth,
-			ColorProfile: termenv.TrueColor,
+			WordWrap: defaultWidth,
 		},
 	}
 	for _, o := range options {
@@ -99,15 +98,6 @@ func NewTermRenderer(options ...TermRendererOption) (*TermRenderer, error) {
 func WithBaseURL(baseURL string) TermRendererOption {
 	return func(tr *TermRenderer) error {
 		tr.ansiOptions.BaseURL = baseURL
-		return nil
-	}
-}
-
-// WithColorProfile sets the TermRenderer's color profile
-// (TrueColor / ANSI256 / ANSI).
-func WithColorProfile(profile termenv.Profile) TermRendererOption {
-	return func(tr *TermRenderer) error {
-		tr.ansiOptions.ColorProfile = profile
 		return nil
 	}
 }
@@ -249,12 +239,20 @@ func getEnvironmentStyle() string {
 	return glamourStyle
 }
 
+// hasDarkBackground is a global variable that is set to true if the terminal
+// has a dark background. This should only be set once, when the package is
+// initialized.
+var (
+	isStdoutTTY       = term.IsTerminal(int(os.Stdout.Fd()))
+	hasDarkBackground = lipgloss.HasDarkBackground(os.Stdin, os.Stdout)
+)
+
 func getDefaultStyle(style string) (*ansi.StyleConfig, error) {
 	if style == styles.AutoStyle {
-		if !term.IsTerminal(int(os.Stdout.Fd())) {
+		if !isStdoutTTY {
 			return &styles.NoTTYStyleConfig, nil
 		}
-		if termenv.HasDarkBackground() {
+		if hasDarkBackground {
 			return &styles.DarkStyleConfig, nil
 		}
 		return &styles.LightStyleConfig, nil

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/muesli/termenv"
+	"github.com/charmbracelet/lipgloss/v2"
 )
 
 // BaseElement renders a styled primitive element.
@@ -32,47 +32,44 @@ func formatToken(format string, token string) (string, error) {
 	return b.String(), err
 }
 
-func renderText(w io.Writer, p termenv.Profile, rules StylePrimitive, s string) {
+func renderText(w io.Writer, rules StylePrimitive, s string) {
 	if len(s) == 0 {
 		return
 	}
 
-	out := termenv.String(s)
+	out := lipgloss.NewStyle().SetString(s)
 	if rules.Upper != nil && *rules.Upper {
-		out = termenv.String(strings.ToUpper(s))
+		out = out.SetString(strings.ToUpper(s))
 	}
 	if rules.Lower != nil && *rules.Lower {
-		out = termenv.String(strings.ToLower(s))
+		out = out.SetString(strings.ToLower(s))
 	}
 	if rules.Title != nil && *rules.Title {
-		out = termenv.String(strings.Title(s))
+		out = out.SetString(strings.Title(s))
 	}
 	if rules.Color != nil {
-		out = out.Foreground(p.Color(*rules.Color))
+		out = out.Foreground(lipgloss.Color(*rules.Color))
 	}
 	if rules.BackgroundColor != nil {
-		out = out.Background(p.Color(*rules.BackgroundColor))
+		out = out.Background(lipgloss.Color(*rules.BackgroundColor))
 	}
-	if rules.Underline != nil && *rules.Underline {
-		out = out.Underline()
+	if rules.Underline != nil {
+		out = out.Underline(*rules.Underline)
 	}
-	if rules.Bold != nil && *rules.Bold {
-		out = out.Bold()
+	if rules.Bold != nil {
+		out = out.Bold(*rules.Bold)
 	}
-	if rules.Italic != nil && *rules.Italic {
-		out = out.Italic()
+	if rules.Italic != nil {
+		out = out.Italic(*rules.Italic)
 	}
-	if rules.CrossedOut != nil && *rules.CrossedOut {
-		out = out.CrossOut()
+	if rules.CrossedOut != nil {
+		out = out.Strikethrough(*rules.CrossedOut)
 	}
-	if rules.Overlined != nil && *rules.Overlined {
-		out = out.Overline()
+	if rules.Inverse != nil {
+		out = out.Reverse(*rules.Inverse)
 	}
-	if rules.Inverse != nil && *rules.Inverse {
-		out = out.Reverse()
-	}
-	if rules.Blink != nil && *rules.Blink {
-		out = out.Blink()
+	if rules.Blink != nil {
+		out = out.Blink(*rules.Blink)
 	}
 
 	_, _ = io.WriteString(w, out.String())
@@ -83,32 +80,32 @@ func (e *BaseElement) StyleOverrideRender(w io.Writer, ctx RenderContext, style 
 	st1 := cascadeStylePrimitives(bs.Current().Style.StylePrimitive, style)
 	st2 := cascadeStylePrimitives(bs.With(e.Style), style)
 
-	return e.doRender(w, ctx.options.ColorProfile, st1, st2)
+	return e.doRender(w, st1, st2)
 }
 
 func (e *BaseElement) Render(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 	st1 := bs.Current().Style.StylePrimitive
 	st2 := bs.With(e.Style)
-	return e.doRender(w, ctx.options.ColorProfile, st1, st2)
+	return e.doRender(w, st1, st2)
 }
 
-func (e *BaseElement) doRender(w io.Writer, p termenv.Profile, st1, st2 StylePrimitive) error {
-	renderText(w, p, st1, e.Prefix)
+func (e *BaseElement) doRender(w io.Writer, st1, st2 StylePrimitive) error {
+	renderText(w, st1, e.Prefix)
 	defer func() {
-		renderText(w, p, st1, e.Suffix)
+		renderText(w, st1, e.Suffix)
 	}()
 
 	// render unstyled prefix/suffix
-	renderText(w, p, st1, st2.BlockPrefix)
+	renderText(w, st1, st2.BlockPrefix)
 	defer func() {
-		renderText(w, p, st1, st2.BlockSuffix)
+		renderText(w, st1, st2.BlockSuffix)
 	}()
 
 	// render styled prefix/suffix
-	renderText(w, p, st2, st2.Prefix)
+	renderText(w, st2, st2.Prefix)
 	defer func() {
-		renderText(w, p, st2, st2.Suffix)
+		renderText(w, st2, st2.Suffix)
 	}()
 
 	s := e.Token
@@ -119,7 +116,7 @@ func (e *BaseElement) doRender(w io.Writer, p termenv.Profile, st1, st2 StylePri
 			return err
 		}
 	}
-	renderText(w, p, st2, escapeReplacer.Replace(s))
+	renderText(w, st2, escapeReplacer.Replace(s))
 	return nil
 }
 

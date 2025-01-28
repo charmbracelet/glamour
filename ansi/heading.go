@@ -42,7 +42,7 @@ func (e *HeadingElement) Render(w io.Writer, ctx RenderContext) error {
 	}
 
 	if !e.First {
-		renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, "\n")
+		renderText(w, bs.Current().Style.StylePrimitive, "\n")
 	}
 
 	be := BlockElement{
@@ -51,8 +51,8 @@ func (e *HeadingElement) Render(w io.Writer, ctx RenderContext) error {
 	}
 	bs.Push(be)
 
-	renderText(w, ctx.options.ColorProfile, bs.Parent().Style.StylePrimitive, rules.BlockPrefix)
-	renderText(bs.Current().Block, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, rules.Prefix)
+	renderText(w, bs.Parent().Style.StylePrimitive, rules.BlockPrefix)
+	renderText(bs.Current().Block, bs.Current().Style.StylePrimitive, rules.Prefix)
 	return nil
 }
 
@@ -73,8 +73,8 @@ func (e *HeadingElement) Finish(w io.Writer, ctx RenderContext) error {
 		return err
 	}
 
-	renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, rules.Suffix)
-	renderText(w, ctx.options.ColorProfile, bs.Parent().Style.StylePrimitive, rules.BlockSuffix)
+	renderText(w, bs.Current().Style.StylePrimitive, rules.Suffix)
+	renderText(w, bs.Parent().Style.StylePrimitive, rules.BlockSuffix)
 
 	bs.Current().Block.Reset()
 	bs.Pop()
