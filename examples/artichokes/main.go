@@ -7,7 +7,6 @@ import (
 	"os"
 
 	"github.com/charmbracelet/glamour"
-	"github.com/muesli/termenv"
 )
 
 //go:embed artichokes.md
@@ -31,7 +30,6 @@ func main() {
 
 	r, err := glamour.NewTermRenderer(
 		glamour.WithStandardStyle(style),
-		glamour.WithColorProfile(termenv.TrueColor),
 	)
 	if err != nil {
 		log.Fatal(err)
