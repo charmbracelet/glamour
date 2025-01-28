@@ -248,7 +248,7 @@ var (
 )
 
 func getDefaultStyle(style string) (*ansi.StyleConfig, error) {
-	if style == styles.AutoStyle {
+	if len(style) == 0 || style == styles.AutoStyle {
 		if !isStdoutTTY {
 			return &styles.NoTTYStyleConfig, nil
 		}
