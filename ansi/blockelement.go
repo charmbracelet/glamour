@@ -36,7 +36,7 @@ func (e *BlockElement) Finish(w io.Writer, ctx RenderContext) error {
 			" ,.;-+|",
 		)
 
-		mw := NewMarginWriter(ctx, w, bs.Current().Style)
+		mw := NewMarginWriter(ctx, w, bs.Current().Style, true)
 		if _, err := io.WriteString(mw, s); err != nil {
 			return err
 		}
