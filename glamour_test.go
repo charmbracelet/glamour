@@ -161,8 +161,8 @@ func TestCustomStyle(t *testing.T) {
 					t.Fatal(err)
 				}
 				text, _ := os.ReadFile(md)
-				want, err := w.RenderBytes(text)
-				got, err := g.RenderBytes(text)
+				want, _ := w.RenderBytes(text)
+				got, _ := g.RenderBytes(text)
 				if !bytes.Equal(want, got) {
 					t.Error("Wrong style used")
 				}
