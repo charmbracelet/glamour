@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/muesli/termenv"
@@ -15,6 +16,7 @@ import (
 	"github.com/yuin/goldmark/util"
 	"golang.org/x/term"
 
+	"github.com/charmbracelet/colorprofile"
 	"github.com/charmbracelet/glamour/ansi"
 	styles "github.com/charmbracelet/glamour/styles"
 )
@@ -23,6 +25,22 @@ const (
 	defaultWidth = 80
 	highPriority = 1000
 )
+
+// termenvToColorprofile maps termenv profiles to colorprofile profiles.
+var termenvToColorprofile = map[termenv.Profile]colorprofile.Profile{
+	termenv.TrueColor: colorprofile.TrueColor,
+	termenv.ANSI256:   colorprofile.ANSI256,
+	termenv.ANSI:      colorprofile.ANSI,
+	termenv.Ascii:     colorprofile.Ascii,
+}
+
+// colorprofileToTermenv maps colorprofile profiles to termenv profiles.
+var colorprofileToTermenv = map[colorprofile.Profile]termenv.Profile{
+	colorprofile.TrueColor: termenv.TrueColor,
+	colorprofile.ANSI256:   termenv.ANSI256,
+	colorprofile.ANSI:      termenv.ANSI,
+	colorprofile.Ascii:     termenv.Ascii,
+}
 
 // A TermRendererOption sets an option on a TermRenderer.
 type TermRendererOption func(*TermRenderer) error
@@ -34,6 +52,20 @@ type TermRenderer struct {
 	ansiOptions ansi.Options
 	buf         bytes.Buffer
 	renderBuf   bytes.Buffer
+
+	// downsampler is the colorprofile writer used to downsample colors, when
+	// necessary.
+	//
+	// colorprofile is used to enforce a color profile at render time. This is
+	// somewhat redundant to the internals of the Termenv package and glamour
+	// renderer, however we're using the profile here in order to downsample
+	// chroma colors, which are out of Temenv's reach.
+	//
+	// In other words, colorprofile ensures that all ANSI colors, no matter
+	// where they came from, are restricted to the terminal's color profile.
+	// For more info on how this works, see:
+	// https://github.com/charmbracelet/colorprofile
+	downsampler *colorprofile.Writer
 }
 
 // Render initializes a new TermRenderer and renders a markdown with a specific
@@ -84,6 +116,18 @@ func NewTermRenderer(options ...TermRendererOption) (*TermRenderer, error) {
 			return nil, err
 		}
 	}
+
+	// The user has not specified a color profile, nor has she auto-detected
+	// one, so we'll just setup the downsampler per the color profile set in
+	// the internals.
+	//
+	// XXX: This should be removed via refactor in v2.
+	if tr.downsampler == nil {
+		tr.downsampler = &colorprofile.Writer{
+			Profile: termenvToColorprofile[tr.ansiOptions.ColorProfile],
+		}
+	}
+
 	ar := ansi.NewRenderer(tr.ansiOptions)
 	tr.md.SetRenderer(
 		renderer.NewRenderer(
@@ -103,11 +147,43 @@ func WithBaseURL(baseURL string) TermRendererOption {
 	}
 }
 
-// WithColorProfile sets the TermRenderer's color profile
-// (TrueColor / ANSI256 / ANSI).
+// WithColorProfile sets the TermRenderer's color profile available options are
+// [termenv.TrueColor], [termenv.ANSI256], [termenv.ANSI], and [termenv.Ascii].
+//
+// If this is set after WithColorProfileDetection, it will override the color
+// profile detected.
 func WithColorProfile(profile termenv.Profile) TermRendererOption {
 	return func(tr *TermRenderer) error {
 		tr.ansiOptions.ColorProfile = profile
+
+		// Note the specified color profile so we can enforce it at render
+		// time.
+		//
+		// XXX: This should be removed via refactor in v2.
+		p := termenvToColorprofile[profile]
+		tr.downsampler = &colorprofile.Writer{Profile: p}
+
+		return nil
+	}
+}
+
+// WithColorProfileDetection detects the terminal's color profile and
+// downsamples colors accordingly. Pass the target output and target
+// environment.
+//
+// Example:
+//
+//	r _, := NewTermRenderer(
+//	    WithColorProfileDetection(os.Stdout, os.Environ()),
+//	)
+//
+// If this is set after WithColorProfile, it will override the color profile
+// specified in that option.
+func WithColorProfileDetection(output io.Writer, environ []string) TermRendererOption {
+	// XXX: This should be refactored in v2.
+	return func(tr *TermRenderer) error {
+		tr.downsampler = colorprofile.NewWriter(output, environ) // detect color profile
+		tr.ansiOptions.ColorProfile = colorprofileToTermenv[tr.downsampler.Profile]
 		return nil
 	}
 }
@@ -235,9 +311,24 @@ func (tr *TermRenderer) Render(in string) (string, error) {
 
 // RenderBytes returns the markdown rendered into a byte slice.
 func (tr *TermRenderer) RenderBytes(in []byte) ([]byte, error) {
-	var buf bytes.Buffer
-	err := tr.md.Convert(in, &buf)
-	return buf.Bytes(), err
+	var (
+		md  bytes.Buffer
+		res bytes.Buffer
+	)
+
+	if err := tr.md.Convert(in, &md); err != nil {
+		return nil, fmt.Errorf("could not convert input to markdown: %w", err)
+	}
+
+	// Enforce the color profile at render time.
+	//
+	// XXX: This should be refactored in v2.
+	tr.downsampler.Forward = &res
+	if _, err := tr.downsampler.Write(md.Bytes()); err != nil {
+		return nil, fmt.Errorf("could not downsample ansi: %w", err)
+	}
+
+	return res.Bytes(), nil
 }
 
 func getEnvironmentStyle() string {

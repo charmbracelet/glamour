@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"embed"
 	"fmt"
 	"os"
 
+	"github.com/charmbracelet/colorprofile"
 	"github.com/charmbracelet/glamour"
 )
 
@@ -12,17 +14,20 @@ import (
 var f embed.FS
 
 func main() {
-	var opt glamour.TermRendererOption
+	var (
+		output   = os.Stdout
+		styleOpt glamour.TermRendererOption
+	)
 
 	// Provide a style name via the first arg, or the GLAMOUR_STYLE environment
 	// variable. If neither are set, we'll detect the background color and use
 	// the standard light or dark style accordingly.
 	if len(os.Args) >= 2 { //nolint:mnd
-		opt = glamour.WithStandardStyle(os.Args[1])
+		styleOpt = glamour.WithStandardStyle(os.Args[1])
 	} else if v := os.Getenv("GLAMOUR_STYLE"); v != "" {
-		opt = glamour.WithStandardStyle(v)
+		styleOpt = glamour.WithStandardStyle(v)
 	} else {
-		opt = glamour.WithAutoStyle()
+		styleOpt = glamour.WithAutoStyle()
 	}
 
 	// Let's learn a 'lil something about artichokes...
@@ -33,19 +38,27 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Set up a new renderer.
-	r, err := glamour.NewTermRenderer(opt)
+	// Also note the detected color profile.
+	var buf bytes.Buffer
+	buf.Write(b)
+	fmt.Fprintf(&buf, "***\n\n## By the Way\n\nWe detected the following color profile: %s.", colorprofile.Detect(output, os.Environ()))
+
+	// Set up a new renderer. Note that we're auto-detecting the color profile.
+	r, err := glamour.NewTermRenderer(
+		glamour.WithColorProfileDetection(output, os.Environ()),
+		styleOpt,
+	)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Could not create renderer: %v\n", err)
 		os.Exit(1)
 	}
 
 	// Render markdown.
-	md, err := r.RenderBytes(b)
+	md, err := r.RenderBytes(buf.Bytes())
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Could not render markdown: %v\n", err)
 		os.Exit(1)
 	}
 
-	fmt.Fprintf(os.Stdout, "%s\n", md)
+	fmt.Fprintf(output, "%s\n", md)
 }
