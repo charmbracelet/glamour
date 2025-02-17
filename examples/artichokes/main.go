@@ -3,42 +3,48 @@ package main
 import (
 	"embed"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/charmbracelet/glamour"
-	"github.com/muesli/termenv"
 )
 
 //go:embed artichokes.md
 var f embed.FS
 
 func main() {
-	// Provide a style by name (optional)
-	var style string
-	if len(os.Args) < 2 {
-		// check env, if unset then use default style
-		style = os.Getenv("GLAMOUR_STYLE")
+	var opt glamour.TermRendererOption
+
+	// Provide a style name via the first arg, or the GLAMOUR_STYLE environment
+	// variable. If neither are set, we'll detect the background color and use
+	// the standard light or dark style accordingly.
+	if len(os.Args) >= 2 { //nolint:mnd
+		opt = glamour.WithStandardStyle(os.Args[1])
+	} else if v := os.Getenv("GLAMOUR_STYLE"); v != "" {
+		opt = glamour.WithStandardStyle(v)
 	} else {
-		style = os.Args[1]
+		opt = glamour.WithAutoStyle()
 	}
 
 	// Let's learn a 'lil something about artichokes...
-	b, err := f.ReadFile("artichokes.md")
+	const filename = "artichokes.md"
+	b, err := f.ReadFile(filename)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Fprintf(os.Stderr, "Failed reading %s: %v\n", filename, err)
+		os.Exit(1)
 	}
 
-	r, err := glamour.NewTermRenderer(
-		glamour.WithStandardStyle(style),
-		glamour.WithColorProfile(termenv.TrueColor),
-	)
+	// Set up a new renderer.
+	r, err := glamour.NewTermRenderer(opt)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Fprintf(os.Stderr, "Could not create renderer: %v\n", err)
+		os.Exit(1)
 	}
+
+	// Render markdown.
 	md, err := r.RenderBytes(b)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Fprintf(os.Stderr, "Could not render markdown: %v\n", err)
+		os.Exit(1)
 	}
 
 	fmt.Fprintf(os.Stdout, "%s\n", md)
