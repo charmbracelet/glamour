@@ -38,16 +38,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Also note the detected color profile.
+	// Detect the color profile, and note it.
+	p := colorprofile.Detect(output, os.Environ())
 	var buf bytes.Buffer
 	buf.Write(b)
-	fmt.Fprintf(&buf, "***\n\n## By the Way\n\nWe detected the following color profile: %s.", colorprofile.Detect(output, os.Environ()))
+	fmt.Fprintf(&buf, "***\n\n## By the Way\n\nWe detected the following color profile: %s.", p)
 
 	// Set up a new renderer. Note that we're auto-detecting the color profile.
-	r, err := glamour.NewTermRenderer(
-		glamour.WithColorProfileDetection(output, os.Environ()),
-		styleOpt,
-	)
+	r, err := glamour.NewTermRenderer(styleOpt)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Could not create renderer: %v\n", err)
 		os.Exit(1)
@@ -60,5 +58,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Fprintf(output, "%s\n", md)
+	// Write output to the terminal, downsampling colors as necessary.
+	w := &colorprofile.Writer{Forward: output, Profile: p}
+	_, _ = w.Write(md)
 }
