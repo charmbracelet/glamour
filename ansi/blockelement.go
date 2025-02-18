@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"io"
 
-	"github.com/charmbracelet/x/ansi"
+	"github.com/charmbracelet/x/cellbuf"
 )
 
 // BlockElement provides a render buffer for children of a block element.
@@ -30,9 +30,9 @@ func (e *BlockElement) Finish(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 
 	if e.Margin {
-		s := ansi.Wordwrap(
+		s := cellbuf.Wrap(
 			bs.Current().Block.String(),
-			int(bs.Width(ctx)),
+			int(bs.Width(ctx)), //nolint:gosec
 			" ,.;-+|",
 		)
 
