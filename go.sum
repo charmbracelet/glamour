@@ -14,6 +14,8 @@ github.com/charmbracelet/lipgloss/v2 v2.0.0-alpha.2.0.20250127205353-a4c54062388
 github.com/charmbracelet/lipgloss/v2 v2.0.0-alpha.2.0.20250127205353-a4c540623882/go.mod h1:wvhSDGHyThg9IW8ehatv9MkG4YH5MHYcdhQYmsaCITM=
 github.com/charmbracelet/x/ansi v0.8.0 h1:9GTq3xq9caJW8ZrBTe0LIe2fvfLR/bYXKTx2llXn7xE=
 github.com/charmbracelet/x/ansi v0.8.0/go.mod h1:wdYl/ONOLHLIVmQaxbIYEC/cRKOQyjTkowiI4blgS9Q=
+github.com/charmbracelet/x/cellbuf v0.0.12-0.20250218160530-421b202f6f6a h1:rMGZ3e/azMB6h2yyZLjP3v/vV9nQv/RbDPPOYWdaKkc=
+github.com/charmbracelet/x/cellbuf v0.0.12-0.20250218160530-421b202f6f6a/go.mod h1:dKfNBxLovpvzzxAP6/GZfs5eb7vNxHlUDnwGhRmvIdY=
 github.com/charmbracelet/x/exp/golden v0.0.0-20250128152640-d9da2a4aec3d h1:7x04AOVKFikXtx2RgnNNzm904/90aIhURaBnrwu1bKI=
 github.com/charmbracelet/x/exp/golden v0.0.0-20250128152640-d9da2a4aec3d/go.mod h1:wDlXFlCrmJ8J+swcL/MnGUuYnqgQdW9rhSD61oNMb6U=
 github.com/charmbracelet/x/term v0.2.1 h1:AQeHeLZ1OqSXhrAWpYUtZyX1T3zVxfpZuEQMIQaGIAQ=

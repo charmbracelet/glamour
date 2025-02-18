@@ -6,6 +6,7 @@ require (
 	github.com/alecthomas/chroma/v2 v2.14.0
 	github.com/charmbracelet/lipgloss/v2 v2.0.0-alpha.2.0.20250127205353-a4c540623882
 	github.com/charmbracelet/x/ansi v0.8.0
+	github.com/charmbracelet/x/cellbuf v0.0.12-0.20250218160530-421b202f6f6a
 	github.com/charmbracelet/x/exp/golden v0.0.0-20250128152640-d9da2a4aec3d
 	github.com/microcosm-cc/bluemonday v1.0.27
 	github.com/muesli/reflow v0.3.0

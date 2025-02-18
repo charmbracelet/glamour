@@ -12,6 +12,7 @@ require (
 	github.com/charmbracelet/colorprofile v0.2.0 // indirect
 	github.com/charmbracelet/lipgloss/v2 v2.0.0-alpha.2.0.20250127205353-a4c540623882 // indirect
 	github.com/charmbracelet/x/ansi v0.8.0 // indirect
+	github.com/charmbracelet/x/cellbuf v0.0.12-0.20250218160530-421b202f6f6a // indirect
 	github.com/charmbracelet/x/term v0.2.1 // indirect
 	github.com/dlclark/regexp2 v1.11.0 // indirect
 	github.com/gorilla/css v1.0.1 // indirect
