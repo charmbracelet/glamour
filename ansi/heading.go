@@ -66,7 +66,9 @@ func (e *HeadingElement) Finish(w io.Writer, ctx RenderContext) error {
 	if err != nil {
 		return err
 	}
-	flow.Close()
+	if err := flow.Close(); err != nil {
+		return err
+	}
 
 	_, err = mw.Write(flow.Bytes())
 	if err != nil {

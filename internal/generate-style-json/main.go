@@ -15,7 +15,8 @@ func writeStyleJSON(filename string, styleConfig *ansi.StyleConfig) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer f.Close() //nolint: errcheck
+
 	e := json.NewEncoder(f)
 	e.SetIndent("", "  ")
 	return e.Encode(styleConfig)
