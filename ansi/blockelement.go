@@ -32,7 +32,7 @@ func (e *BlockElement) Finish(w io.Writer, ctx RenderContext) error {
 	if e.Margin {
 		s := ansi.Wordwrap(
 			bs.Current().Block.String(),
-			int(bs.Width(ctx)),
+			int(bs.Width(ctx)), //nolint: gosec
 			" ,.;-+|",
 		)
 
