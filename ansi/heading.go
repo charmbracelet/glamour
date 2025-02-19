@@ -61,7 +61,7 @@ func (e *HeadingElement) Finish(w io.Writer, ctx RenderContext) error {
 	rules := bs.Current().Style
 	mw := NewMarginWriter(ctx, w, rules)
 
-	flow := wordwrap.NewWriter(int(bs.Width(ctx)))
+	flow := wordwrap.NewWriter(int(bs.Width(ctx))) //nolint: gosec
 	_, err := flow.Write(bs.Current().Block.Bytes())
 	if err != nil {
 		return err

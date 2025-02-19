@@ -51,7 +51,7 @@ func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
 
 	renderText(iw, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, rules.BlockPrefix)
 	renderText(iw, ctx.options.ColorProfile, style, rules.Prefix)
-	width := int(ctx.blockStack.Width(ctx))
+	width := int(ctx.blockStack.Width(ctx)) //nolint: gosec
 	ctx.table.lipgloss = table.New().Width(width)
 
 	return nil
@@ -61,7 +61,7 @@ func (e *TableElement) setStyles(ctx RenderContext) {
 	ctx.table.lipgloss = ctx.table.lipgloss.StyleFunc(func(row, col int) lipgloss.Style {
 		st := lipgloss.NewStyle().Inline(true)
 		if m := ctx.options.Styles.Table.Margin; m != nil {
-			st = st.Padding(0, int(*m))
+			st = st.Padding(0, int(*m)) //nolint: gosec
 		}
 		if row == 0 {
 			st = st.Bold(true)
