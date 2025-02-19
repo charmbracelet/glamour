@@ -7,6 +7,8 @@ import (
 	"text/template"
 
 	"github.com/muesli/termenv"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 // BaseElement renders a styled primitive element.
@@ -39,13 +41,13 @@ func renderText(w io.Writer, p termenv.Profile, rules StylePrimitive, s string) 
 
 	out := termenv.String(s)
 	if rules.Upper != nil && *rules.Upper {
-		out = termenv.String(strings.ToUpper(s))
+		out = termenv.String(cases.Upper(language.English).String(s))
 	}
 	if rules.Lower != nil && *rules.Lower {
-		out = termenv.String(strings.ToLower(s))
+		out = termenv.String(cases.Lower(language.English).String(s))
 	}
 	if rules.Title != nil && *rules.Title {
-		out = termenv.String(strings.Title(s))
+		out = termenv.String(cases.Title(language.English).String(s))
 	}
 	if rules.Color != nil {
 		out = out.Foreground(p.Color(*rules.Color))
