@@ -2,25 +2,27 @@ run:
   tests: false
 
 issues:
+  include:
+    - EXC0001
+    - EXC0005
+    - EXC0011
+    - EXC0012
+    - EXC0013
+
   max-issues-per-linter: 0
   max-same-issues: 0
 
 linters:
   enable:
     - bodyclose
-    - dupl
-    - exportloopref
-    - goconst
-    - godot
-    - godox
+    - gofumpt
     - goimports
-    - mnd
-    - goprintffuncname
     - gosec
-    - misspell
-    - prealloc
+    - nilerr
+    - revive
     - rowserrcheck
     - sqlclosecheck
+    - tparallel
     - unconvert
     - unparam
     - whitespace
