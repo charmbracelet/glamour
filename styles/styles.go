@@ -14,7 +14,7 @@ const (
 
 // Default styles.
 const (
-	AsciiStyle      = "ascii"
+	AsciiStyle      = "ascii" //nolint: revive
 	AutoStyle       = "auto"
 	DarkStyle       = "dark"
 	DraculaStyle    = "dracula"

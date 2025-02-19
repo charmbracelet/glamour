@@ -23,7 +23,7 @@ type Options struct {
 }
 
 // ANSIRenderer renders markdown content as ANSI escaped sequences.
-type ANSIRenderer struct {
+type ANSIRenderer struct { //nolint: revive
 	context RenderContext
 }
 
