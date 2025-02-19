@@ -13,6 +13,7 @@ type ParagraphElement struct {
 	First bool
 }
 
+// Render renders a ParagraphElement.
 func (e *ParagraphElement) Render(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 	rules := ctx.options.Styles.Paragraph
@@ -31,6 +32,7 @@ func (e *ParagraphElement) Render(w io.Writer, ctx RenderContext) error {
 	return nil
 }
 
+// Finish finishes rendering a ParagraphElement.
 func (e *ParagraphElement) Finish(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 	rules := bs.Current().Style

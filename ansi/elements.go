@@ -17,6 +17,7 @@ type ElementRenderer interface {
 	Render(w io.Writer, ctx RenderContext) error
 }
 
+// StyleOverriderElementRenderer is called when entering a markdown node with a specific style.
 type StyleOverriderElementRenderer interface {
 	StyleOverrideRender(w io.Writer, ctx RenderContext, style StylePrimitive) error
 }

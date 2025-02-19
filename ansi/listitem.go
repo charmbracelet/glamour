@@ -11,6 +11,7 @@ type ItemElement struct {
 	Enumeration uint
 }
 
+// Render renders an ItemElement.
 func (e *ItemElement) Render(w io.Writer, ctx RenderContext) error {
 	var el *BaseElement
 	if e.IsOrdered {

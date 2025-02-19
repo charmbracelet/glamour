@@ -17,6 +17,7 @@ type BlockElement struct {
 	Newline bool
 }
 
+// Render renders a BlockElement.
 func (e *BlockElement) Render(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 	bs.Push(*e)
@@ -26,6 +27,7 @@ func (e *BlockElement) Render(w io.Writer, ctx RenderContext) error {
 	return nil
 }
 
+// Finish finishes rendering a BlockElement.
 func (e *BlockElement) Finish(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 

@@ -10,6 +10,7 @@ type EmphasisElement struct {
 	Level    int
 }
 
+// Render renders a EmphasisElement.
 func (e *EmphasisElement) Render(w io.Writer, ctx RenderContext) error {
 	style := ctx.options.Styles.Emph
 	if e.Level > 1 {
@@ -19,6 +20,7 @@ func (e *EmphasisElement) Render(w io.Writer, ctx RenderContext) error {
 	return e.doRender(w, ctx, style)
 }
 
+// StyleOverrideRender renders a EmphasisElement with a given style.
 func (e *EmphasisElement) StyleOverrideRender(w io.Writer, ctx RenderContext, style StylePrimitive) error {
 	base := ctx.options.Styles.Emph
 	if e.Level > 1 {
