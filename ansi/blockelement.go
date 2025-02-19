@@ -32,7 +32,7 @@ func (e *BlockElement) Render(w io.Writer, ctx RenderContext) error {
 func (e *BlockElement) Finish(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 
-	if e.Margin {
+	if e.Margin { //nolint: nestif
 		s := ansi.Wordwrap(
 			bs.Current().Block.String(),
 			int(bs.Width(ctx)), //nolint: gosec

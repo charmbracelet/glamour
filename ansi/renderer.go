@@ -97,7 +97,7 @@ func (r *ANSIRenderer) renderNode(w util.BufWriter, source []byte, node ast.Node
 	}
 
 	e := r.NewElement(node, source)
-	if entering {
+	if entering { //nolint: nestif
 		// everything below the Document element gets rendered into a block buffer
 		if bs.Len() > 0 {
 			writeTo = io.Writer(bs.Current().Block)
