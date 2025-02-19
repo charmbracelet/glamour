@@ -60,6 +60,7 @@ func chromaStyle(style StylePrimitive) string {
 	return s
 }
 
+// Render renders a CodeBlockElement.
 func (e *CodeBlockElement) Render(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 

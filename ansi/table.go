@@ -30,6 +30,7 @@ type TableCellElement struct {
 	Head     bool
 }
 
+// Render renders a TableElement.
 func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 
@@ -100,6 +101,7 @@ func (e *TableElement) setBorders(ctx RenderContext) {
 	ctx.table.lipgloss.BorderBottom(false)
 }
 
+// Finish finishes rendering a TableElement.
 func (e *TableElement) Finish(_ io.Writer, ctx RenderContext) error {
 	rules := ctx.options.Styles.Table
 
@@ -117,6 +119,7 @@ func (e *TableElement) Finish(_ io.Writer, ctx RenderContext) error {
 	return nil
 }
 
+// Finish finishes rendering a TableRowElement.
 func (e *TableRowElement) Finish(_ io.Writer, ctx RenderContext) error {
 	if ctx.table.lipgloss == nil {
 		return nil
@@ -127,6 +130,7 @@ func (e *TableRowElement) Finish(_ io.Writer, ctx RenderContext) error {
 	return nil
 }
 
+// Finish finishes rendering a TableHeadElement.
 func (e *TableHeadElement) Finish(_ io.Writer, ctx RenderContext) error {
 	if ctx.table.lipgloss == nil {
 		return nil
@@ -137,6 +141,7 @@ func (e *TableHeadElement) Finish(_ io.Writer, ctx RenderContext) error {
 	return nil
 }
 
+// Render renders a TableCellElement.
 func (e *TableCellElement) Render(_ io.Writer, ctx RenderContext) error {
 	var b bytes.Buffer
 	style := ctx.options.Styles.Table.StylePrimitive

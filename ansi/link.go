@@ -13,6 +13,7 @@ type LinkElement struct {
 	Children []ElementRenderer
 }
 
+// Render renders a LinkElement.
 func (e *LinkElement) Render(w io.Writer, ctx RenderContext) error {
 	for _, child := range e.Children {
 		if r, ok := child.(StyleOverriderElementRenderer); ok {

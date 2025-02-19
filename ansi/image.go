@@ -12,6 +12,7 @@ type ImageElement struct {
 	Child   ElementRenderer
 }
 
+// Render renders an ImageElement.
 func (e *ImageElement) Render(w io.Writer, ctx RenderContext) error {
 	if len(e.Text) > 0 {
 		el := &BaseElement{

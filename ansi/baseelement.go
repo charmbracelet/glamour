@@ -80,6 +80,7 @@ func renderText(w io.Writer, p termenv.Profile, rules StylePrimitive, s string) 
 	_, _ = io.WriteString(w, out.String())
 }
 
+// StyleOverrideRender renders a BaseElement with an overridden style.
 func (e *BaseElement) StyleOverrideRender(w io.Writer, ctx RenderContext, style StylePrimitive) error {
 	bs := ctx.blockStack
 	st1 := cascadeStylePrimitives(bs.Current().Style.StylePrimitive, style)
@@ -88,6 +89,7 @@ func (e *BaseElement) StyleOverrideRender(w io.Writer, ctx RenderContext, style 
 	return e.doRender(w, ctx.options.ColorProfile, st1, st2)
 }
 
+// Render renders a BaseElement.
 func (e *BaseElement) Render(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 	st1 := bs.Current().Style.StylePrimitive

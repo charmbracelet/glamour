@@ -22,6 +22,7 @@ const (
 	h6
 )
 
+// Render renders a HeadingElement.
 func (e *HeadingElement) Render(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 	rules := ctx.options.Styles.Heading
@@ -56,6 +57,7 @@ func (e *HeadingElement) Render(w io.Writer, ctx RenderContext) error {
 	return nil
 }
 
+// Finish finishes rendering a HeadingElement.
 func (e *HeadingElement) Finish(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 	rules := bs.Current().Style
