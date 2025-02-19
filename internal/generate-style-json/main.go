@@ -13,13 +13,16 @@ import (
 func writeStyleJSON(filename string, styleConfig *ansi.StyleConfig) error {
 	f, err := os.Create(filename)
 	if err != nil {
-		return err
+		return fmt.Errorf("glamour: error creating file: %w", err)
 	}
 	defer f.Close() //nolint: errcheck
 
 	e := json.NewEncoder(f)
 	e.SetIndent("", "  ")
-	return e.Encode(styleConfig)
+	if err := e.Encode(styleConfig); err != nil {
+		return fmt.Errorf("glamour: error encoding json: %w", err)
+	}
+	return nil
 }
 
 func run() error {

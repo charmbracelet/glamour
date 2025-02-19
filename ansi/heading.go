@@ -2,6 +2,7 @@ package ansi
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 
 	"github.com/muesli/reflow/wordwrap"
@@ -66,10 +67,10 @@ func (e *HeadingElement) Finish(w io.Writer, ctx RenderContext) error {
 	flow := wordwrap.NewWriter(int(bs.Width(ctx))) //nolint: gosec
 	_, err := flow.Write(bs.Current().Block.Bytes())
 	if err != nil {
-		return err
+		return fmt.Errorf("glamour: error writing bytes: %w", err)
 	}
 	if err := flow.Close(); err != nil {
-		return err
+		return fmt.Errorf("glamour: error closing flow: %w", err)
 	}
 
 	_, err = mw.Write(flow.Bytes())

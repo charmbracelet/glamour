@@ -1,6 +1,7 @@
 package ansi
 
 import (
+	"fmt"
 	"io"
 	"sync"
 
@@ -128,7 +129,7 @@ func (e *CodeBlockElement) Render(w io.Writer, ctx RenderContext) error {
 
 		err := quick.Highlight(iw, e.Code, e.Language, "terminal256", theme)
 		if err != nil {
-			return err
+			return fmt.Errorf("glamour: error highlighting code: %w", err)
 		}
 		renderText(iw, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, rules.BlockSuffix)
 		return nil

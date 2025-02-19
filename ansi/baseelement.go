@@ -2,6 +2,7 @@ package ansi
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"strings"
 	"text/template"
@@ -27,7 +28,7 @@ func formatToken(format string, token string) (string, error) {
 
 	tmpl, err := template.New(format).Funcs(TemplateFuncMap).Parse(format)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("glamour: error parsing template: %w", err)
 	}
 
 	err = tmpl.Execute(&b, v)
