@@ -32,8 +32,7 @@ var (
 				l = len(s)
 			}
 
-			//nolint:gomnd
-			if len(values) > 2 {
+			if len(values) > 2 { //nolint:mnd
 				r := values[2].(int)
 				if r > len(s) {
 					r = len(s)
