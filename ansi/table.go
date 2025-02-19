@@ -43,7 +43,7 @@ func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
 		margin = *rules.Margin
 	}
 
-	iw := indent.NewWriterPipe(w, indentation+margin, func(wr io.Writer) {
+	iw := indent.NewWriterPipe(w, indentation+margin, func(_ io.Writer) {
 		renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, " ")
 	})
 
