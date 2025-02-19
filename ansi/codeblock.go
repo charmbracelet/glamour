@@ -118,7 +118,7 @@ func (e *CodeBlockElement) Render(w io.Writer, ctx RenderContext) error {
 		mutex.Unlock()
 	}
 
-	iw := indent.NewWriterPipe(w, indentation+margin, func(wr io.Writer) {
+	iw := indent.NewWriterPipe(w, indentation+margin, func(_ io.Writer) {
 		renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, " ")
 	})
 
