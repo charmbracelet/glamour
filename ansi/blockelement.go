@@ -2,6 +2,7 @@ package ansi
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 
 	"github.com/charmbracelet/x/ansi"
@@ -40,18 +41,18 @@ func (e *BlockElement) Finish(w io.Writer, ctx RenderContext) error {
 
 		mw := NewMarginWriter(ctx, w, bs.Current().Style)
 		if _, err := io.WriteString(mw, s); err != nil {
-			return err
+			return fmt.Errorf("glamour: error writing to writer: %w", err)
 		}
 
 		if e.Newline {
 			if _, err := io.WriteString(mw, "\n"); err != nil {
-				return err
+				return fmt.Errorf("glamour: error writing to writer: %w", err)
 			}
 		}
 	} else {
 		_, err := bs.Parent().Block.Write(bs.Current().Block.Bytes())
 		if err != nil {
-			return err
+			return fmt.Errorf("glamour: error writing to writer: %w", err)
 		}
 	}
 

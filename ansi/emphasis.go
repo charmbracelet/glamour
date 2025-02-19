@@ -1,6 +1,7 @@
 package ansi
 
 import (
+	"fmt"
 	"io"
 )
 
@@ -33,11 +34,11 @@ func (e *EmphasisElement) doRender(w io.Writer, ctx RenderContext, style StylePr
 	for _, child := range e.Children {
 		if r, ok := child.(StyleOverriderElementRenderer); ok {
 			if err := r.StyleOverrideRender(w, ctx, style); err != nil {
-				return err
+				return fmt.Errorf("glamour: error rendering with style: %w", err)
 			}
 		} else {
 			if err := child.Render(w, ctx); err != nil {
-				return err
+				return fmt.Errorf("glamour: error rendering: %w", err)
 			}
 		}
 	}

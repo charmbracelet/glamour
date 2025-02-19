@@ -2,6 +2,7 @@ package ansi
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"strings"
 
@@ -43,7 +44,7 @@ func (e *ParagraphElement) Finish(w io.Writer, ctx RenderContext) error {
 		flow.KeepNewlines = ctx.options.PreserveNewLines
 		_, _ = flow.Write(bs.Current().Block.Bytes())
 		if err := flow.Close(); err != nil {
-			return err
+			return fmt.Errorf("glamour: error closing flow: %w", err)
 		}
 
 		_, err := mw.Write(flow.Bytes())

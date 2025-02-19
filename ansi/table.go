@@ -2,6 +2,7 @@ package ansi
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 
 	"github.com/charmbracelet/lipgloss"
@@ -110,7 +111,7 @@ func (e *TableElement) Finish(_ io.Writer, ctx RenderContext) error {
 
 	ow := ctx.blockStack.Current().Block
 	if _, err := ow.WriteString(ctx.table.lipgloss.String()); err != nil {
-		return err
+		return fmt.Errorf("glamour: error writing to buffer: %w", err)
 	}
 
 	renderText(ow, ctx.options.ColorProfile, ctx.blockStack.With(rules.StylePrimitive), rules.Suffix)
@@ -148,12 +149,12 @@ func (e *TableCellElement) Render(_ io.Writer, ctx RenderContext) error {
 	for _, child := range e.Children {
 		if r, ok := child.(StyleOverriderElementRenderer); ok {
 			if err := r.StyleOverrideRender(&b, ctx, style); err != nil {
-				return err
+				return fmt.Errorf("glamour: error rendering with style: %w", err)
 			}
 		} else {
 			var bb bytes.Buffer
 			if err := child.Render(&bb, ctx); err != nil {
-				return err
+				return fmt.Errorf("glamour: error rendering: %w", err)
 			}
 			el := &BaseElement{
 				Token: bb.String(),

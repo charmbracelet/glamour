@@ -1,6 +1,7 @@
 package ansi
 
 import (
+	"fmt"
 	"io"
 	"net/url"
 	"strings"
@@ -106,7 +107,7 @@ func (r *ANSIRenderer) renderNode(w util.BufWriter, source []byte, node ast.Node
 		if e.Renderer != nil {
 			err := e.Renderer.Render(writeTo, r.context)
 			if err != nil {
-				return ast.WalkStop, err
+				return ast.WalkStop, fmt.Errorf("glamour: error rendering: %w", err)
 			}
 		}
 	} else {
@@ -124,7 +125,7 @@ func (r *ANSIRenderer) renderNode(w util.BufWriter, source []byte, node ast.Node
 		if e.Finisher != nil {
 			err := e.Finisher.Finish(writeTo, r.context)
 			if err != nil {
-				return ast.WalkStop, err
+				return ast.WalkStop, fmt.Errorf("glamour: error finishing render: %w", err)
 			}
 		}
 

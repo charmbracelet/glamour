@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/muesli/termenv"
@@ -146,7 +147,7 @@ func WithStylePath(stylePath string) TermRendererOption {
 		if err != nil {
 			jsonBytes, err := os.ReadFile(stylePath)
 			if err != nil {
-				return err
+				return fmt.Errorf("glamour: error reading file: %w", err)
 			}
 
 			return json.Unmarshal(jsonBytes, &tr.ansiOptions.Styles)
@@ -177,7 +178,7 @@ func WithStylesFromJSONFile(filename string) TermRendererOption {
 	return func(tr *TermRenderer) error {
 		jsonBytes, err := os.ReadFile(filename)
 		if err != nil {
-			return err
+			return fmt.Errorf("glamour: error reading file: %w", err)
 		}
 		return json.Unmarshal(jsonBytes, &tr.ansiOptions.Styles)
 	}
@@ -208,11 +209,22 @@ func WithEmoji() TermRendererOption {
 }
 
 func (tr *TermRenderer) Read(b []byte) (int, error) {
-	return tr.renderBuf.Read(b)
+	n, err := tr.renderBuf.Read(b)
+	if err == io.EOF {
+		return n, io.EOF
+	}
+	if err != nil {
+		return 0, fmt.Errorf("glamour: error reading from buffer: %w", err)
+	}
+	return n, nil
 }
 
 func (tr *TermRenderer) Write(b []byte) (int, error) {
-	return tr.buf.Write(b)
+	n, err := tr.buf.Write(b)
+	if err != nil {
+		return 0, fmt.Errorf("glamour: error writing bytes: %w", err)
+	}
+	return n, nil
 }
 
 // Close must be called after writing to TermRenderer. You can then retrieve
@@ -220,7 +232,7 @@ func (tr *TermRenderer) Write(b []byte) (int, error) {
 func (tr *TermRenderer) Close() error {
 	err := tr.md.Convert(tr.buf.Bytes(), &tr.renderBuf)
 	if err != nil {
-		return err
+		return fmt.Errorf("glamour: error converting markdown: %w", err)
 	}
 
 	tr.buf.Reset()
