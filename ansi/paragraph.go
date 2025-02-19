@@ -40,7 +40,9 @@ func (e *ParagraphElement) Finish(w io.Writer, ctx RenderContext) error {
 		flow := wordwrap.NewWriter(int(bs.Width(ctx)))
 		flow.KeepNewlines = ctx.options.PreserveNewLines
 		_, _ = flow.Write(bs.Current().Block.Bytes())
-		flow.Close()
+		if err := flow.Close(); err != nil {
+			return err
+		}
 
 		_, err := mw.Write(flow.Bytes())
 		if err != nil {
