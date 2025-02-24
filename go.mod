@@ -13,7 +13,7 @@ require (
 	github.com/yuin/goldmark v1.7.8
 	github.com/yuin/goldmark-emoji v1.0.4
 	golang.org/x/term v0.29.0
-	golang.org/x/text v0.21.0
+	golang.org/x/text v0.22.0
 )
 
 require (
