@@ -122,7 +122,11 @@ var (
 				Margin: uintPtr(defaultMargin),
 			},
 		},
-		Table: ansi.StyleTable{},
+		Table: ansi.StyleTable{
+			CenterSeparator: stringPtr("|"),
+			ColumnSeparator: stringPtr("|"),
+			RowSeparator:    stringPtr("-"),
+		},
 		DefinitionDescription: ansi.StylePrimitive{
 			BlockPrefix: "\n* ",
 		},
