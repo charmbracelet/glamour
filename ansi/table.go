@@ -55,7 +55,7 @@ func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
 	renderText(iw, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, rules.BlockPrefix)
 	renderText(iw, ctx.options.ColorProfile, style, rules.Prefix)
 	width := int(ctx.blockStack.Width(ctx)) //nolint: gosec
-	ctx.table.lipgloss = table.New().Width(width)
+	ctx.table.lipgloss = table.New().Width(width).Wrap(false)
 
 	return nil
 }
