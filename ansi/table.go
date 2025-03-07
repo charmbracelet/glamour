@@ -66,9 +66,6 @@ func (e *TableElement) setStyles(ctx RenderContext) {
 		if m := ctx.options.Styles.Table.Margin; m != nil {
 			st = st.Padding(0, int(*m)) //nolint: gosec
 		}
-		if row == 0 {
-			st = st.Bold(true)
-		}
 
 		switch e.table.Alignments[col] {
 		case astext.AlignLeft:
