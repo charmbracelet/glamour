@@ -208,6 +208,26 @@ func WithEmoji() TermRendererOption {
 	}
 }
 
+// WithChromaFormatter sets a TermRenderer's chroma formatter used for code blocks.
+func WithChromaFormatter(formatter string) TermRendererOption {
+	return func(tr *TermRenderer) error {
+		tr.ansiOptions.ChromaFormatter = formatter
+		return nil
+	}
+}
+
+// WithOptions sets multiple TermRenderer options within a single TermRendererOption.
+func WithOptions(options ...TermRendererOption) TermRendererOption {
+	return func(tr *TermRenderer) error {
+		for _, o := range options {
+			if err := o(tr); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+}
+
 func (tr *TermRenderer) Read(b []byte) (int, error) {
 	n, err := tr.renderBuf.Read(b)
 	if err == io.EOF {
