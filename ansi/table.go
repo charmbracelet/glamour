@@ -61,7 +61,7 @@ func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
 }
 
 func (e *TableElement) setStyles(ctx RenderContext) {
-	ctx.table.lipgloss = ctx.table.lipgloss.StyleFunc(func(row, col int) lipgloss.Style {
+	ctx.table.lipgloss = ctx.table.lipgloss.StyleFunc(func(_, col int) lipgloss.Style {
 		st := lipgloss.NewStyle().Inline(true)
 		if m := ctx.options.Styles.Table.Margin; m != nil {
 			st = st.Padding(0, int(*m)) //nolint: gosec
