@@ -282,3 +282,46 @@ func ExampleASCIIStyleConfig() {
 	// ..Cell.3................................|Cell.4...............................
 	// ..Cell.5................................|Cell.6...............................
 }
+
+func TestWithChromaFormatterDefault(t *testing.T) {
+	r, err := NewTermRenderer(
+		WithStandardStyle(styles.DarkStyle),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	in, err := os.ReadFile("testdata/TestWithChromaFormatter.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	b, err := r.Render(string(in))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	golden.RequireEqual(t, []byte(b))
+}
+
+func TestWithChromaFormatterCustom(t *testing.T) {
+	r, err := NewTermRenderer(
+		WithStandardStyle(styles.DarkStyle),
+		WithChromaFormatter("terminal16"),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	in, err := os.ReadFile("testdata/TestWithChromaFormatter.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	b, err := r.Render(string(in))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	golden.RequireEqual(t, []byte(b))
+}
