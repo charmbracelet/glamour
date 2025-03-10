@@ -55,18 +55,21 @@ func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
 	renderText(iw, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, rules.BlockPrefix)
 	renderText(iw, ctx.options.ColorProfile, style, rules.Prefix)
 	width := int(ctx.blockStack.Width(ctx)) //nolint: gosec
-	ctx.table.lipgloss = table.New().Width(width).Wrap(false)
+	ctx.table.lipgloss = table.New().Width(width).Wrap(true)
 
 	return nil
 }
 
 func (e *TableElement) setStyles(ctx RenderContext) {
-	ctx.table.lipgloss = ctx.table.lipgloss.StyleFunc(func(_, col int) lipgloss.Style {
-		st := lipgloss.NewStyle().Inline(true)
+	ctx.table.lipgloss = ctx.table.lipgloss.StyleFunc(func(row, col int) lipgloss.Style {
+		st := lipgloss.NewStyle().Inline(false)
+		// Default Styles
+		st = st.Margin(0, 1)
+
+		// Override with custom styles
 		if m := ctx.options.Styles.Table.Margin; m != nil {
 			st = st.Padding(0, int(*m)) //nolint: gosec
 		}
-
 		switch e.table.Alignments[col] {
 		case astext.AlignLeft:
 			st = st.Align(lipgloss.Left).PaddingRight(0)
