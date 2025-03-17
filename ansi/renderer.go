@@ -18,6 +18,7 @@ import (
 type Options struct {
 	BaseURL          string
 	WordWrap         int
+	TableWrap        *bool
 	PreserveNewLines bool
 	ColorProfile     termenv.Profile
 	Styles           StyleConfig

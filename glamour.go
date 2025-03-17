@@ -192,6 +192,16 @@ func WithWordWrap(wordWrap int) TermRendererOption {
 	}
 }
 
+// WithTableWrap controls whether table content will wrap if too long.
+// This is true by default. If false, table content will be truncated with an
+// ellipsis if too long to fit.
+func WithTableWrap(tableWrap bool) TermRendererOption {
+	return func(tr *TermRenderer) error {
+		tr.ansiOptions.TableWrap = &tableWrap
+		return nil
+	}
+}
+
 // WithPreservedNewlines preserves newlines from being replaced.
 func WithPreservedNewLines() TermRendererOption {
 	return func(tr *TermRenderer) error {
