@@ -3,12 +3,14 @@ package glamour
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"os"
+	"regexp"
 	"strings"
 	"testing"
 
-	styles "github.com/charmbracelet/glamour/styles"
+	"github.com/charmbracelet/glamour/styles"
 	"github.com/charmbracelet/x/exp/golden"
 )
 
@@ -217,4 +219,109 @@ func FuzzData(f *testing.F) {
 			return 1
 		}()
 	})
+}
+
+func TestTableAscii(t *testing.T) {
+	markdown := strings.TrimSpace(`
+| Header A  | Header B  |
+| --------- | --------- |
+| Cell 1    | Cell 2    |
+| Cell 3    | Cell 4    |
+| Cell 5    | Cell 6    |
+`)
+
+	renderer, err := NewTermRenderer(
+		WithStyles(styles.ASCIIStyleConfig),
+		WithWordWrap(80),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	result, err := renderer.Render(markdown)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	nonAsciiRegexp := regexp.MustCompile(`[^\x00-\x7f]+`)
+	nonAsciiChars := nonAsciiRegexp.FindAllString(result, -1)
+	if len(nonAsciiChars) > 0 {
+		t.Errorf("Non-ASCII characters found in output: %v", nonAsciiChars)
+	}
+}
+
+func ExampleASCIIStyleConfig() {
+	markdown := strings.TrimSpace(`
+| Header A  | Header B  |
+| --------- | --------- |
+| Cell 1    | Cell 2    |
+| Cell 3    | Cell 4    |
+| Cell 5    | Cell 6    |
+`)
+
+	renderer, err := NewTermRenderer(
+		WithStyles(styles.ASCIIStyleConfig),
+		WithWordWrap(80),
+	)
+	if err != nil {
+		return
+	}
+
+	result, err := renderer.Render(markdown)
+	if err != nil {
+		return
+	}
+	result = strings.ReplaceAll(result, " ", ".")
+	fmt.Println(result)
+
+	// Output:
+	// ..............................................................................
+	// ...Header.A............................|.Header.B.............................
+	// ..-------------------------------------|------------------------------------..
+	// ...Cell.1..............................|.Cell.2...............................
+	// ...Cell.3..............................|.Cell.4...............................
+	// ...Cell.5..............................|.Cell.6...............................
+}
+
+func TestWithChromaFormatterDefault(t *testing.T) {
+	r, err := NewTermRenderer(
+		WithStandardStyle(styles.DarkStyle),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	in, err := os.ReadFile("testdata/TestWithChromaFormatter.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	b, err := r.Render(string(in))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	golden.RequireEqual(t, []byte(b))
+}
+
+func TestWithChromaFormatterCustom(t *testing.T) {
+	r, err := NewTermRenderer(
+		WithStandardStyle(styles.DarkStyle),
+		WithChromaFormatter("terminal16"),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	in, err := os.ReadFile("testdata/TestWithChromaFormatter.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	b, err := r.Render(string(in))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	golden.RequireEqual(t, []byte(b))
 }

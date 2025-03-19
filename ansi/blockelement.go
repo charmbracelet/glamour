@@ -2,6 +2,7 @@ package ansi
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 
 	"github.com/charmbracelet/x/ansi"
@@ -17,6 +18,7 @@ type BlockElement struct {
 	Newline bool
 }
 
+// Render renders a BlockElement.
 func (e *BlockElement) Render(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 	bs.Push(*e)
@@ -26,30 +28,31 @@ func (e *BlockElement) Render(w io.Writer, ctx RenderContext) error {
 	return nil
 }
 
+// Finish finishes rendering a BlockElement.
 func (e *BlockElement) Finish(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 
-	if e.Margin {
+	if e.Margin { //nolint: nestif
 		s := ansi.Wordwrap(
 			bs.Current().Block.String(),
-			int(bs.Width(ctx)),
+			int(bs.Width(ctx)), //nolint: gosec
 			" ,.;-+|",
 		)
 
 		mw := NewMarginWriter(ctx, w, bs.Current().Style)
 		if _, err := io.WriteString(mw, s); err != nil {
-			return err
+			return fmt.Errorf("glamour: error writing to writer: %w", err)
 		}
 
 		if e.Newline {
 			if _, err := io.WriteString(mw, "\n"); err != nil {
-				return err
+				return fmt.Errorf("glamour: error writing to writer: %w", err)
 			}
 		}
 	} else {
 		_, err := bs.Parent().Block.Write(bs.Current().Block.Bytes())
 		if err != nil {
-			return err
+			return fmt.Errorf("glamour: error writing to writer: %w", err)
 		}
 	}
 

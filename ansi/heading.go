@@ -2,6 +2,7 @@ package ansi
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 
 	"github.com/muesli/reflow/wordwrap"
@@ -22,6 +23,7 @@ const (
 	h6
 )
 
+// Render renders a HeadingElement.
 func (e *HeadingElement) Render(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 	rules := ctx.options.Styles.Heading
@@ -56,17 +58,20 @@ func (e *HeadingElement) Render(w io.Writer, ctx RenderContext) error {
 	return nil
 }
 
+// Finish finishes rendering a HeadingElement.
 func (e *HeadingElement) Finish(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 	rules := bs.Current().Style
 	mw := NewMarginWriter(ctx, w, rules)
 
-	flow := wordwrap.NewWriter(int(bs.Width(ctx)))
+	flow := wordwrap.NewWriter(int(bs.Width(ctx))) //nolint: gosec
 	_, err := flow.Write(bs.Current().Block.Bytes())
 	if err != nil {
-		return err
+		return fmt.Errorf("glamour: error writing bytes: %w", err)
 	}
-	flow.Close()
+	if err := flow.Close(); err != nil {
+		return fmt.Errorf("glamour: error closing flow: %w", err)
+	}
 
 	_, err = mw.Write(flow.Bytes())
 	if err != nil {

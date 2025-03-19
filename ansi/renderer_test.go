@@ -50,6 +50,15 @@ func TestRenderer(t *testing.T) {
 				t.Fatal(err)
 			}
 
+			switch bn {
+			case "table_wrap":
+				tableWrap := true
+				options.TableWrap = &tableWrap
+			case "table_truncate":
+				tableWrap := false
+				options.TableWrap = &tableWrap
+			}
+
 			md := goldmark.New(
 				goldmark.WithExtensions(
 					extension.GFM,
@@ -100,6 +109,10 @@ func TestRendererIssues(t *testing.T) {
 			err = json.Unmarshal(b, &options.Styles)
 			if err != nil {
 				t.Fatal(err)
+			}
+			if bn == "493" {
+				tableWrap := false
+				options.TableWrap = &tableWrap
 			}
 
 			md := goldmark.New(

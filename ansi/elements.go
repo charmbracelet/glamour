@@ -17,6 +17,7 @@ type ElementRenderer interface {
 	Render(w io.Writer, ctx RenderContext) error
 }
 
+// StyleOverriderElementRenderer is called when entering a markdown node with a specific style.
 type StyleOverriderElementRenderer interface {
 	StyleOverrideRender(w io.Writer, ctx RenderContext, style StylePrimitive) error
 }
@@ -134,7 +135,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		if node.Parent().(*ast.List).IsOrdered() {
 			e = l
 			if node.Parent().(*ast.List).Start != 1 {
-				e += uint(node.Parent().(*ast.List).Start) - 1
+				e += uint(node.Parent().(*ast.List).Start) - 1 //nolint: gosec
 			}
 		}
 
@@ -197,7 +198,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 
 	case astext.KindStrikethrough:
 		n := node.(*astext.Strikethrough)
-		s := string(n.Text(source))
+		s := string(n.Text(source)) //nolint: staticcheck
 		style := ctx.options.Styles.Strikethrough
 
 		return Element{
@@ -264,7 +265,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 	// Images
 	case ast.KindImage:
 		n := node.(*ast.Image)
-		text := string(n.Text(source))
+		text := string(n.Text(source)) //nolint: staticcheck
 		return Element{
 			Renderer: &ImageElement{
 				Text:    text,
@@ -307,7 +308,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 
 	case ast.KindCodeSpan:
 		n := node.(*ast.CodeSpan)
-		s := string(n.Text(source))
+		s := string(n.Text(source)) //nolint: staticcheck
 		return Element{
 			Renderer: &CodeSpanElement{
 				Text:  html.UnescapeString(s),
@@ -359,7 +360,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		n := node.(*ast.HTMLBlock)
 		return Element{
 			Renderer: &BaseElement{
-				Token: ctx.SanitizeHTML(string(n.Text(source)), true),
+				Token: ctx.SanitizeHTML(string(n.Text(source)), true), //nolint: staticcheck
 				Style: ctx.options.Styles.HTMLBlock.StylePrimitive,
 			},
 		}
@@ -367,7 +368,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		n := node.(*ast.RawHTML)
 		return Element{
 			Renderer: &BaseElement{
-				Token: ctx.SanitizeHTML(string(n.Text(source)), true),
+				Token: ctx.SanitizeHTML(string(n.Text(source)), true), //nolint: staticcheck
 				Style: ctx.options.Styles.HTMLSpan.StylePrimitive,
 			},
 		}

@@ -1,6 +1,7 @@
 package ansi
 
 import (
+	"fmt"
 	"io"
 
 	"github.com/muesli/reflow/indent"
@@ -48,5 +49,9 @@ func NewMarginWriter(ctx RenderContext, w io.Writer, rules StyleBlock) *MarginWr
 }
 
 func (w *MarginWriter) Write(b []byte) (int, error) {
-	return w.iw.Write(b)
+	n, err := w.iw.Write(b)
+	if err != nil {
+		return 0, fmt.Errorf("glamour: error writing bytes: %w", err)
+	}
+	return n, nil
 }

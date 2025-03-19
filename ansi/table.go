@@ -2,11 +2,13 @@ package ansi
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 
 	"github.com/charmbracelet/lipgloss/v2"
 	"github.com/charmbracelet/lipgloss/v2/table"
 	"github.com/muesli/reflow/indent"
+	"github.com/yuin/goldmark/extension/ast"
 	astext "github.com/yuin/goldmark/extension/ast"
 )
 
@@ -30,6 +32,7 @@ type TableCellElement struct {
 	Head     bool
 }
 
+// Render renders a TableElement.
 func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 
@@ -51,22 +54,27 @@ func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
 
 	renderText(iw, bs.Current().Style.StylePrimitive, rules.BlockPrefix)
 	renderText(iw, style, rules.Prefix)
-	width := int(ctx.blockStack.Width(ctx))
-	ctx.table.lipgloss = table.New().Width(width)
+	width := int(ctx.blockStack.Width(ctx)) //nolint: gosec
+
+	wrap := true
+	if ctx.options.TableWrap != nil {
+		wrap = *ctx.options.TableWrap
+	}
+	ctx.table.lipgloss = table.New().Width(width).Wrap(wrap)
 
 	return nil
 }
 
 func (e *TableElement) setStyles(ctx RenderContext) {
-	ctx.table.lipgloss = ctx.table.lipgloss.StyleFunc(func(row, col int) lipgloss.Style {
-		st := lipgloss.NewStyle().Inline(true)
-		if m := ctx.options.Styles.Table.Margin; m != nil {
-			st = st.Padding(0, int(*m))
-		}
-		if row == 0 {
-			st = st.Bold(true)
-		}
+	ctx.table.lipgloss = ctx.table.lipgloss.StyleFunc(func(_, col int) lipgloss.Style {
+		st := lipgloss.NewStyle().Inline(false)
+		// Default Styles
+		st = st.Margin(0, 1)
 
+		// Override with custom styles
+		if m := ctx.options.Styles.Table.Margin; m != nil {
+			st = st.Padding(0, int(*m)) //nolint: gosec
+		}
 		switch e.table.Alignments[col] {
 		case astext.AlignLeft:
 			st = st.Align(lipgloss.Left).PaddingRight(0)
@@ -74,6 +82,8 @@ func (e *TableElement) setStyles(ctx RenderContext) {
 			st = st.Align(lipgloss.Center)
 		case astext.AlignRight:
 			st = st.Align(lipgloss.Right).PaddingLeft(0)
+		case ast.AlignNone:
+			// do nothing
 		}
 
 		return st
@@ -100,6 +110,7 @@ func (e *TableElement) setBorders(ctx RenderContext) {
 	ctx.table.lipgloss.BorderBottom(false)
 }
 
+// Finish finishes rendering a TableElement.
 func (e *TableElement) Finish(_ io.Writer, ctx RenderContext) error {
 	rules := ctx.options.Styles.Table
 
@@ -108,7 +119,7 @@ func (e *TableElement) Finish(_ io.Writer, ctx RenderContext) error {
 
 	ow := ctx.blockStack.Current().Block
 	if _, err := ow.WriteString(ctx.table.lipgloss.String()); err != nil {
-		return err
+		return fmt.Errorf("glamour: error writing to buffer: %w", err)
 	}
 
 	renderText(ow, ctx.blockStack.With(rules.StylePrimitive), rules.Suffix)
@@ -117,6 +128,7 @@ func (e *TableElement) Finish(_ io.Writer, ctx RenderContext) error {
 	return nil
 }
 
+// Finish finishes rendering a TableRowElement.
 func (e *TableRowElement) Finish(_ io.Writer, ctx RenderContext) error {
 	if ctx.table.lipgloss == nil {
 		return nil
@@ -127,6 +139,7 @@ func (e *TableRowElement) Finish(_ io.Writer, ctx RenderContext) error {
 	return nil
 }
 
+// Finish finishes rendering a TableHeadElement.
 func (e *TableHeadElement) Finish(_ io.Writer, ctx RenderContext) error {
 	if ctx.table.lipgloss == nil {
 		return nil
@@ -137,18 +150,19 @@ func (e *TableHeadElement) Finish(_ io.Writer, ctx RenderContext) error {
 	return nil
 }
 
+// Render renders a TableCellElement.
 func (e *TableCellElement) Render(_ io.Writer, ctx RenderContext) error {
 	var b bytes.Buffer
 	style := ctx.options.Styles.Table.StylePrimitive
 	for _, child := range e.Children {
 		if r, ok := child.(StyleOverriderElementRenderer); ok {
 			if err := r.StyleOverrideRender(&b, ctx, style); err != nil {
-				return err
+				return fmt.Errorf("glamour: error rendering with style: %w", err)
 			}
 		} else {
 			var bb bytes.Buffer
 			if err := child.Render(&bb, ctx); err != nil {
-				return err
+				return fmt.Errorf("glamour: error rendering: %w", err)
 			}
 			el := &BaseElement{
 				Token: bb.String(),
