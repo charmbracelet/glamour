@@ -111,6 +111,10 @@ func (e *TableElement) setBorders(ctx RenderContext) {
 
 // Finish finishes rendering a TableElement.
 func (e *TableElement) Finish(_ io.Writer, ctx RenderContext) error {
+	defer func() {
+		ctx.table.lipgloss = nil
+	}()
+
 	rules := ctx.options.Styles.Table
 
 	e.setStyles(ctx)
@@ -123,7 +127,6 @@ func (e *TableElement) Finish(_ io.Writer, ctx RenderContext) error {
 
 	renderText(ow, ctx.options.ColorProfile, ctx.blockStack.With(rules.StylePrimitive), rules.Suffix)
 	renderText(ow, ctx.options.ColorProfile, ctx.blockStack.Current().Style.StylePrimitive, rules.BlockSuffix)
-	ctx.table.lipgloss = nil
 	return nil
 }
 
