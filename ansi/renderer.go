@@ -16,13 +16,14 @@ import (
 
 // Options is used to configure an ANSIRenderer.
 type Options struct {
-	BaseURL          string
-	WordWrap         int
-	TableWrap        *bool
-	PreserveNewLines bool
-	ColorProfile     termenv.Profile
-	Styles           StyleConfig
-	ChromaFormatter  string
+	BaseURL              string
+	WordWrap             int
+	TableWrap            *bool
+	AccessibleTableLinks bool
+	PreserveNewLines     bool
+	ColorProfile         termenv.Profile
+	Styles               StyleConfig
+	ChromaFormatter      string
 }
 
 // ANSIRenderer renders markdown content as ANSI escaped sequences.

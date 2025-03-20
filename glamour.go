@@ -202,6 +202,16 @@ func WithTableWrap(tableWrap bool) TermRendererOption {
 	}
 }
 
+// WithAccessibleTableLinks enable accessible mode for tables that contain
+// links. With this mode enabled, links are not rendered inline. Instead, they
+// are rendered as a list of links at the end of the table.
+func WithAccessibleTableLinks(accessibleTableLinks bool) TermRendererOption {
+	return func(tr *TermRenderer) error {
+		tr.ansiOptions.AccessibleTableLinks = accessibleTableLinks
+		return nil
+	}
+}
+
 // WithPreservedNewlines preserves newlines from being replaced.
 func WithPreservedNewLines() TermRendererOption {
 	return func(tr *TermRenderer) error {

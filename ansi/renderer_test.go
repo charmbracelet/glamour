@@ -59,6 +59,10 @@ func TestRenderer(t *testing.T) {
 			case "table_truncate":
 				tableWrap := false
 				options.TableWrap = &tableWrap
+			case "table_with_links_regular":
+				options.AccessibleTableLinks = false
+			case "table_with_links_accessible", "table_with_links_no_color":
+				options.AccessibleTableLinks = true
 			}
 
 			md := goldmark.New(

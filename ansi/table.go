@@ -17,6 +17,7 @@ type TableElement struct {
 	table    *astext.Table
 	header   []string
 	row      []string
+	source   []byte
 }
 
 // A TableRowElement is used to render a single row in a table.
@@ -127,6 +128,11 @@ func (e *TableElement) Finish(_ io.Writer, ctx RenderContext) error {
 
 	renderText(ow, ctx.options.ColorProfile, ctx.blockStack.With(rules.StylePrimitive), rules.Suffix)
 	renderText(ow, ctx.options.ColorProfile, ctx.blockStack.Current().Style.StylePrimitive, rules.BlockSuffix)
+
+	if err := e.printTableLinks(ctx); err != nil {
+		return fmt.Errorf("glamour: error printing table links: %w", err)
+	}
+
 	return nil
 }
 

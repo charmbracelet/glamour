@@ -231,6 +231,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 				BaseURL:  ctx.options.BaseURL,
 				URL:      string(n.Destination),
 				Children: children,
+				TextOnly: ctx.options.AccessibleTableLinks && isInsideTable(node),
 			},
 		}
 	case ast.KindAutoLink:
@@ -259,6 +260,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 				Children: children,
 				BaseURL:  ctx.options.BaseURL,
 				URL:      u,
+				TextOnly: ctx.options.AccessibleTableLinks && isInsideTable(node),
 			},
 		}
 
@@ -320,7 +322,8 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 	case astext.KindTable:
 		table := node.(*astext.Table)
 		te := &TableElement{
-			table: table,
+			table:  table,
+			source: source,
 		}
 		return Element{
 			Entering: "\n",
