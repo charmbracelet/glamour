@@ -17,6 +17,15 @@ type TableElement struct {
 	table    *astext.Table
 	header   []string
 	row      []string
+	source   []byte
+
+	tableAutoLinks []tableLink
+	tableImages    []tableLink
+	tableLinks     []tableLink
+
+	groupedAutoLinks groupedTableLinks
+	groupedImages    groupedTableLinks
+	groupedLinks     groupedTableLinks
 }
 
 // A TableRowElement is used to render a single row in a table.
@@ -60,6 +69,11 @@ func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
 		wrap = *ctx.options.TableWrap
 	}
 	ctx.table.lipgloss = table.New().Width(width).Wrap(wrap)
+
+	if err := e.collectLinksAndImages(ctx); err != nil {
+		return err
+	}
+	e.uniqAndGroupLinks(ctx)
 
 	return nil
 }
@@ -113,6 +127,12 @@ func (e *TableElement) setBorders(ctx RenderContext) {
 func (e *TableElement) Finish(_ io.Writer, ctx RenderContext) error {
 	defer func() {
 		ctx.table.lipgloss = nil
+		ctx.table.tableAutoLinks = nil
+		ctx.table.tableImages = nil
+		ctx.table.tableLinks = nil
+		ctx.table.groupedAutoLinks = nil
+		ctx.table.groupedImages = nil
+		ctx.table.groupedLinks = nil
 	}()
 
 	rules := ctx.options.Styles.Table
@@ -127,6 +147,9 @@ func (e *TableElement) Finish(_ io.Writer, ctx RenderContext) error {
 
 	renderText(ow, ctx.options.ColorProfile, ctx.blockStack.With(rules.StylePrimitive), rules.Suffix)
 	renderText(ow, ctx.options.ColorProfile, ctx.blockStack.Current().Style.StylePrimitive, rules.BlockSuffix)
+
+	e.printTableLinks(ctx)
+
 	return nil
 }
 

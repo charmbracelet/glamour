@@ -12,6 +12,7 @@ type LinkElement struct {
 	BaseURL  string
 	URL      string
 	Children []ElementRenderer
+	TextOnly bool
 }
 
 // Render renders a LinkElement.
@@ -35,6 +36,10 @@ func (e *LinkElement) Render(w io.Writer, ctx RenderContext) error {
 				return fmt.Errorf("glamour: error rendering: %w", err)
 			}
 		}
+	}
+
+	if e.TextOnly {
+		return nil
 	}
 
 	u, err := url.Parse(e.URL)
