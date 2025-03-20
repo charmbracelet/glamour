@@ -13,6 +13,7 @@ type LinkElement struct {
 	URL      string
 	Children []ElementRenderer
 	SkipText bool
+	SkipHref bool
 }
 
 // Render renders a LinkElement.
@@ -22,8 +23,10 @@ func (e *LinkElement) Render(w io.Writer, ctx RenderContext) error {
 			return err
 		}
 	}
-	if err := e.renderHrefPart(w, ctx); err != nil {
-		return err
+	if !e.SkipHref {
+		if err := e.renderHrefPart(w, ctx); err != nil {
+			return err
+		}
 	}
 	return nil
 }
