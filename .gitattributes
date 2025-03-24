@@ -1,9 +1,2 @@
 *.golden linguist-generated=true -text
-styles/gallery/auto.png filter=lfs diff=lfs merge=lfs -text
-styles/gallery/dark.png filter=lfs diff=lfs merge=lfs -text
-styles/gallery/dracula.png filter=lfs diff=lfs merge=lfs -text
-styles/gallery/light.png filter=lfs diff=lfs merge=lfs -text
-styles/gallery/notty.png filter=lfs diff=lfs merge=lfs -text
-styles/gallery/pink.png filter=lfs diff=lfs merge=lfs -text
-styles/gallery/tokyo-night.png filter=lfs diff=lfs merge=lfs -text
-styles/gallery/ascii.png filter=lfs diff=lfs merge=lfs -text
+*.png filter=lfs diff=lfs merge=lfs -text
