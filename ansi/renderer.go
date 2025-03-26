@@ -6,7 +6,6 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/muesli/termenv"
 	east "github.com/yuin/goldmark-emoji/ast"
 	"github.com/yuin/goldmark/ast"
 	astext "github.com/yuin/goldmark/extension/ast"
@@ -20,7 +19,6 @@ type Options struct {
 	WordWrap         int
 	TableWrap        *bool
 	PreserveNewLines bool
-	ColorProfile     termenv.Profile
 	Styles           StyleConfig
 	ChromaFormatter  string
 }

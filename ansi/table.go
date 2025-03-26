@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/lipgloss/table"
+	"github.com/charmbracelet/lipgloss/v2"
+	"github.com/charmbracelet/lipgloss/v2/table"
 	"github.com/muesli/reflow/indent"
 	"github.com/yuin/goldmark/extension/ast"
 	astext "github.com/yuin/goldmark/extension/ast"
@@ -47,13 +47,13 @@ func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
 	}
 
 	iw := indent.NewWriterPipe(w, indentation+margin, func(_ io.Writer) {
-		renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, " ")
+		renderText(w, bs.Current().Style.StylePrimitive, " ")
 	})
 
 	style := bs.With(rules.StylePrimitive)
 
-	renderText(iw, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, rules.BlockPrefix)
-	renderText(iw, ctx.options.ColorProfile, style, rules.Prefix)
+	renderText(iw, bs.Current().Style.StylePrimitive, rules.BlockPrefix)
+	renderText(iw, style, rules.Prefix)
 	width := int(ctx.blockStack.Width(ctx)) //nolint: gosec
 
 	wrap := true
@@ -122,8 +122,8 @@ func (e *TableElement) Finish(_ io.Writer, ctx RenderContext) error {
 		return fmt.Errorf("glamour: error writing to buffer: %w", err)
 	}
 
-	renderText(ow, ctx.options.ColorProfile, ctx.blockStack.With(rules.StylePrimitive), rules.Suffix)
-	renderText(ow, ctx.options.ColorProfile, ctx.blockStack.Current().Style.StylePrimitive, rules.BlockSuffix)
+	renderText(ow, ctx.blockStack.With(rules.StylePrimitive), rules.Suffix)
+	renderText(ow, ctx.blockStack.Current().Style.StylePrimitive, rules.BlockSuffix)
 	ctx.table.lipgloss = nil
 	return nil
 }

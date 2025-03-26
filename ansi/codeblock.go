@@ -9,7 +9,6 @@ import (
 	"github.com/alecthomas/chroma/v2/quick"
 	"github.com/alecthomas/chroma/v2/styles"
 	"github.com/muesli/reflow/indent"
-	"github.com/muesli/termenv"
 )
 
 const (
@@ -83,7 +82,7 @@ func (e *CodeBlockElement) Render(w io.Writer, ctx RenderContext) error {
 	}
 	theme := rules.Theme
 
-	if rules.Chroma != nil && ctx.options.ColorProfile != termenv.Ascii {
+	if rules.Chroma != nil {
 		theme = chromaStyleTheme
 		mutex.Lock()
 		// Don't register the style if it's already registered.
@@ -128,17 +127,17 @@ func (e *CodeBlockElement) Render(w io.Writer, ctx RenderContext) error {
 	}
 
 	iw := indent.NewWriterPipe(w, indentation+margin, func(_ io.Writer) {
-		renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, " ")
+		renderText(w, bs.Current().Style.StylePrimitive, " ")
 	})
 
 	if len(theme) > 0 {
-		renderText(iw, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, rules.BlockPrefix)
+		renderText(iw, bs.Current().Style.StylePrimitive, rules.BlockPrefix)
 
 		err := quick.Highlight(iw, e.Code, e.Language, formatter, theme)
 		if err != nil {
 			return fmt.Errorf("glamour: error highlighting code: %w", err)
 		}
-		renderText(iw, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, rules.BlockSuffix)
+		renderText(iw, bs.Current().Style.StylePrimitive, rules.BlockSuffix)
 		return nil
 	}
 

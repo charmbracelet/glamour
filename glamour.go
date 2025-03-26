@@ -7,17 +7,17 @@ import (
 	"io"
 	"os"
 
-	"github.com/muesli/termenv"
 	"github.com/yuin/goldmark"
 	emoji "github.com/yuin/goldmark-emoji"
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/renderer"
 	"github.com/yuin/goldmark/util"
-	"golang.org/x/term"
 
 	"github.com/charmbracelet/glamour/ansi"
 	styles "github.com/charmbracelet/glamour/styles"
+	"github.com/charmbracelet/lipgloss/v2"
+	"github.com/charmbracelet/x/term"
 )
 
 const (
@@ -76,8 +76,7 @@ func NewTermRenderer(options ...TermRendererOption) (*TermRenderer, error) {
 			),
 		),
 		ansiOptions: ansi.Options{
-			WordWrap:     defaultWidth,
-			ColorProfile: termenv.TrueColor,
+			WordWrap: defaultWidth,
 		},
 	}
 	for _, o := range options {
@@ -100,15 +99,6 @@ func NewTermRenderer(options ...TermRendererOption) (*TermRenderer, error) {
 func WithBaseURL(baseURL string) TermRendererOption {
 	return func(tr *TermRenderer) error {
 		tr.ansiOptions.BaseURL = baseURL
-		return nil
-	}
-}
-
-// WithColorProfile sets the TermRenderer's color profile
-// (TrueColor / ANSI256 / ANSI).
-func WithColorProfile(profile termenv.Profile) TermRendererOption {
-	return func(tr *TermRenderer) error {
-		tr.ansiOptions.ColorProfile = profile
 		return nil
 	}
 }
@@ -291,12 +281,17 @@ func getEnvironmentStyle() string {
 	return glamourStyle
 }
 
+var (
+	isatty    = term.IsTerminal(os.Stdout.Fd())
+	hasDarkBg = lipgloss.HasDarkBackground(os.Stdin, os.Stdout)
+)
+
 func getDefaultStyle(style string) (*ansi.StyleConfig, error) {
 	if style == styles.AutoStyle {
-		if !term.IsTerminal(int(os.Stdout.Fd())) {
+		if !isatty {
 			return &styles.NoTTYStyleConfig, nil
 		}
-		if termenv.HasDarkBackground() {
+		if hasDarkBg {
 			return &styles.DarkStyleConfig, nil
 		}
 		return &styles.LightStyleConfig, nil

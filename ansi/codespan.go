@@ -10,6 +10,6 @@ type CodeSpanElement struct {
 
 // Render renders a CodeSpanElement.
 func (e *CodeSpanElement) Render(w io.Writer, ctx RenderContext) error {
-	renderText(w, ctx.options.ColorProfile, e.Style, e.Style.Prefix+e.Text+e.Style.Suffix)
+	renderText(w, e.Style, e.Style.Prefix+e.Text+e.Style.Suffix)
 	return nil
 }
