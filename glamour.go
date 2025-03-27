@@ -16,8 +16,6 @@ import (
 
 	"github.com/charmbracelet/glamour/v2/ansi"
 	styles "github.com/charmbracelet/glamour/v2/styles"
-	"github.com/charmbracelet/lipgloss/v2"
-	"github.com/charmbracelet/x/term"
 )
 
 const (
@@ -114,12 +112,6 @@ func WithStandardStyle(style string) TermRendererOption {
 		tr.ansiOptions.Styles = *styles
 		return nil
 	}
-}
-
-// WithAutoStyle sets a TermRenderer's styles with either the standard dark
-// or light style, depending on the terminal's background color at run-time.
-func WithAutoStyle() TermRendererOption {
-	return WithStandardStyle(styles.AutoStyle)
 }
 
 // WithEnvironmentConfig sets a TermRenderer's styles based on the
@@ -275,28 +267,13 @@ func (tr *TermRenderer) RenderBytes(in []byte) ([]byte, error) {
 func getEnvironmentStyle() string {
 	glamourStyle := os.Getenv("GLAMOUR_STYLE")
 	if len(glamourStyle) == 0 {
-		glamourStyle = styles.AutoStyle
+		glamourStyle = styles.DarkStyle
 	}
 
 	return glamourStyle
 }
 
-var (
-	isatty    = term.IsTerminal(os.Stdout.Fd())
-	hasDarkBg = lipgloss.HasDarkBackground(os.Stdin, os.Stdout)
-)
-
 func getDefaultStyle(style string) (*ansi.StyleConfig, error) {
-	if style == styles.AutoStyle {
-		if !isatty {
-			return &styles.NoTTYStyleConfig, nil
-		}
-		if hasDarkBg {
-			return &styles.DarkStyleConfig, nil
-		}
-		return &styles.LightStyleConfig, nil
-	}
-
 	styles, ok := styles.DefaultStyles[style]
 	if !ok {
 		return nil, fmt.Errorf("%s: style not found", style)
