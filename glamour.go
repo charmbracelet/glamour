@@ -14,8 +14,8 @@ import (
 	"github.com/yuin/goldmark/renderer"
 	"github.com/yuin/goldmark/util"
 
-	"github.com/charmbracelet/glamour/ansi"
-	styles "github.com/charmbracelet/glamour/styles"
+	"github.com/charmbracelet/glamour/v2/ansi"
+	styles "github.com/charmbracelet/glamour/v2/styles"
 	"github.com/charmbracelet/lipgloss/v2"
 	"github.com/charmbracelet/x/term"
 )
