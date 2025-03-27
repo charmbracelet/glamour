@@ -6,7 +6,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/muesli/reflow/wordwrap"
+	"github.com/charmbracelet/x/cellbuf"
 )
 
 // A ParagraphElement is used to render individual paragraphs.
@@ -28,8 +28,8 @@ func (e *ParagraphElement) Render(w io.Writer, ctx RenderContext) error {
 	}
 	bs.Push(be)
 
-	renderText(w, bs.Parent().Style.StylePrimitive, rules.BlockPrefix)
-	renderText(bs.Current().Block, bs.Current().Style.StylePrimitive, rules.Prefix)
+	_, _ = renderText(w, bs.Parent().Style.StylePrimitive, rules.BlockPrefix)
+	_, _ = renderText(bs.Current().Block, bs.Current().Style.StylePrimitive, rules.Prefix)
 	return nil
 }
 
@@ -40,22 +40,21 @@ func (e *ParagraphElement) Finish(w io.Writer, ctx RenderContext) error {
 
 	mw := NewMarginWriter(ctx, w, rules)
 	if len(strings.TrimSpace(bs.Current().Block.String())) > 0 {
-		flow := wordwrap.NewWriter(int(bs.Width(ctx))) //nolint: gosec
-		flow.KeepNewlines = ctx.options.PreserveNewLines
-		_, _ = flow.Write(bs.Current().Block.Bytes())
-		if err := flow.Close(); err != nil {
-			return fmt.Errorf("glamour: error closing flow: %w", err)
+		blk := bs.Current().Block.String()
+		if !ctx.options.PreserveNewLines {
+			blk = strings.ReplaceAll(blk, "\n", " ")
 		}
+		flow := cellbuf.Wrap(blk, int(bs.Width(ctx)), "") //nolint: gosec
 
-		_, err := mw.Write(flow.Bytes())
+		_, err := io.WriteString(mw, flow)
 		if err != nil {
-			return err
+			return fmt.Errorf("glamour: error writing to writer: %w", err)
 		}
 		_, _ = io.WriteString(mw, "\n")
 	}
 
-	renderText(w, bs.Current().Style.StylePrimitive, rules.Suffix)
-	renderText(w, bs.Parent().Style.StylePrimitive, rules.BlockSuffix)
+	_, _ = renderText(w, bs.Current().Style.StylePrimitive, rules.Suffix)
+	_, _ = renderText(w, bs.Parent().Style.StylePrimitive, rules.BlockSuffix)
 
 	bs.Current().Block.Reset()
 	bs.Pop()

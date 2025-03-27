@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/muesli/reflow/wordwrap"
+	"github.com/charmbracelet/x/cellbuf"
 )
 
 // A HeadingElement is used to render headings.
@@ -44,7 +44,7 @@ func (e *HeadingElement) Render(w io.Writer, ctx RenderContext) error {
 	}
 
 	if !e.First {
-		renderText(w, bs.Current().Style.StylePrimitive, "\n")
+		_, _ = renderText(w, bs.Current().Style.StylePrimitive, "\n")
 	}
 
 	be := BlockElement{
@@ -53,8 +53,8 @@ func (e *HeadingElement) Render(w io.Writer, ctx RenderContext) error {
 	}
 	bs.Push(be)
 
-	renderText(w, bs.Parent().Style.StylePrimitive, rules.BlockPrefix)
-	renderText(bs.Current().Block, bs.Current().Style.StylePrimitive, rules.Prefix)
+	_, _ = renderText(w, bs.Parent().Style.StylePrimitive, rules.BlockPrefix)
+	_, _ = renderText(bs.Current().Block, bs.Current().Style.StylePrimitive, rules.Prefix)
 	return nil
 }
 
@@ -64,22 +64,14 @@ func (e *HeadingElement) Finish(w io.Writer, ctx RenderContext) error {
 	rules := bs.Current().Style
 	mw := NewMarginWriter(ctx, w, rules)
 
-	flow := wordwrap.NewWriter(int(bs.Width(ctx))) //nolint: gosec
-	_, err := flow.Write(bs.Current().Block.Bytes())
+	flow := cellbuf.Wrap(bs.Current().Block.String(), int(bs.Width(ctx)), "") //nolint: gosec
+	_, err := io.WriteString(mw, flow)
 	if err != nil {
-		return fmt.Errorf("glamour: error writing bytes: %w", err)
-	}
-	if err := flow.Close(); err != nil {
-		return fmt.Errorf("glamour: error closing flow: %w", err)
+		return fmt.Errorf("glamour: error writing to writer: %w", err)
 	}
 
-	_, err = mw.Write(flow.Bytes())
-	if err != nil {
-		return err
-	}
-
-	renderText(w, bs.Current().Style.StylePrimitive, rules.Suffix)
-	renderText(w, bs.Parent().Style.StylePrimitive, rules.BlockSuffix)
+	_, _ = renderText(w, bs.Current().Style.StylePrimitive, rules.Suffix)
+	_, _ = renderText(w, bs.Parent().Style.StylePrimitive, rules.BlockSuffix)
 
 	bs.Current().Block.Reset()
 	bs.Pop()

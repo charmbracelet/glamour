@@ -8,7 +8,6 @@ import (
 	"github.com/alecthomas/chroma/v2"
 	"github.com/alecthomas/chroma/v2/quick"
 	"github.com/alecthomas/chroma/v2/styles"
-	"github.com/muesli/reflow/indent"
 )
 
 const (
@@ -126,18 +125,18 @@ func (e *CodeBlockElement) Render(w io.Writer, ctx RenderContext) error {
 		mutex.Unlock()
 	}
 
-	iw := indent.NewWriterPipe(w, indentation+margin, func(_ io.Writer) {
-		renderText(w, bs.Current().Style.StylePrimitive, " ")
+	iw := NewIndentWriter(w, int(indentation+margin), func(_ io.Writer) { //nolint:gosec
+		_, _ = renderText(w, bs.Current().Style.StylePrimitive, " ")
 	})
 
 	if len(theme) > 0 {
-		renderText(iw, bs.Current().Style.StylePrimitive, rules.BlockPrefix)
+		_, _ = renderText(iw, bs.Current().Style.StylePrimitive, rules.BlockPrefix)
 
 		err := quick.Highlight(iw, e.Code, e.Language, formatter, theme)
 		if err != nil {
 			return fmt.Errorf("glamour: error highlighting code: %w", err)
 		}
-		renderText(iw, bs.Current().Style.StylePrimitive, rules.BlockSuffix)
+		_, _ = renderText(iw, bs.Current().Style.StylePrimitive, rules.BlockSuffix)
 		return nil
 	}
 
