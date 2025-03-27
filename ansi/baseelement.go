@@ -36,7 +36,7 @@ func formatToken(format string, token string) (string, error) {
 	return b.String(), err
 }
 
-func renderText(w io.Writer, rules StylePrimitive, s string) (int, error) {
+func renderText(w io.Writer, rules StylePrimitive, s string) (int, error) { //nolint:unparam
 	if len(s) == 0 {
 		return 0, nil
 	}
@@ -83,7 +83,12 @@ func renderText(w io.Writer, rules StylePrimitive, s string) (int, error) {
 		style = style.SlowBlink()
 	}
 
-	return io.WriteString(w, style.Styled(s))
+	n, err := io.WriteString(w, style.Styled(s))
+	if err != nil {
+		return n, fmt.Errorf("glamour: error writing to writer: %w", err)
+	}
+
+	return n, nil
 }
 
 // StyleOverrideRender renders a BaseElement with an overridden style.
@@ -104,21 +109,21 @@ func (e *BaseElement) Render(w io.Writer, ctx RenderContext) error {
 }
 
 func (e *BaseElement) doRender(w io.Writer, st1, st2 StylePrimitive) error {
-	renderText(w, st1, e.Prefix)
+	_, _ = renderText(w, st1, e.Prefix)
 	defer func() {
-		renderText(w, st1, e.Suffix)
+		_, _ = renderText(w, st1, e.Suffix)
 	}()
 
 	// render unstyled prefix/suffix
-	renderText(w, st1, st2.BlockPrefix)
+	_, _ = renderText(w, st1, st2.BlockPrefix)
 	defer func() {
-		renderText(w, st1, st2.BlockSuffix)
+		_, _ = renderText(w, st1, st2.BlockSuffix)
 	}()
 
 	// render styled prefix/suffix
-	renderText(w, st2, st2.Prefix)
+	_, _ = renderText(w, st2, st2.Prefix)
 	defer func() {
-		renderText(w, st2, st2.Suffix)
+		_, _ = renderText(w, st2, st2.Suffix)
 	}()
 
 	s := e.Token
@@ -129,7 +134,7 @@ func (e *BaseElement) doRender(w io.Writer, st1, st2 StylePrimitive) error {
 			return err
 		}
 	}
-	renderText(w, st2, escapeReplacer.Replace(s))
+	_, _ = renderText(w, st2, escapeReplacer.Replace(s))
 	return nil
 }
 
