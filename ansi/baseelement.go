@@ -72,10 +72,6 @@ func renderText(w io.Writer, rules StylePrimitive, s string) (int, error) { //no
 	if rules.CrossedOut != nil && *rules.CrossedOut {
 		style = style.Strikethrough()
 	}
-	if rules.Overlined != nil && *rules.Overlined {
-		// TODO: ansi doesn't support overline
-		// style = style.Overline(true)
-	}
 	if rules.Inverse != nil && *rules.Inverse {
 		style = style.Reverse()
 	}
