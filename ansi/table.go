@@ -8,7 +8,6 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
 	"github.com/muesli/reflow/indent"
-	"github.com/yuin/goldmark/extension/ast"
 	astext "github.com/yuin/goldmark/extension/ast"
 )
 
@@ -18,6 +17,15 @@ type TableElement struct {
 	table    *astext.Table
 	header   []string
 	row      []string
+	source   []byte
+
+	tableAutoLinks []tableLink
+	tableImages    []tableLink
+	tableLinks     []tableLink
+
+	groupedAutoLinks groupedTableLinks
+	groupedImages    groupedTableLinks
+	groupedLinks     groupedTableLinks
 }
 
 // A TableRowElement is used to render a single row in a table.
@@ -62,6 +70,11 @@ func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
 	}
 	ctx.table.lipgloss = table.New().Width(width).Wrap(wrap)
 
+	if err := e.collectLinksAndImages(ctx); err != nil {
+		return err
+	}
+	e.uniqAndGroupLinks(ctx)
+
 	return nil
 }
 
@@ -82,7 +95,7 @@ func (e *TableElement) setStyles(ctx RenderContext) {
 			st = st.Align(lipgloss.Center)
 		case astext.AlignRight:
 			st = st.Align(lipgloss.Right).PaddingLeft(0)
-		case ast.AlignNone:
+		case astext.AlignNone:
 			// do nothing
 		}
 
@@ -112,6 +125,16 @@ func (e *TableElement) setBorders(ctx RenderContext) {
 
 // Finish finishes rendering a TableElement.
 func (e *TableElement) Finish(_ io.Writer, ctx RenderContext) error {
+	defer func() {
+		ctx.table.lipgloss = nil
+		ctx.table.tableAutoLinks = nil
+		ctx.table.tableImages = nil
+		ctx.table.tableLinks = nil
+		ctx.table.groupedAutoLinks = nil
+		ctx.table.groupedImages = nil
+		ctx.table.groupedLinks = nil
+	}()
+
 	rules := ctx.options.Styles.Table
 
 	e.setStyles(ctx)
@@ -124,7 +147,9 @@ func (e *TableElement) Finish(_ io.Writer, ctx RenderContext) error {
 
 	renderText(ow, ctx.options.ColorProfile, ctx.blockStack.With(rules.StylePrimitive), rules.Suffix)
 	renderText(ow, ctx.options.ColorProfile, ctx.blockStack.Current().Style.StylePrimitive, rules.BlockSuffix)
-	ctx.table.lipgloss = nil
+
+	e.printTableLinks(ctx)
+
 	return nil
 }
 
