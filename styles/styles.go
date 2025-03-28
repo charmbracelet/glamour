@@ -3,7 +3,7 @@ package styles
 //go:generate go run ../internal/generate-style-json
 
 import (
-	"github.com/charmbracelet/glamour/ansi"
+	"github.com/charmbracelet/glamour/v2/ansi"
 )
 
 const (
@@ -15,7 +15,6 @@ const (
 // Default styles.
 const (
 	AsciiStyle      = "ascii" //nolint: revive
-	AutoStyle       = "auto"
 	DarkStyle       = "dark"
 	DraculaStyle    = "dracula"
 	TokyoNightStyle = "tokyo-night"

@@ -3,8 +3,11 @@ package ansi
 import (
 	"bytes"
 	"fmt"
+	"hash/fnv"
 	"io"
 	"net/url"
+
+	"github.com/charmbracelet/x/ansi"
 )
 
 // A LinkElement is used to render hyperlinks.
@@ -16,19 +19,28 @@ type LinkElement struct {
 
 // Render renders a LinkElement.
 func (e *LinkElement) Render(w io.Writer, ctx RenderContext) error {
+	// Make OSC 8 hyperlink token.
+	hyperlink, resetHyperlink, validURL := makeHyperlink(e.URL)
 	for _, child := range e.Children {
-		if r, ok := child.(StyleOverriderElementRenderer); ok {
+		if r, ok := child.(StyleOverriderElementRenderer); ok { //nolint:nestif
+			var b bytes.Buffer
 			st := ctx.options.Styles.LinkText
-			if err := r.StyleOverrideRender(w, ctx, st); err != nil {
+			if err := r.StyleOverrideRender(&b, ctx, st); err != nil {
 				return fmt.Errorf("glamour: error rendering with style: %w", err)
+			}
+
+			token := hyperlink + b.String() + resetHyperlink
+			if _, err := io.WriteString(w, token); err != nil {
+				return fmt.Errorf("glamour: error writing hyperlink: %w", err)
 			}
 		} else {
 			var b bytes.Buffer
 			if err := child.Render(&b, ctx); err != nil {
 				return fmt.Errorf("glamour: error rendering: %w", err)
 			}
+			token := hyperlink + b.String() + resetHyperlink
 			el := &BaseElement{
-				Token: b.String(),
+				Token: token,
 				Style: ctx.options.Styles.LinkText,
 			}
 			if err := el.Render(w, ctx); err != nil {
@@ -37,10 +49,10 @@ func (e *LinkElement) Render(w io.Writer, ctx RenderContext) error {
 		}
 	}
 
-	u, err := url.Parse(e.URL)
-	if err == nil && "#"+u.Fragment != e.URL { // if the URL only consists of an anchor, ignore it
+	if validURL {
+		token := hyperlink + resolveRelativeURL(e.BaseURL, e.URL) + resetHyperlink
 		el := &BaseElement{
-			Token:  resolveRelativeURL(e.BaseURL, e.URL),
+			Token:  token,
 			Prefix: " ",
 			Style:  ctx.options.Styles.Link,
 		}
@@ -50,4 +62,24 @@ func (e *LinkElement) Render(w io.Writer, ctx RenderContext) error {
 	}
 
 	return nil
+}
+
+// makeHyperlink takes a URL and returns an OSC 8 hyperlink token.
+func makeHyperlink(link string) (string, string, bool) {
+	// Make OSC 8 hyperlink token.
+	var hyperlink, resetHyperlink string
+
+	u, err := url.Parse(link)
+	validURL := err == nil && "#"+u.Fragment != link // if the URL only consists of an anchor, ignore it
+	if validURL {                                    // if the URL only consists of an anchor, ignore it
+		h := fnv.New32a()
+		if _, err := io.WriteString(h, link); err != nil {
+			return "", "", false
+		}
+		urlID := fmt.Sprintf("id=%d", h.Sum32())
+		hyperlink = ansi.SetHyperlink(link, urlID)
+		resetHyperlink = ansi.ResetHyperlink()
+	}
+
+	return hyperlink, resetHyperlink, validURL
 }
