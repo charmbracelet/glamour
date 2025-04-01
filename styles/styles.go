@@ -1,3 +1,4 @@
+// Package styles provides default styles for the glamour package.
 package styles
 
 //go:generate go run ../internal/generate-style-json

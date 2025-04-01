@@ -2,7 +2,7 @@ package styles
 
 import "github.com/charmbracelet/glamour/ansi"
 
-// TokyoNightStyle is the tokyo night style.
+// TokyoNightStyleConfig is the tokyo night style.
 var TokyoNightStyleConfig = ansi.StyleConfig{
 	Document: ansi.StyleBlock{
 		StylePrimitive: ansi.StylePrimitive{
