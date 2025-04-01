@@ -7,7 +7,6 @@ import (
 
 	"github.com/charmbracelet/lipgloss/v2"
 	"github.com/charmbracelet/lipgloss/v2/table"
-	"github.com/yuin/goldmark/extension/ast"
 	astext "github.com/yuin/goldmark/extension/ast"
 )
 
@@ -81,7 +80,7 @@ func (e *TableElement) setStyles(ctx RenderContext) {
 			st = st.Align(lipgloss.Center)
 		case astext.AlignRight:
 			st = st.Align(lipgloss.Right).PaddingLeft(0)
-		case ast.AlignNone:
+		case astext.AlignNone:
 			// do nothing
 		}
 
