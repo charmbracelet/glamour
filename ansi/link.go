@@ -12,10 +12,23 @@ type LinkElement struct {
 	BaseURL  string
 	URL      string
 	Children []ElementRenderer
+	SkipText bool
 }
 
 // Render renders a LinkElement.
 func (e *LinkElement) Render(w io.Writer, ctx RenderContext) error {
+	if !e.SkipText {
+		if err := e.renderTextPart(w, ctx); err != nil {
+			return err
+		}
+	}
+	if err := e.renderHrefPart(w, ctx); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (e *LinkElement) renderTextPart(w io.Writer, ctx RenderContext) error {
 	for _, child := range e.Children {
 		if r, ok := child.(StyleOverriderElementRenderer); ok {
 			st := ctx.options.Styles.LinkText
@@ -36,18 +49,25 @@ func (e *LinkElement) Render(w io.Writer, ctx RenderContext) error {
 			}
 		}
 	}
+	return nil
+}
+
+func (e *LinkElement) renderHrefPart(w io.Writer, ctx RenderContext) error {
+	prefix := ""
+	if !e.SkipText {
+		prefix = " "
+	}
 
 	u, err := url.Parse(e.URL)
 	if err == nil && "#"+u.Fragment != e.URL { // if the URL only consists of an anchor, ignore it
 		el := &BaseElement{
 			Token:  resolveRelativeURL(e.BaseURL, e.URL),
-			Prefix: " ",
+			Prefix: prefix,
 			Style:  ctx.options.Styles.Link,
 		}
 		if err := el.Render(w, ctx); err != nil {
 			return err
 		}
 	}
-
 	return nil
 }
