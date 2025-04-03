@@ -205,6 +205,15 @@ func WithTableWrap(tableWrap bool) TermRendererOption {
 	}
 }
 
+// WithInlineTableLinks forces tables to render links inline. By default,links
+// are rendered as a list of links at the bottom of the table.
+func WithInlineTableLinks(inlineTableLinks bool) TermRendererOption {
+	return func(tr *TermRenderer) error {
+		tr.ansiOptions.InlineTableLinks = inlineTableLinks
+		return nil
+	}
+}
+
 // WithPreservedNewLines preserves newlines from being replaced.
 func WithPreservedNewLines() TermRendererOption {
 	return func(tr *TermRenderer) error {

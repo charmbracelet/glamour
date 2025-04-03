@@ -220,22 +220,33 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 	// Links
 	case ast.KindLink:
 		n := node.(*ast.Link)
+		isFooterLinks := !ctx.options.InlineTableLinks && isInsideTable(node)
+
 		var children []ElementRenderer
-		nn := n.FirstChild()
-		for nn != nil {
-			children = append(children, tr.NewElement(nn, source).Renderer)
-			nn = nn.NextSibling()
+		content, err := nodeContent(node, source)
+
+		if isFooterLinks && err == nil {
+			children = []ElementRenderer{&BaseElement{Token: string(content)}}
+		} else {
+			nn := n.FirstChild()
+			for nn != nil {
+				children = append(children, tr.NewElement(nn, source).Renderer)
+				nn = nn.NextSibling()
+			}
 		}
+
 		return Element{
 			Renderer: &LinkElement{
 				BaseURL:  ctx.options.BaseURL,
 				URL:      string(n.Destination),
 				Children: children,
+				TextOnly: isFooterLinks,
 			},
 		}
 	case ast.KindAutoLink:
 		n := node.(*ast.AutoLink)
 		u := string(n.URL(source))
+		isFooterLinks := !ctx.options.InlineTableLinks && isInsideTable(node)
 
 		var children []ElementRenderer
 		nn := n.FirstChild()
@@ -245,32 +256,45 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		}
 
 		if len(children) == 0 {
-			children = append(children, &BaseElement{
-				Token: u,
-			})
+			children = append(children, &BaseElement{Token: u})
 		}
 
 		if n.AutoLinkType == ast.AutoLinkEmail && !strings.HasPrefix(strings.ToLower(u), "mailto:") {
 			u = "mailto:" + u
 		}
 
-		return Element{
-			Renderer: &LinkElement{
-				Children: children,
-				BaseURL:  ctx.options.BaseURL,
+		var renderer ElementRenderer
+		if isFooterLinks {
+			domain := linkDomain(u)
+			renderer = &LinkElement{
+				Children: []ElementRenderer{&BaseElement{Token: domain}},
 				URL:      u,
-			},
+				TextOnly: true,
+			}
+		} else {
+			renderer = &LinkElement{
+				Children: children,
+				URL:      u,
+			}
 		}
+		return Element{Renderer: renderer}
 
 	// Images
 	case ast.KindImage:
 		n := node.(*ast.Image)
 		text := string(n.Text(source)) //nolint: staticcheck
+		isFooterLinks := !ctx.options.InlineTableLinks && isInsideTable(node)
+
+		if isFooterLinks && text == "" {
+			text = linkDomain(string(n.Destination))
+		}
+
 		return Element{
 			Renderer: &ImageElement{
-				Text:    text,
-				BaseURL: ctx.options.BaseURL,
-				URL:     string(n.Destination),
+				Text:     text,
+				BaseURL:  ctx.options.BaseURL,
+				URL:      string(n.Destination),
+				TextOnly: isFooterLinks,
 			},
 		}
 
@@ -320,7 +344,8 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 	case astext.KindTable:
 		table := node.(*astext.Table)
 		te := &TableElement{
-			table: table,
+			table:  table,
+			source: source,
 		}
 		return Element{
 			Entering: "\n",
