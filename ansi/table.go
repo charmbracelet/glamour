@@ -19,13 +19,11 @@ type TableElement struct {
 	row      []string
 	source   []byte
 
-	tableAutoLinks []tableLink
-	tableImages    []tableLink
-	tableLinks     []tableLink
+	tableImages []tableLink
+	tableLinks  []tableLink
 
-	groupedAutoLinks groupedTableLinks
-	groupedImages    groupedTableLinks
-	groupedLinks     groupedTableLinks
+	groupedImages groupedTableLinks
+	groupedLinks  groupedTableLinks
 }
 
 // A TableRowElement is used to render a single row in a table.
@@ -127,10 +125,8 @@ func (e *TableElement) setBorders(ctx RenderContext) {
 func (e *TableElement) Finish(_ io.Writer, ctx RenderContext) error {
 	defer func() {
 		ctx.table.lipgloss = nil
-		ctx.table.tableAutoLinks = nil
 		ctx.table.tableImages = nil
 		ctx.table.tableLinks = nil
-		ctx.table.groupedAutoLinks = nil
 		ctx.table.groupedImages = nil
 		ctx.table.groupedLinks = nil
 	}()
