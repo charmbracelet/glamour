@@ -3,8 +3,8 @@ package ansi
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"net/url"
-	"slices"
 
 	xansi "github.com/charmbracelet/x/ansi"
 	"github.com/charmbracelet/x/exp/slice"
@@ -13,9 +13,10 @@ import (
 )
 
 type tableLink struct {
-	href    string
-	title   string
-	content string
+	href     string
+	title    string
+	content  string
+	linkType linkType
 }
 
 type groupedTableLinks map[string][]tableLink
@@ -37,36 +38,35 @@ func (e *TableElement) printTableLinks(ctx RenderContext) {
 	w := ctx.blockStack.Current().Block
 	termWidth := int(ctx.blockStack.Width(ctx)) //nolint: gosec
 
-	renderLinkText := func(link tableLink, linkType linkType) string {
+	renderLinkText := func(link tableLink, position int) string {
+		var token string
 		style := ctx.options.Styles.LinkText
 
-		var token string
-		switch linkType {
-		case linkTypeAuto:
-			token = linkWithSuffix(link, ctx.table.groupedAutoLinks)
+		switch link.linkType {
+		case linkTypeAuto, linkTypeRegular:
+			token = fmt.Sprintf("[%d]: %s", position, link.content)
 		case linkTypeImage:
-			token = linkWithSuffix(link, ctx.table.groupedImages)
+			token = link.content
 			style = ctx.options.Styles.ImageText
-		case linkTypeRegular:
-			token = linkWithSuffix(link, ctx.table.groupedLinks)
+			style.Prefix = fmt.Sprintf("[%d]: %s", position, style.Prefix)
 		}
 
+		var b bytes.Buffer
 		el := &BaseElement{Token: token, Style: style}
-		_ = el.Render(w, ctx)
-
-		return token
+		_ = el.Render(io.MultiWriter(w, &b), ctx)
+		return b.String()
 	}
 
-	renderLinkHref := func(link tableLink, linkType linkType, linkText string) {
+	renderLinkHref := func(link tableLink, linkText string) {
 		style := ctx.options.Styles.Link
-		if linkType == linkTypeImage {
+		if link.linkType == linkTypeImage {
 			style = ctx.options.Styles.Image
 		}
 
 		// XXX(@andreynering): Once #411 is merged, use the hyperlink
 		// protocol to make the link work for the full URL even if we
 		// show it truncated.
-		linkMaxWidth := max(termWidth-len(linkText)-1, 0)
+		linkMaxWidth := max(termWidth-xansi.StringWidth(linkText)-1, 0)
 		token := xansi.Truncate(link.href, linkMaxWidth, "…")
 
 		el := &BaseElement{Token: token, Style: style}
@@ -77,30 +77,24 @@ func (e *TableElement) printTableLinks(ctx RenderContext) {
 		renderText(w, ctx.options.ColorProfile, ctx.blockStack.Current().Style.StylePrimitive, str)
 	}
 
-	if len(ctx.table.tableAutoLinks) > 0 || len(ctx.table.tableLinks) > 0 {
+	if len(ctx.table.tableLinks) > 0 {
 		renderString("\n")
 	}
-	for _, link := range ctx.table.tableAutoLinks {
+	for i, link := range ctx.table.tableLinks {
 		renderString("\n")
-		linkText := renderLinkText(link, linkTypeAuto)
+		linkText := renderLinkText(link, i+1)
 		renderString(" ")
-		renderLinkHref(link, linkTypeAuto, linkText)
-	}
-	for _, link := range ctx.table.tableLinks {
-		renderString("\n")
-		linkText := renderLinkText(link, linkTypeRegular)
-		renderString(" ")
-		renderLinkHref(link, linkTypeRegular, linkText)
+		renderLinkHref(link, linkText)
 	}
 
 	if len(ctx.table.tableImages) > 0 {
 		renderString("\n")
 	}
-	for _, image := range ctx.table.tableImages {
+	for i, image := range ctx.table.tableImages {
 		renderString("\n")
-		linkText := renderLinkText(image, linkTypeImage)
+		linkText := renderLinkText(image, i+1)
 		renderString(" ")
-		renderLinkHref(image, linkTypeImage, linkText)
+		renderLinkHref(image, linkText)
 	}
 }
 
@@ -108,14 +102,13 @@ func (e *TableElement) shouldPrintTableLinks(ctx RenderContext) bool {
 	if ctx.options.InlineTableLinks {
 		return false
 	}
-	if len(ctx.table.tableAutoLinks) == 0 && len(ctx.table.tableLinks) == 0 && len(ctx.table.tableImages) == 0 {
+	if len(ctx.table.tableLinks) == 0 && len(ctx.table.tableImages) == 0 {
 		return false
 	}
 	return true
 }
 
 func (e *TableElement) collectLinksAndImages(ctx RenderContext) error {
-	autoLinks := make([]tableLink, 0)
 	images := make([]tableLink, 0)
 	links := make([]tableLink, 0)
 
@@ -128,19 +121,21 @@ func (e *TableElement) collectLinksAndImages(ctx RenderContext) error {
 		case *ast.AutoLink:
 			uri := string(n.URL(e.source))
 			autoLink := tableLink{
-				href:    uri,
-				content: linkDomain(uri),
+				href:     uri,
+				content:  linkDomain(uri),
+				linkType: linkTypeAuto,
 			}
-			autoLinks = append(autoLinks, autoLink)
+			links = append(links, autoLink)
 		case *ast.Image:
 			content, err := nodeContent(node, e.source)
 			if err != nil {
 				return ast.WalkStop, err
 			}
 			image := tableLink{
-				href:    string(n.Destination),
-				title:   string(n.Title),
-				content: string(content),
+				href:     string(n.Destination),
+				title:    string(n.Title),
+				content:  string(content),
+				linkType: linkTypeImage,
 			}
 			if image.content == "" {
 				image.content = linkDomain(image.href)
@@ -152,9 +147,10 @@ func (e *TableElement) collectLinksAndImages(ctx RenderContext) error {
 				return ast.WalkStop, err
 			}
 			link := tableLink{
-				href:    string(n.Destination),
-				title:   string(n.Title),
-				content: string(content),
+				href:     string(n.Destination),
+				title:    string(n.Title),
+				content:  string(content),
+				linkType: linkTypeRegular,
 			}
 			links = append(links, link)
 		}
@@ -165,7 +161,6 @@ func (e *TableElement) collectLinksAndImages(ctx RenderContext) error {
 		return fmt.Errorf("glamour: error collecting links: %w", err)
 	}
 
-	ctx.table.tableAutoLinks = autoLinks
 	ctx.table.tableImages = images
 	ctx.table.tableLinks = links
 	return nil
@@ -173,10 +168,6 @@ func (e *TableElement) collectLinksAndImages(ctx RenderContext) error {
 
 func (e *TableElement) uniqAndGroupLinks(ctx RenderContext) {
 	groupByContentFunc := func(l tableLink) string { return l.content }
-
-	// auto links
-	ctx.table.tableAutoLinks = slice.Uniq(ctx.table.tableAutoLinks)
-	ctx.table.groupedAutoLinks = slice.GroupBy(ctx.table.tableAutoLinks, groupByContentFunc)
 
 	// images
 	ctx.table.tableImages = slice.Uniq(ctx.table.tableImages)
@@ -231,13 +222,4 @@ func linkDomain(href string) string {
 		return uri.Hostname()
 	}
 	return "link"
-}
-
-func linkWithSuffix(tl tableLink, grouped groupedTableLinks) string {
-	token := tl.content
-	if len(grouped[token]) < 2 {
-		return token
-	}
-	index := slices.Index(grouped[token], tl)
-	return fmt.Sprintf("%s[%d]", token, index+1)
 }

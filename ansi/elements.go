@@ -226,11 +226,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		content, err := nodeContent(node, source)
 
 		if isFooterLinks && err == nil {
-			text := string(content)
-			tl := tableLink{content: text, href: string(n.Destination), title: string(n.Title)}
-			text = linkWithSuffix(tl, ctx.table.groupedLinks)
-
-			children = []ElementRenderer{&BaseElement{Token: text}}
+			children = []ElementRenderer{&BaseElement{Token: string(content)}}
 		} else {
 			nn := n.FirstChild()
 			for nn != nil {
@@ -270,11 +266,8 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		var renderer ElementRenderer
 		if isFooterLinks {
 			domain := linkDomain(u)
-			tl := tableLink{content: domain, href: u}
-			text := linkWithSuffix(tl, ctx.table.groupedAutoLinks)
-
 			renderer = &LinkElement{
-				Children: []ElementRenderer{&BaseElement{Token: text}},
+				Children: []ElementRenderer{&BaseElement{Token: domain}},
 				URL:      u,
 				SkipHref: true,
 			}
@@ -295,8 +288,6 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 
 		if isFooterLinks && text == "" {
 			text = linkDomain(string(n.Destination))
-			tl := tableLink{content: text, href: string(n.Destination)}
-			text = linkWithSuffix(tl, ctx.table.groupedImages)
 		}
 
 		return Element{
