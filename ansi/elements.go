@@ -259,6 +259,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 				Children: children,
 				BaseURL:  ctx.options.BaseURL,
 				URL:      u,
+				SkipText: n.AutoLinkType != ast.AutoLinkEmail,
 			},
 		}
 
