@@ -21,9 +21,6 @@ type TableElement struct {
 
 	tableImages []tableLink
 	tableLinks  []tableLink
-
-	groupedImages groupedTableLinks
-	groupedLinks  groupedTableLinks
 }
 
 // A TableRowElement is used to render a single row in a table.
@@ -71,7 +68,6 @@ func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
 	if err := e.collectLinksAndImages(ctx); err != nil {
 		return err
 	}
-	e.uniqAndGroupLinks(ctx)
 
 	return nil
 }
@@ -127,8 +123,6 @@ func (e *TableElement) Finish(_ io.Writer, ctx RenderContext) error {
 		ctx.table.lipgloss = nil
 		ctx.table.tableImages = nil
 		ctx.table.tableLinks = nil
-		ctx.table.groupedImages = nil
-		ctx.table.groupedLinks = nil
 	}()
 
 	rules := ctx.options.Styles.Table
