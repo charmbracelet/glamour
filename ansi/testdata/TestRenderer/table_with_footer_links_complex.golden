@@ -1,34 +1,40 @@
                                                                                 
- Handle        │ Description                              │ Image               
-───────────────┼──────────────────────────────────────────┼───────────────────  
- [38;5;35;1m@andreynering[0m │ Passionate engineer pushing the          │ [38;5;243mImage: github.com[0m   
-               │ boundaries of technology. Check out      │                     
-               │ Andrey's [38;5;35;1mGitHub projects[0m and [38;5;35;1mpersonal[m    │                     [0m
-[0m[38;5;35;1m[m               │ [1;38;5;35mblog[0m. Connect on [38;5;35;1mTwitter[0m for tech        │                     
-               │ insights.                                │                     
- [38;5;35;1m@aymanbagabas[0m │ Open-source enthusiast and innovative    │ [38;5;243mImage: github.com[0m   
-               │ software engineer. Explore Ayman's       │                     
-               │ [38;5;35;1mGitHub contributions[0m and [38;5;35;1mtechnical[m       │                     [0m
-[0m[38;5;35;1m[m               │ [1;38;5;35mwritings[0m. Follow on [38;5;35;1mLinkedIn[0m for         │                     
-               │ professional updates.                    │                     
- [38;5;35;1m@bashbunni[0m    │ Creative developer with a passion for    │ [38;5;243mImage: github.com[0m   
-               │ cutting-edge technologies. Dive into     │                     
-               │ Bash's [38;5;35;1mGitHub repositories[0m and [38;5;35;1mdev[m       │                     [0m
-[0m[38;5;35;1m[m               │ [1;38;5;35mportfolio[0m. Engage on [38;5;35;1mTwitter[0m for tech    │                     
-               │ discussions.                             │                     
- [38;5;35;1m@caarlos0[0m     │ Innovative engineering leader and open-  │ [38;5;243mImage: github.com[0m   
-               │ source contributor. Discover Carlos's    │                     
-               │ [38;5;35;1mGitHub projects[0m and [38;5;35;1mtechnical blog[0m.      │                     
-               │ Connect on [38;5;35;1mLinkedIn[0m for professional     │                     
-               │ networking.                              │                     
- [38;5;35;1m@meowgorithm[0m  │ Product visionary bridging technology    │ [38;5;243mImage: github.com[0m   
-               │ and user experience. Explore Christian's │                     
-               │ [38;5;35;1mGitHub profile[0m and [38;5;35;1mpersonal website[0m.     │                     
-               │ Follow on [38;5;35;1mTwitter[0m for product insights.  │                     
- [38;5;35;1m@raphamorim[0m   │ Ambitious intern making waves in the     │ [38;5;243mImage: github.com[0m   
-               │ tech world. Check out Rapha's [38;5;35;1mGitHub[m     │                     [0m
-[0m[38;5;35;1m[m               │ [1;38;5;35mrepositories[0m and [38;5;35;1mgrowing portfolio[0m.      │                     
-               │ Connect on [38;5;35;1mLinkedIn[0m for emerging talent. │                     
+ Handle           │ Description                        │ Image                  
+──────────────────┼────────────────────────────────────┼──────────────────────  
+ [38;5;35;1m@andreynering[1][0m │ Passionate engineer pushing the    │ [38;5;243mImage: github.com[1][0m   
+                  │ boundaries of technology. Check    │                        
+                  │ out Andrey's [38;5;35;1mGitHub projects[2][0m    │                        
+                  │ and [38;5;35;1mpersonal blog[3][0m. Connect on   │                        
+                  │ [38;5;35;1mTwitter[4][0m for tech insights.      │                        
+ [38;5;35;1m@aymanbagabas[5][0m │ Open-source enthusiast and         │ [38;5;243mImage: github.com[2][0m   
+                  │ innovative software engineer.      │                        
+                  │ Explore Ayman's [38;5;35;1mGitHub[m             │                        [0m
+[0m[38;5;35;1m[m                  │ [1;38;5;35mcontributions[6][0m and [38;5;35;1mtechnical[m     │                        [0m
+[0m[38;5;35;1m[m                  │ [1;38;5;35mwritings[7][0m. Follow on [38;5;35;1mLinkedIn[8][0m │                        
+                  │ for professional updates.          │                        
+ [38;5;35;1m@bashbunni[9][0m    │ Creative developer with a passion  │ [38;5;243mImage: github.com[3][0m   
+                  │ for cutting-edge technologies.     │                        
+                  │ Dive into Bash's [38;5;35;1mGitHub[m            │                        [0m
+[0m[38;5;35;1m[m                  │ [1;38;5;35mrepositories[10][0m and [38;5;35;1mdev[m           │                        [0m
+[0m[38;5;35;1m[m                  │ [1;38;5;35mportfolio[11][0m. Engage on           │                        
+                  │ [38;5;35;1mTwitter[12][0m for tech discussions.  │                        
+ [38;5;35;1m@caarlos0[13][0m    │ Innovative engineering leader and  │ [38;5;243mImage: github.com[4][0m   
+                  │ open-source contributor. Discover  │                        
+                  │ Carlos's [38;5;35;1mGitHub projects[14][0m and   │                        
+                  │ [38;5;35;1mtechnical blog[15][0m. Connect on     │                        
+                  │ [38;5;35;1mLinkedIn[16][0m for professional      │                        
+                  │ networking.                        │                        
+ [38;5;35;1m@meowgorithm[17][0m │ Product visionary bridging         │ [38;5;243mImage: github.com[5][0m   
+                  │ technology and user experience.    │                        
+                  │ Explore Christian's [38;5;35;1mGitHub[m         │                        [0m
+[0m[38;5;35;1m[m                  │ [1;38;5;35mprofile[18][0m and [38;5;35;1mpersonal[m           │                        [0m
+[0m[38;5;35;1m[m                  │ [1;38;5;35mwebsite[19][0m. Follow on [38;5;35;1mTwitter[20][0m │                        
+                  │ for product insights.              │                        
+ [38;5;35;1m@raphamorim[21][0m  │ Ambitious intern making waves in   │ [38;5;243mImage: github.com[6][0m   
+                  │ the tech world. Check out Rapha's  │                        
+                  │ [38;5;35;1mGitHub repositories[22][0m and        │                        
+                  │ [38;5;35;1mgrowing portfolio[23][0m. Connect on  │                        
+                  │ [38;5;35;1mLinkedIn[24][0m for emerging talent.  │                        
                                                                                 
 [38;5;35;1m[0m[38;5;35;1m[1]: @andreynering[0m [38;5;30;4mhttps://github.com/andreynering[0m                              
 [38;5;35;1m[0m[38;5;35;1m[2]: GitHub projects[0m [38;5;30;4mhttps://github.com/andreynering[0m                            

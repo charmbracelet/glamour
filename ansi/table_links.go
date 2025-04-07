@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/url"
+	"slices"
 
 	xansi "github.com/charmbracelet/x/ansi"
 	"github.com/charmbracelet/x/exp/slice"
@@ -18,8 +19,6 @@ type tableLink struct {
 	content  string
 	linkType linkType
 }
-
-type groupedTableLinks map[string][]tableLink
 
 type linkType int
 
@@ -161,21 +160,9 @@ func (e *TableElement) collectLinksAndImages(ctx RenderContext) error {
 		return fmt.Errorf("glamour: error collecting links: %w", err)
 	}
 
-	ctx.table.tableImages = images
-	ctx.table.tableLinks = links
+	ctx.table.tableImages = slice.Uniq(images)
+	ctx.table.tableLinks = slice.Uniq(links)
 	return nil
-}
-
-func (e *TableElement) uniqAndGroupLinks(ctx RenderContext) {
-	groupByContentFunc := func(l tableLink) string { return l.content }
-
-	// images
-	ctx.table.tableImages = slice.Uniq(ctx.table.tableImages)
-	ctx.table.groupedImages = slice.GroupBy(ctx.table.tableImages, groupByContentFunc)
-
-	// links
-	ctx.table.tableLinks = slice.Uniq(ctx.table.tableLinks)
-	ctx.table.groupedLinks = slice.GroupBy(ctx.table.tableLinks, groupByContentFunc)
 }
 
 func isInsideTable(node ast.Node) bool {
@@ -222,4 +209,12 @@ func linkDomain(href string) string {
 		return uri.Hostname()
 	}
 	return "link"
+}
+
+func linkWithSuffix(tl tableLink, list []tableLink) string {
+	index := slices.Index(list, tl)
+	if index == -1 {
+		return tl.content
+	}
+	return fmt.Sprintf("%s[%d]", tl.content, index+1)
 }

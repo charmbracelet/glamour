@@ -226,7 +226,15 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		content, err := nodeContent(node, source)
 
 		if isFooterLinks && err == nil {
-			children = []ElementRenderer{&BaseElement{Token: string(content)}}
+			text := string(content)
+			tl := tableLink{
+				content:  text,
+				href:     string(n.Destination),
+				title:    string(n.Title),
+				linkType: linkTypeRegular,
+			}
+			text = linkWithSuffix(tl, ctx.table.tableLinks)
+			children = []ElementRenderer{&BaseElement{Token: text}}
 		} else {
 			nn := n.FirstChild()
 			for nn != nil {
@@ -266,8 +274,15 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		var renderer ElementRenderer
 		if isFooterLinks {
 			domain := linkDomain(u)
+			tl := tableLink{
+				content:  domain,
+				href:     u,
+				linkType: linkTypeAuto,
+			}
+			text := linkWithSuffix(tl, ctx.table.tableLinks)
+
 			renderer = &LinkElement{
-				Children: []ElementRenderer{&BaseElement{Token: domain}},
+				Children: []ElementRenderer{&BaseElement{Token: text}},
 				URL:      u,
 				SkipHref: true,
 			}
@@ -286,8 +301,17 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		text := string(n.Text(source)) //nolint: staticcheck
 		isFooterLinks := !ctx.options.InlineTableLinks && isInsideTable(node)
 
-		if isFooterLinks && text == "" {
-			text = linkDomain(string(n.Destination))
+		if isFooterLinks {
+			if text == "" {
+				text = linkDomain(string(n.Destination))
+			}
+			tl := tableLink{
+				title:    string(n.Title),
+				content:  text,
+				href:     string(n.Destination),
+				linkType: linkTypeImage,
+			}
+			text = linkWithSuffix(tl, ctx.table.tableImages)
 		}
 
 		return Element{

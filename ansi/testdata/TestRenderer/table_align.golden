@@ -2,6 +2,6 @@
      Label                │          Value          │                 URL       
 ──────────────────────────┼─────────────────────────┼─────────────────────────  
      First                │           foo           │            charm.sh       
-     Second               │           bar           │            charm.sh       
+     Second               │           bar           │         charm.sh[1]       
                                                                                 
 [1]: charm.sh https://charm.sh                                                  
