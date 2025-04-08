@@ -6,6 +6,8 @@ import (
 	"io"
 	"net/url"
 	"slices"
+	"strconv"
+	"strings"
 
 	xansi "github.com/charmbracelet/x/ansi"
 	"github.com/charmbracelet/x/exp/slice"
@@ -37,15 +39,15 @@ func (e *TableElement) printTableLinks(ctx RenderContext) {
 	w := ctx.blockStack.Current().Block
 	termWidth := int(ctx.blockStack.Width(ctx)) //nolint: gosec
 
-	renderLinkText := func(link tableLink, position int) string {
-		var token string
+	renderLinkText := func(link tableLink, position, padding int) string {
+		token := strings.Repeat(" ", padding)
 		style := ctx.options.Styles.LinkText
 
 		switch link.linkType {
 		case linkTypeAuto, linkTypeRegular:
-			token = fmt.Sprintf("[%d]: %s", position, link.content)
+			token += fmt.Sprintf("[%d]: %s", position, link.content)
 		case linkTypeImage:
-			token = link.content
+			token += link.content
 			style = ctx.options.Styles.ImageText
 			style.Prefix = fmt.Sprintf("[%d]: %s", position, style.Prefix)
 		}
@@ -76,25 +78,34 @@ func (e *TableElement) printTableLinks(ctx RenderContext) {
 		renderText(w, ctx.options.ColorProfile, ctx.blockStack.Current().Style.StylePrimitive, str)
 	}
 
+	paddingFor := func(total, position int) int {
+		totalSize := len(strconv.Itoa(total))
+		positionSize := len(strconv.Itoa(position))
+
+		return max(totalSize-positionSize, 0)
+	}
+
+	renderList := func(list []tableLink) {
+		for i, item := range list {
+			position := i + 1
+			padding := paddingFor(len(list), position)
+
+			renderString("\n")
+			linkText := renderLinkText(item, position, padding)
+			renderString(" ")
+			renderLinkHref(item, linkText)
+		}
+	}
+
 	if len(ctx.table.tableLinks) > 0 {
 		renderString("\n")
 	}
-	for i, link := range ctx.table.tableLinks {
-		renderString("\n")
-		linkText := renderLinkText(link, i+1)
-		renderString(" ")
-		renderLinkHref(link, linkText)
-	}
+	renderList(ctx.table.tableLinks)
 
 	if len(ctx.table.tableImages) > 0 {
 		renderString("\n")
 	}
-	for i, image := range ctx.table.tableImages {
-		renderString("\n")
-		linkText := renderLinkText(image, i+1)
-		renderString(" ")
-		renderLinkHref(image, linkText)
-	}
+	renderList(ctx.table.tableImages)
 }
 
 func (e *TableElement) shouldPrintTableLinks(ctx RenderContext) bool {
