@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/charmbracelet/glamour/internal/autolink"
 	xansi "github.com/charmbracelet/x/ansi"
 	"github.com/charmbracelet/x/exp/slice"
 	"github.com/yuin/goldmark/ast"
@@ -134,6 +135,9 @@ func (e *TableElement) collectLinksAndImages(ctx RenderContext) error {
 				href:     uri,
 				content:  linkDomain(uri),
 				linkType: linkTypeAuto,
+			}
+			if shortned, ok := autolink.Detect(uri); ok {
+				autoLink.content = shortned
 			}
 			links = append(links, autoLink)
 		case *ast.Image:
