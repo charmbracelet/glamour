@@ -7,6 +7,7 @@ import (
 	"io"
 	"strings"
 
+	"github.com/charmbracelet/glamour/internal/autolink"
 	east "github.com/yuin/goldmark-emoji/ast"
 	"github.com/yuin/goldmark/ast"
 	astext "github.com/yuin/goldmark/extension/ast"
@@ -278,6 +279,9 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 				content:  domain,
 				href:     u,
 				linkType: linkTypeAuto,
+			}
+			if shortned, ok := autolink.Detect(u); ok {
+				tl.content = shortned
 			}
 			text := linkWithSuffix(tl, ctx.table.tableLinks)
 
