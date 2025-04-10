@@ -14,7 +14,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/charmbracelet/glamour"
+	"github.com/charmbracelet/glamour/v2"
 )
 
 const defaultWidth = 80
