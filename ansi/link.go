@@ -15,12 +15,32 @@ type LinkElement struct {
 	BaseURL  string
 	URL      string
 	Children []ElementRenderer
+	SkipText bool
+	SkipHref bool
+
+	hyperlink, resetHyperlink string
+	validURL                  bool
 }
 
 // Render renders a LinkElement.
 func (e *LinkElement) Render(w io.Writer, ctx RenderContext) error {
 	// Make OSC 8 hyperlink token.
-	hyperlink, resetHyperlink, validURL := makeHyperlink(e.URL)
+	e.hyperlink, e.resetHyperlink, e.validURL = makeHyperlink(e.URL)
+
+	if !e.SkipText {
+		if err := e.renderTextPart(w, ctx); err != nil {
+			return err
+		}
+	}
+	if !e.SkipHref {
+		if err := e.renderHrefPart(w, ctx); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (e *LinkElement) renderTextPart(w io.Writer, ctx RenderContext) error {
 	for _, child := range e.Children {
 		if r, ok := child.(StyleOverriderElementRenderer); ok { //nolint:nestif
 			var b bytes.Buffer
@@ -29,7 +49,7 @@ func (e *LinkElement) Render(w io.Writer, ctx RenderContext) error {
 				return fmt.Errorf("glamour: error rendering with style: %w", err)
 			}
 
-			token := hyperlink + b.String() + resetHyperlink
+			token := e.hyperlink + b.String() + e.resetHyperlink
 			if _, err := io.WriteString(w, token); err != nil {
 				return fmt.Errorf("glamour: error writing hyperlink: %w", err)
 			}
@@ -38,7 +58,7 @@ func (e *LinkElement) Render(w io.Writer, ctx RenderContext) error {
 			if err := child.Render(&b, ctx); err != nil {
 				return fmt.Errorf("glamour: error rendering: %w", err)
 			}
-			token := hyperlink + b.String() + resetHyperlink
+			token := e.hyperlink + b.String() + e.resetHyperlink
 			el := &BaseElement{
 				Token: token,
 				Style: ctx.options.Styles.LinkText,
@@ -48,19 +68,26 @@ func (e *LinkElement) Render(w io.Writer, ctx RenderContext) error {
 			}
 		}
 	}
+	return nil
+}
 
-	if validURL {
-		token := hyperlink + resolveRelativeURL(e.BaseURL, e.URL) + resetHyperlink
+func (e *LinkElement) renderHrefPart(w io.Writer, ctx RenderContext) error {
+	prefix := ""
+	if !e.SkipText {
+		prefix = " "
+	}
+
+	if e.validURL {
+		token := e.hyperlink + resolveRelativeURL(e.BaseURL, e.URL) + e.resetHyperlink
 		el := &BaseElement{
 			Token:  token,
-			Prefix: " ",
+			Prefix: prefix,
 			Style:  ctx.options.Styles.Link,
 		}
 		if err := el.Render(w, ctx); err != nil {
 			return err
 		}
 	}
-
 	return nil
 }
 
@@ -71,7 +98,7 @@ func makeHyperlink(link string) (string, string, bool) {
 
 	u, err := url.Parse(link)
 	validURL := err == nil && "#"+u.Fragment != link // if the URL only consists of an anchor, ignore it
-	if validURL {                                    // if the URL only consists of an anchor, ignore it
+	if validURL {
 		h := fnv.New32a()
 		if _, err := io.WriteString(h, link); err != nil {
 			return "", "", false

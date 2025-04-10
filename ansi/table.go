@@ -16,6 +16,10 @@ type TableElement struct {
 	table    *astext.Table
 	header   []string
 	row      []string
+	source   []byte
+
+	tableImages []tableLink
+	tableLinks  []tableLink
 }
 
 // A TableRowElement is used to render a single row in a table.
@@ -59,6 +63,10 @@ func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
 		wrap = *ctx.options.TableWrap
 	}
 	ctx.table.lipgloss = table.New().Width(width).Wrap(wrap)
+
+	if err := e.collectLinksAndImages(ctx); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -110,6 +118,12 @@ func (e *TableElement) setBorders(ctx RenderContext) {
 
 // Finish finishes rendering a TableElement.
 func (e *TableElement) Finish(_ io.Writer, ctx RenderContext) error {
+	defer func() {
+		ctx.table.lipgloss = nil
+		ctx.table.tableImages = nil
+		ctx.table.tableLinks = nil
+	}()
+
 	rules := ctx.options.Styles.Table
 
 	e.setStyles(ctx)
@@ -122,6 +136,9 @@ func (e *TableElement) Finish(_ io.Writer, ctx RenderContext) error {
 
 	_, _ = renderText(ow, ctx.blockStack.With(rules.StylePrimitive), rules.Suffix)
 	_, _ = renderText(ow, ctx.blockStack.Current().Style.StylePrimitive, rules.BlockSuffix)
+
+	e.printTableLinks(ctx)
+
 	ctx.table.lipgloss = nil
 	return nil
 }

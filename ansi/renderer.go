@@ -18,6 +18,7 @@ type Options struct {
 	BaseURL          string
 	WordWrap         int
 	TableWrap        *bool
+	InlineTableLinks bool
 	PreserveNewLines bool
 	Styles           StyleConfig
 	ChromaFormatter  string
