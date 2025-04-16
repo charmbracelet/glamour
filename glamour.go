@@ -10,17 +10,15 @@ import (
 	"io"
 	"os"
 
-	"github.com/muesli/termenv"
 	"github.com/yuin/goldmark"
 	emoji "github.com/yuin/goldmark-emoji"
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/renderer"
 	"github.com/yuin/goldmark/util"
-	"golang.org/x/term"
 
-	"github.com/charmbracelet/glamour/ansi"
-	styles "github.com/charmbracelet/glamour/styles"
+	"github.com/charmbracelet/glamour/v2/ansi"
+	styles "github.com/charmbracelet/glamour/v2/styles"
 )
 
 const (
@@ -79,8 +77,7 @@ func NewTermRenderer(options ...TermRendererOption) (*TermRenderer, error) {
 			),
 		),
 		ansiOptions: ansi.Options{
-			WordWrap:     defaultWidth,
-			ColorProfile: termenv.TrueColor,
+			WordWrap: defaultWidth,
 		},
 	}
 	for _, o := range options {
@@ -107,15 +104,6 @@ func WithBaseURL(baseURL string) TermRendererOption {
 	}
 }
 
-// WithColorProfile sets the TermRenderer's color profile
-// (TrueColor / ANSI256 / ANSI).
-func WithColorProfile(profile termenv.Profile) TermRendererOption {
-	return func(tr *TermRenderer) error {
-		tr.ansiOptions.ColorProfile = profile
-		return nil
-	}
-}
-
 // WithStandardStyle sets a TermRenderer's styles with a standard (builtin)
 // style.
 func WithStandardStyle(style string) TermRendererOption {
@@ -127,12 +115,6 @@ func WithStandardStyle(style string) TermRendererOption {
 		tr.ansiOptions.Styles = *styles
 		return nil
 	}
-}
-
-// WithAutoStyle sets a TermRenderer's styles with either the standard dark
-// or light style, depending on the terminal's background color at run-time.
-func WithAutoStyle() TermRendererOption {
-	return WithStandardStyle(styles.AutoStyle)
 }
 
 // WithEnvironmentConfig sets a TermRenderer's styles based on the
@@ -297,23 +279,13 @@ func (tr *TermRenderer) RenderBytes(in []byte) ([]byte, error) {
 func getEnvironmentStyle() string {
 	glamourStyle := os.Getenv("GLAMOUR_STYLE")
 	if len(glamourStyle) == 0 {
-		glamourStyle = styles.AutoStyle
+		glamourStyle = styles.DarkStyle
 	}
 
 	return glamourStyle
 }
 
 func getDefaultStyle(style string) (*ansi.StyleConfig, error) {
-	if style == styles.AutoStyle {
-		if !term.IsTerminal(int(os.Stdout.Fd())) {
-			return &styles.NoTTYStyleConfig, nil
-		}
-		if termenv.HasDarkBackground() {
-			return &styles.DarkStyleConfig, nil
-		}
-		return &styles.LightStyleConfig, nil
-	}
-
 	styles, ok := styles.DefaultStyles[style]
 	if !ok {
 		return nil, fmt.Errorf("%s: style not found", style)

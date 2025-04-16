@@ -3,7 +3,7 @@ package autolink_test
 import (
 	"testing"
 
-	"github.com/charmbracelet/glamour/internal/autolink"
+	"github.com/charmbracelet/glamour/v2/internal/autolink"
 )
 
 func TestDetect(t *testing.T) {
