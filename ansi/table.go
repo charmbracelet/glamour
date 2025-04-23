@@ -72,6 +72,12 @@ func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
 }
 
 func (e *TableElement) setStyles(ctx RenderContext) {
+	docRules := ctx.options.Styles.Document
+	if docRules.BackgroundColor != nil {
+		baseStyle := lipgloss.NewStyle().Background(lipgloss.Color(*docRules.BackgroundColor))
+		ctx.table.lipgloss.BaseStyle(baseStyle)
+	}
+
 	ctx.table.lipgloss = ctx.table.lipgloss.StyleFunc(func(_, col int) lipgloss.Style {
 		st := lipgloss.NewStyle().Inline(false)
 		// Default Styles
