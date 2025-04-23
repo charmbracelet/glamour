@@ -6,7 +6,7 @@ toolchain go1.23.7
 
 require (
 	github.com/alecthomas/chroma/v2 v2.14.0
-	github.com/charmbracelet/lipgloss/v2 v2.0.0-beta.1
+	github.com/charmbracelet/lipgloss/v2 v2.0.0-beta.1.0.20250423170848-3968edcc7629
 	github.com/charmbracelet/x/ansi v0.8.0
 	github.com/charmbracelet/x/cellbuf v0.0.14-0.20250326144200-0875329e71da
 	github.com/charmbracelet/x/exp/golden v0.0.0-20240806155701-69247e0abc2a
