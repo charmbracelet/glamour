@@ -14,7 +14,7 @@ require (
 	github.com/muesli/reflow v0.3.0
 	github.com/muesli/termenv v0.16.0
 	github.com/yuin/goldmark v1.7.11
-	github.com/yuin/goldmark-emoji v1.0.5
+	github.com/yuin/goldmark-emoji v1.0.6
 	golang.org/x/term v0.31.0
 	golang.org/x/text v0.24.0
 )
