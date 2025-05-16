@@ -12,8 +12,8 @@ github.com/charmbracelet/colorprofile v0.3.0 h1:KtLh9uuu1RCt+Hml4s6Hz+kB1PfV3wi+
 github.com/charmbracelet/colorprofile v0.3.0/go.mod h1:oHJ340RS2nmG1zRGPmhJKJ/jf4FPNNk0P39/wBPA1G0=
 github.com/charmbracelet/lipgloss/v2 v2.0.0-beta.1.0.20250513162854-28902d027c40 h1:SxOUomYAVo5zh+6WCH1bGshlAnSKP0ZeovI0FHAl9kg=
 github.com/charmbracelet/lipgloss/v2 v2.0.0-beta.1.0.20250513162854-28902d027c40/go.mod h1:tRlx/Hu0lo/j9viunCN2H+Ze6JrmdjQlXUQvvArgaOc=
-github.com/charmbracelet/x/ansi v0.8.0 h1:9GTq3xq9caJW8ZrBTe0LIe2fvfLR/bYXKTx2llXn7xE=
-github.com/charmbracelet/x/ansi v0.8.0/go.mod h1:wdYl/ONOLHLIVmQaxbIYEC/cRKOQyjTkowiI4blgS9Q=
+github.com/charmbracelet/x/ansi v0.9.3-0.20250516160309-24eee56f89fa h1:JU05TLAB6nOEL46bxHDV/+e8umBX32ODsGbVkc7o7bk=
+github.com/charmbracelet/x/ansi v0.9.3-0.20250516160309-24eee56f89fa/go.mod h1:3RQDQ6lDnROptfpWuUVIUG64bD2g2BgntdxH0Ya5TeE=
 github.com/charmbracelet/x/cellbuf v0.0.14-0.20250326144200-0875329e71da h1:8MGKD5WBtuzfXglq0CnyzVSwGojv57X+H46OL9OUyRA=
 github.com/charmbracelet/x/cellbuf v0.0.14-0.20250326144200-0875329e71da/go.mod h1:xe0nKWGd3eJgtqZRaN9RjMtK7xUYchjzPr7q6kcvCCs=
 github.com/charmbracelet/x/exp/golden v0.0.0-20240806155701-69247e0abc2a h1:G99klV19u0QnhiizODirwVksQB91TJKV/UaTnACcG30=
