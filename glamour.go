@@ -238,6 +238,133 @@ func WithChromaFormatter(formatter string) TermRendererOption {
 	}
 }
 
+// WithJustifiedAlignment enables justified alignment with configurable margins for all block elements.
+func WithJustifiedAlignment(leftMargin, rightMargin uint) TermRendererOption {
+	return func(tr *TermRenderer) error {
+		// Apply justified alignment with configurable margins to block elements
+		align := "justify"
+		
+		tr.ansiOptions.Styles.Paragraph.Align = &align
+		tr.ansiOptions.Styles.Paragraph.MarginLeft = &leftMargin
+		tr.ansiOptions.Styles.Paragraph.MarginRight = &rightMargin
+		
+		tr.ansiOptions.Styles.H1.Align = &align
+		tr.ansiOptions.Styles.H1.MarginLeft = &leftMargin
+		tr.ansiOptions.Styles.H1.MarginRight = &rightMargin
+		
+		tr.ansiOptions.Styles.H2.Align = &align
+		tr.ansiOptions.Styles.H2.MarginLeft = &leftMargin
+		tr.ansiOptions.Styles.H2.MarginRight = &rightMargin
+		
+		tr.ansiOptions.Styles.H3.Align = &align
+		tr.ansiOptions.Styles.H3.MarginLeft = &leftMargin
+		tr.ansiOptions.Styles.H3.MarginRight = &rightMargin
+		
+		tr.ansiOptions.Styles.H4.Align = &align
+		tr.ansiOptions.Styles.H4.MarginLeft = &leftMargin
+		tr.ansiOptions.Styles.H4.MarginRight = &rightMargin
+		
+		tr.ansiOptions.Styles.H5.Align = &align
+		tr.ansiOptions.Styles.H5.MarginLeft = &leftMargin
+		tr.ansiOptions.Styles.H5.MarginRight = &rightMargin
+		
+		tr.ansiOptions.Styles.H6.Align = &align
+		tr.ansiOptions.Styles.H6.MarginLeft = &leftMargin
+		tr.ansiOptions.Styles.H6.MarginRight = &rightMargin
+		
+		tr.ansiOptions.Styles.List.Align = &align
+		tr.ansiOptions.Styles.List.MarginLeft = &leftMargin
+		tr.ansiOptions.Styles.List.MarginRight = &rightMargin
+		
+		tr.ansiOptions.Styles.Code.Align = &align
+		tr.ansiOptions.Styles.Code.MarginLeft = &leftMargin
+		tr.ansiOptions.Styles.Code.MarginRight = &rightMargin
+		
+		return nil
+	}
+}
+
+// WithCenterAlignment enables center alignment with configurable margins for all block elements.
+func WithCenterAlignment(leftMargin, rightMargin uint) TermRendererOption {
+	return func(tr *TermRenderer) error {
+		// Apply center alignment with configurable margins to block elements
+		align := "center"
+		
+		tr.ansiOptions.Styles.Paragraph.Align = &align
+		tr.ansiOptions.Styles.Paragraph.MarginLeft = &leftMargin
+		tr.ansiOptions.Styles.Paragraph.MarginRight = &rightMargin
+		
+		tr.ansiOptions.Styles.H1.Align = &align
+		tr.ansiOptions.Styles.H1.MarginLeft = &leftMargin
+		tr.ansiOptions.Styles.H1.MarginRight = &rightMargin
+		
+		tr.ansiOptions.Styles.H2.Align = &align
+		tr.ansiOptions.Styles.H2.MarginLeft = &leftMargin
+		tr.ansiOptions.Styles.H2.MarginRight = &rightMargin
+		
+		tr.ansiOptions.Styles.H3.Align = &align
+		tr.ansiOptions.Styles.H3.MarginLeft = &leftMargin
+		tr.ansiOptions.Styles.H3.MarginRight = &rightMargin
+		
+		tr.ansiOptions.Styles.H4.Align = &align
+		tr.ansiOptions.Styles.H4.MarginLeft = &leftMargin
+		tr.ansiOptions.Styles.H4.MarginRight = &rightMargin
+		
+		tr.ansiOptions.Styles.H5.Align = &align
+		tr.ansiOptions.Styles.H5.MarginLeft = &leftMargin
+		tr.ansiOptions.Styles.H5.MarginRight = &rightMargin
+		
+		tr.ansiOptions.Styles.H6.Align = &align
+		tr.ansiOptions.Styles.H6.MarginLeft = &leftMargin
+		tr.ansiOptions.Styles.H6.MarginRight = &rightMargin
+		
+		tr.ansiOptions.Styles.List.Align = &align
+		tr.ansiOptions.Styles.List.MarginLeft = &leftMargin
+		tr.ansiOptions.Styles.List.MarginRight = &rightMargin
+		
+		tr.ansiOptions.Styles.Code.Align = &align
+		tr.ansiOptions.Styles.Code.MarginLeft = &leftMargin
+		tr.ansiOptions.Styles.Code.MarginRight = &rightMargin
+		
+		return nil
+	}
+}
+
+// WithMargins applies left and right margins without special alignment.
+func WithMargins(leftMargin, rightMargin uint) TermRendererOption {
+	return func(tr *TermRenderer) error {
+		// Apply margins to block elements without special alignment
+		tr.ansiOptions.Styles.Paragraph.MarginLeft = &leftMargin
+		tr.ansiOptions.Styles.Paragraph.MarginRight = &rightMargin
+		
+		tr.ansiOptions.Styles.H1.MarginLeft = &leftMargin
+		tr.ansiOptions.Styles.H1.MarginRight = &rightMargin
+		
+		tr.ansiOptions.Styles.H2.MarginLeft = &leftMargin
+		tr.ansiOptions.Styles.H2.MarginRight = &rightMargin
+		
+		tr.ansiOptions.Styles.H3.MarginLeft = &leftMargin
+		tr.ansiOptions.Styles.H3.MarginRight = &rightMargin
+		
+		tr.ansiOptions.Styles.H4.MarginLeft = &leftMargin
+		tr.ansiOptions.Styles.H4.MarginRight = &rightMargin
+		
+		tr.ansiOptions.Styles.H5.MarginLeft = &leftMargin
+		tr.ansiOptions.Styles.H5.MarginRight = &rightMargin
+		
+		tr.ansiOptions.Styles.H6.MarginLeft = &leftMargin
+		tr.ansiOptions.Styles.H6.MarginRight = &rightMargin
+		
+		tr.ansiOptions.Styles.List.MarginLeft = &leftMargin
+		tr.ansiOptions.Styles.List.MarginRight = &rightMargin
+		
+		tr.ansiOptions.Styles.Code.MarginLeft = &leftMargin
+		tr.ansiOptions.Styles.Code.MarginRight = &rightMargin
+		
+		return nil
+	}
+}
+
 // WithOptions sets multiple TermRenderer options within a single TermRendererOption.
 func WithOptions(options ...TermRendererOption) TermRendererOption {
 	return func(tr *TermRenderer) error {
