@@ -365,6 +365,16 @@ func WithMargins(leftMargin, rightMargin uint) TermRendererOption {
 	}
 }
 
+// WithZenMode applies zen-mode margins using glamour's native Document margin system.
+// This leverages the same proven margin mechanism used by default styles.
+func WithZenMode(margin uint) TermRendererOption {
+	return func(tr *TermRenderer) error {
+		// Use glamour's native Document margin system for consistent zen-mode
+		tr.ansiOptions.Styles.Document.Margin = &margin
+		return nil
+	}
+}
+
 // WithOptions sets multiple TermRenderer options within a single TermRendererOption.
 func WithOptions(options ...TermRendererOption) TermRendererOption {
 	return func(tr *TermRenderer) error {
