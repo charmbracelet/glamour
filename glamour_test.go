@@ -325,3 +325,59 @@ func TestWithChromaFormatterCustom(t *testing.T) {
 
 	golden.RequireEqual(t, []byte(b))
 }
+
+func TestRenderBytesTo(t *testing.T) {
+	in, err := os.ReadFile(markdown)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var buf bytes.Buffer
+	err = RenderBytesTo(in, "dark", &buf)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	golden.RequireEqual(t, buf.Bytes())
+}
+
+func TestRenderBytesToWithCustomStyle(t *testing.T) {
+	in, err := os.ReadFile(markdown)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var buf bytes.Buffer
+	err = RenderBytesTo(in, "testdata/custom.style", &buf)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Compare with expected output
+	r, err := NewTermRenderer(WithStylePath("testdata/custom.style"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expected, err := r.RenderBytes(in)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !bytes.Equal(expected, buf.Bytes()) {
+		t.Errorf("Output doesn't match expected result")
+	}
+}
+
+func TestRenderBytesToError(t *testing.T) {
+	in, err := os.ReadFile(markdown)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var buf bytes.Buffer
+	err = RenderBytesTo(in, "non-existent-style", &buf)
+	if err == nil {
+		t.Error("Expected error for non-existent style, got nil")
+	}
+}
