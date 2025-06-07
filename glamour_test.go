@@ -325,3 +325,21 @@ func TestWithChromaFormatterCustom(t *testing.T) {
 
 	golden.RequireEqual(t, []byte(b))
 }
+
+func TestWithWordWrap(t *testing.T) {
+	longLine := "Of course. Based on my exploration, this project is a command-line application written in Go. It acts as..."
+
+	r, err := NewTermRenderer(
+		WithWordWrap(88),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	out, err := r.Render(longLine)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	golden.RequireEqual(t, []byte(out))
+}
