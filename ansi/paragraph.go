@@ -6,7 +6,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/muesli/reflow/wordwrap"
+	"github.com/charmbracelet/glamour/internal/wordwrap"
 )
 
 // A ParagraphElement is used to render individual paragraphs.
