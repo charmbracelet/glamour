@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/muesli/reflow/wordwrap"
+	"github.com/charmbracelet/glamour/internal/wordwrap"
 )
 
 // A HeadingElement is used to render headings.
