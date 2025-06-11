@@ -75,6 +75,12 @@ Check out these projects, which use `glamour`:
 - [Gitea CLI](https://gitea.com/gitea/tea), Gitea's official command line tool.
 - [Meteor](https://github.com/odpf/meteor), an easy-to-use, plugin-driven metadata collection framework.
 
+## Contributing
+
+See [contributing][contribute].
+
+[contribute]: https://github.com/charmbracelet/glamour/contribute
+
 ## Feedback
 
 We’d love to hear your thoughts on this project. Feel free to drop us a note!
