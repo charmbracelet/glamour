@@ -1,26 +1,26 @@
                                                                                 
- Description                           │ Link                                   
-───────────────────────────────────────┼──────────────────────────────────────  
- Issue                                 │ ]8;id=619797388;https://github.com/owner/repo/issue/123[38;5;35;1mowner/repo#123[1][m]8;;                      
- Issue                                 │ ]8;id=3035292291;https://github.com/owner/repo/issues/123[38;5;35;1mowner/repo#123[2][m]8;;                      
- Issue Comment                         │ ]8;id=2780648231;https://github.com/owner/repo/issue/123#issuecomment-456[38;5;35;1mowner/repo#123 (comment)[3][m]8;;            
- Issue Comment                         │ ]8;id=1220320946;https://github.com/owner/repo/issues/123#issuecomment-456[38;5;35;1mowner/repo#123 (comment)[4][m]8;;            
- Pull Request                          │ ]8;id=2534129736;https://github.com/owner/repo/pull/123[38;5;35;1mowner/repo#123[5][m]8;;                      
- Pull Request                          │ ]8;id=2171473271;https://github.com/owner/repo/pulls/123[38;5;35;1mowner/repo#123[6][m]8;;                      
- Pull Request Comment                  │ ]8;id=1161319467;https://github.com/owner/repo/pull/123#issuecomment-456[38;5;35;1mowner/repo#123 (comment)[7][m]8;;            
- Pull Request Comment                  │ ]8;id=3948449726;https://github.com/owner/repo/pulls/123#issuecomment-456[38;5;35;1mowner/repo#123 (comment)[8][m]8;;            
- Pull Request Comment                  │ ]8;id=2518726931;https://github.com/owner/repo/pull/123#discussion_r456[38;5;35;1mowner/repo#123 (comment)[9][m]8;;            
- Pull Request Comment                  │ ]8;id=1706732200;https://github.com/owner/repo/pulls/123#discussion_r456[38;5;35;1mowner/repo#123 (comment)[10][m]8;;           
- Pull Request Review                   │ ]8;id=3045223221;https://github.com/owner/repo/pull/123#pullrequestreview-456[38;5;35;1mowner/repo#123 (review)[11][m]8;;            
- Pull Request Review                   │ ]8;id=3065861430;https://github.com/owner/repo/pulls/123#pullrequestreview-456[38;5;35;1mowner/repo#123 (review)[12][m]8;;            
- Discussion                            │ ]8;id=2658935710;https://github.com/owner/repo/discussions/123[38;5;35;1mowner/repo#123[13][m]8;;                     
- Discussion Comment                    │ ]8;id=1955857650;https://github.com/owner/repo/discussions/123#discussioncomment-456[38;5;35;1mowner/repo#123 (comment)[14][m]8;;           
- Commit                                │ ]8;id=3017938597;https://github.com/owner/repo/commit/abcdefghijklmnopqrsxyz[38;5;35;1mowner/repo@abcdefg[15][m]8;;                 
- Commit                                │ ]8;id=752921524;https://github.com/owner/repo/commit/abcdefghijklmnopqrsxyz#diff-123[38;5;35;1mowner/repo@abcdefg[16][m]8;;                 
- Pull Request Commit                   │ ]8;id=2075552701;https://github.com/owner/repo/pull/123/commits/abcdefghijklmnopqrsxyz[38;5;35;1mowner/repo@abcdefg[17][m]8;;                 
- Pull Request Commit                   │ ]8;id=2268807388;https://github.com/owner/repo/pulls/123/commits/abcdefghijklmnopqrsxyz[38;5;35;1mowner/repo@abcdefg[18][m]8;;                 
- Pull Request Commit                   │ ]8;id=3995558556;https://github.com/owner/repo/pull/123/commits/abcdefghijklmnopqrsxyz#diff-123[38;5;35;1mowner/repo@abcdefg[19][m]8;;                 
- Pull Request Commit                   │ ]8;id=1885327155;https://github.com/owner/repo/pulls/123/commits/abcdefghijklmnopqrsxyz#diff-123[38;5;35;1mowner/repo@abcdefg[20][m]8;;                 
+ Description                            │ Link                                  
+────────────────────────────────────────┼───────────────────────────────────────
+ Issue                                  │ ]8;id=619797388;https://github.com/owner/repo/issue/123[38;5;35;1mowner/repo#123[1][m]8;;                     
+ Issue                                  │ ]8;id=3035292291;https://github.com/owner/repo/issues/123[38;5;35;1mowner/repo#123[2][m]8;;                     
+ Issue Comment                          │ ]8;id=2780648231;https://github.com/owner/repo/issue/123#issuecomment-456[38;5;35;1mowner/repo#123 (comment)[3][m]8;;           
+ Issue Comment                          │ ]8;id=1220320946;https://github.com/owner/repo/issues/123#issuecomment-456[38;5;35;1mowner/repo#123 (comment)[4][m]8;;           
+ Pull Request                           │ ]8;id=2534129736;https://github.com/owner/repo/pull/123[38;5;35;1mowner/repo#123[5][m]8;;                     
+ Pull Request                           │ ]8;id=2171473271;https://github.com/owner/repo/pulls/123[38;5;35;1mowner/repo#123[6][m]8;;                     
+ Pull Request Comment                   │ ]8;id=1161319467;https://github.com/owner/repo/pull/123#issuecomment-456[38;5;35;1mowner/repo#123 (comment)[7][m]8;;           
+ Pull Request Comment                   │ ]8;id=3948449726;https://github.com/owner/repo/pulls/123#issuecomment-456[38;5;35;1mowner/repo#123 (comment)[8][m]8;;           
+ Pull Request Comment                   │ ]8;id=2518726931;https://github.com/owner/repo/pull/123#discussion_r456[38;5;35;1mowner/repo#123 (comment)[9][m]8;;           
+ Pull Request Comment                   │ ]8;id=1706732200;https://github.com/owner/repo/pulls/123#discussion_r456[38;5;35;1mowner/repo#123 (comment)[10][m]8;;          
+ Pull Request Review                    │ ]8;id=3045223221;https://github.com/owner/repo/pull/123#pullrequestreview-456[38;5;35;1mowner/repo#123 (review)[11][m]8;;           
+ Pull Request Review                    │ ]8;id=3065861430;https://github.com/owner/repo/pulls/123#pullrequestreview-456[38;5;35;1mowner/repo#123 (review)[12][m]8;;           
+ Discussion                             │ ]8;id=2658935710;https://github.com/owner/repo/discussions/123[38;5;35;1mowner/repo#123[13][m]8;;                    
+ Discussion Comment                     │ ]8;id=1955857650;https://github.com/owner/repo/discussions/123#discussioncomment-456[38;5;35;1mowner/repo#123 (comment)[14][m]8;;          
+ Commit                                 │ ]8;id=3017938597;https://github.com/owner/repo/commit/abcdefghijklmnopqrsxyz[38;5;35;1mowner/repo@abcdefg[15][m]8;;                
+ Commit                                 │ ]8;id=752921524;https://github.com/owner/repo/commit/abcdefghijklmnopqrsxyz#diff-123[38;5;35;1mowner/repo@abcdefg[16][m]8;;                
+ Pull Request Commit                    │ ]8;id=2075552701;https://github.com/owner/repo/pull/123/commits/abcdefghijklmnopqrsxyz[38;5;35;1mowner/repo@abcdefg[17][m]8;;                
+ Pull Request Commit                    │ ]8;id=2268807388;https://github.com/owner/repo/pulls/123/commits/abcdefghijklmnopqrsxyz[38;5;35;1mowner/repo@abcdefg[18][m]8;;                
+ Pull Request Commit                    │ ]8;id=3995558556;https://github.com/owner/repo/pull/123/commits/abcdefghijklmnopqrsxyz#diff-123[38;5;35;1mowner/repo@abcdefg[19][m]8;;                
+ Pull Request Commit                    │ ]8;id=1885327155;https://github.com/owner/repo/pulls/123/commits/abcdefghijklmnopqrsxyz#diff-123[38;5;35;1mowner/repo@abcdefg[20][m]8;;                
                                                                                 
 [38;5;35;1m [1]: owner/repo#123[m [38;5;30;4m]8;id=619797388;https://github.com/owner/repo/issue/123https://github.com/owner/repo/issue/123]8;;[m                    
 [38;5;35;1m [2]: owner/repo#123[m [38;5;30;4m]8;id=3035292291;https://github.com/owner/repo/issues/123https://github.com/owner/repo/issues/123]8;;[m                   
