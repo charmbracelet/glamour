@@ -66,6 +66,16 @@ func RenderBytes(in []byte, stylePath string) ([]byte, error) {
 	return r.RenderBytes(in)
 }
 
+func RenderBytesTo(in []byte, stylePath string, w io.Writer) error {
+	r, err := NewTermRenderer(
+		WithStylePath(stylePath),
+	)
+	if err != nil {
+		return err
+	}
+	return r.RenderBytesTo(in, w)
+}
+
 // NewTermRenderer returns a new TermRenderer the given options.
 func NewTermRenderer(options ...TermRendererOption) (*TermRenderer, error) {
 	tr := &TermRenderer{
@@ -290,8 +300,13 @@ func (tr *TermRenderer) Render(in string) (string, error) {
 // RenderBytes returns the markdown rendered into a byte slice.
 func (tr *TermRenderer) RenderBytes(in []byte) ([]byte, error) {
 	var buf bytes.Buffer
-	err := tr.md.Convert(in, &buf)
+	err := tr.RenderBytesTo(in, &buf)
 	return buf.Bytes(), err
+}
+
+// RenderBytesTo renders markdown into the provided writer.
+func (tr *TermRenderer) RenderBytesTo(in []byte, w io.Writer) error {
+	return tr.md.Convert(in, w)
 }
 
 func getEnvironmentStyle() string {
