@@ -25,8 +25,8 @@ _carduus_ in Carthage and Cordoba.
 1. Carrots
 1. Celery
 1. Tacos
-    * Soft
-    * Hard
+  * Soft
+  * Hard
 1. Cucumber
 
 ## Things to eat today
@@ -38,7 +38,7 @@ _carduus_ in Carthage and Cordoba.
 ### Power levels of the aforementioned foods
 
 | Name       | Power | Comment          |
-| ---        | ---   | ---              |
+| ---------- | ----- | ---------------- |
 | Carrots    | 9001  | It’s over 9000?! |
 | Ramen      | 9002  | Also over 9000?! |
 | Currywurst | 10000 | What?!           |
@@ -62,6 +62,8 @@ main = putStrLn
      $ hello <$> [ "artichoke", "alcachofa" ]
 ```
 
+_Alcachofa_, if you were wondering, is artichoke in Spanish.
+
 ***
 
-_Alcachofa_, if you were wondering, is artichoke in Spanish.
+![Charm](https://stuff.charm.sh/charm-badge.jpg)
