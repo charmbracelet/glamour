@@ -12,6 +12,7 @@ require (
 require (
 	github.com/alecthomas/chroma/v2 v2.14.0 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
+	github.com/charmbracelet/bubbletea/v2 v2.0.0-beta.4.0.20250805213652-b149293c83e0 // indirect
 	github.com/charmbracelet/lipgloss/v2 v2.0.0-beta.3.0.20250716211347-10c048e36112 // indirect
 	github.com/charmbracelet/ultraviolet v0.0.0-20250805213125-4167e4d7080b // indirect
 	github.com/charmbracelet/x/ansi v0.10.1 // indirect
