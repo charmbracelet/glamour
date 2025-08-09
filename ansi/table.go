@@ -51,6 +51,7 @@ func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
 	iw := NewIndentWriter(w, int(indentation+margin), func(_ io.Writer) { //nolint:gosec
 		_, _ = renderText(w, bs.Current().Style.StylePrimitive, " ")
 	})
+	defer iw.Close()
 
 	style := bs.With(rules.StylePrimitive)
 

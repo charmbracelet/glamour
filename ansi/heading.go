@@ -63,6 +63,7 @@ func (e *HeadingElement) Finish(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 	rules := bs.Current().Style
 	mw := NewMarginWriter(ctx, w, rules)
+	defer mw.Close()
 
 	flow := cellbuf.Wrap(bs.Current().Block.String(), int(bs.Width(ctx)), "") //nolint: gosec
 	_, err := io.WriteString(mw, flow)

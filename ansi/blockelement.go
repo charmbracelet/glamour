@@ -40,6 +40,7 @@ func (e *BlockElement) Finish(w io.Writer, ctx RenderContext) error {
 		)
 
 		mw := NewMarginWriter(ctx, w, bs.Current().Style)
+		defer mw.Close()
 		if _, err := io.WriteString(mw, s); err != nil {
 			return fmt.Errorf("glamour: error writing to writer: %w", err)
 		}
