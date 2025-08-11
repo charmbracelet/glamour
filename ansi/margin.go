@@ -2,6 +2,7 @@ package ansi
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -56,6 +57,15 @@ func (w *MarginWriter) Write(b []byte) (int, error) {
 	return n, nil
 }
 
+func (w *MarginWriter) Close() error {
+	var werr error
+	if w, ok := w.w.(io.WriteCloser); ok {
+		werr = w.Close()
+	}
+
+	return errors.Join(werr, w.iw.Close())
+}
+
 // PaddingFunc is a function that applies padding around whatever you write to it.
 type PaddingFunc = func(w io.Writer)
 
@@ -107,6 +117,10 @@ func (w *PaddingWriter) Write(p []byte) (int, error) {
 	}
 
 	return len(p), nil
+}
+
+func (w *PaddingWriter) Close() error {
+	return w.w.Close()
 }
 
 // IndentFunc is a function that applies indentation around whatever you write to
@@ -186,4 +200,13 @@ func (w *IndentWriter) Write(p []byte) (int, error) {
 	}
 
 	return len(p), nil
+}
+
+func (w *IndentWriter) Close() error {
+	var werr error
+	if w, ok := w.w.(io.WriteCloser); ok {
+		werr = w.Close()
+	}
+
+	return errors.Join(werr, w.pw.Close())
 }

@@ -128,6 +128,7 @@ func (e *CodeBlockElement) Render(w io.Writer, ctx RenderContext) error {
 	iw := NewIndentWriter(w, int(indentation+margin), func(_ io.Writer) { //nolint:gosec
 		_, _ = renderText(w, bs.Current().Style.StylePrimitive, " ")
 	})
+	defer iw.Close()
 
 	if len(theme) > 0 {
 		_, _ = renderText(iw, bs.Current().Style.StylePrimitive, rules.BlockPrefix)
