@@ -40,6 +40,13 @@ func renderText(w io.Writer, p termenv.Profile, rules StylePrimitive, s string) 
 		return
 	}
 
+	// If text contains ANSI sequences (like OSC 8 hyperlinks), write it directly
+	// without processing through termenv to avoid corruption
+	if containsANSISequences(s) {
+		_, _ = io.WriteString(w, s)
+		return
+	}
+
 	out := termenv.String(s)
 	if rules.Upper != nil && *rules.Upper {
 		out = termenv.String(cases.Upper(language.English).String(s))
@@ -124,7 +131,15 @@ func (e *BaseElement) doRender(w io.Writer, p termenv.Profile, st1, st2 StylePri
 			return err
 		}
 	}
-	renderText(w, p, st2, escapeReplacer.Replace(s))
+
+	// Don't apply escapeReplacer to text that contains ANSI sequences
+	// This preserves custom formatter output (like OSC 8 hyperlinks)
+	processedText := s
+	if !containsANSISequences(s) {
+		processedText = escapeReplacer.Replace(s)
+	}
+
+	renderText(w, p, st2, processedText)
 	return nil
 }
 
@@ -149,3 +164,15 @@ var escapeReplacer = strings.NewReplacer(
 	"\\!", "!",
 	"\\|", "|",
 )
+
+// containsANSISequences checks if text contains ANSI escape sequences.
+// This prevents processing of custom formatter output through escapeReplacer.
+func containsANSISequences(text string) bool {
+	// Check for common ANSI sequence patterns:
+	// - CSI sequences: ESC[
+	// - OSC sequences: ESC]
+	// - Simple escapes: ESC followed by letter
+	return len(text) > 1 && (strings.Contains(text, "\x1b[") ||
+		strings.Contains(text, "\x1b]") ||
+		strings.Contains(text, "\x1b\\"))
+}

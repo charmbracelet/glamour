@@ -3,6 +3,7 @@ package ansi
 import (
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/muesli/reflow/indent"
 	"github.com/muesli/reflow/padding"
@@ -49,9 +50,30 @@ func NewMarginWriter(ctx RenderContext, w io.Writer, rules StyleBlock) *MarginWr
 }
 
 func (w *MarginWriter) Write(b []byte) (int, error) {
+	// CRITICAL FIX: Check if content contains OSC 8 hyperlink sequences specifically
+	// The reflow libraries (indent/padding) process text byte-by-byte which can
+	// corrupt OSC 8 escape sequences by breaking them up. This is the root cause
+	// of OSC 8 hyperlink corruption.
+	content := string(b)
+	if containsOSC8Sequences(content) {
+		// If content contains OSC 8 sequences, bypass reflow processing
+		// and write directly to avoid corruption of hyperlinks
+		n, err := w.w.Write(b)
+		if err != nil {
+			return 0, fmt.Errorf("glamour: error writing bytes: %w", err)
+		}
+		return n, nil
+	}
+
+	// Safe to use reflow processing for content without OSC 8 sequences
 	n, err := w.iw.Write(b)
 	if err != nil {
 		return 0, fmt.Errorf("glamour: error writing bytes: %w", err)
 	}
 	return n, nil
+}
+
+// containsOSC8Sequences checks specifically for OSC 8 hyperlink sequences
+func containsOSC8Sequences(text string) bool {
+	return strings.Contains(text, "\x1b]8;;")
 }
