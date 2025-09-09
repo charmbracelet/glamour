@@ -50,10 +50,6 @@ func NewMarginWriter(ctx RenderContext, w io.Writer, rules StyleBlock) *MarginWr
 }
 
 func (w *MarginWriter) Write(b []byte) (int, error) {
-	// CRITICAL FIX: Check if content contains OSC 8 hyperlink sequences specifically
-	// The reflow libraries (indent/padding) process text byte-by-byte which can
-	// corrupt OSC 8 escape sequences by breaking them up. This is the root cause
-	// of OSC 8 hyperlink corruption.
 	content := string(b)
 	if containsOSC8Sequences(content) {
 		// If content contains OSC 8 sequences, bypass reflow processing
