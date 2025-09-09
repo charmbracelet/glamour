@@ -96,7 +96,7 @@ Extensible system allowing multiple formatting plugins with priority ordering.
 
 ### Hyperlink Support (OSC 8)
 - ✅ **iTerm2** (macOS)
-- ✅ **Windows Terminal** 
+- ✅ **Windows Terminal**
 - ✅ **VS Code integrated terminal**
 - ✅ **Hyper**
 - ✅ **Terminology**
@@ -161,12 +161,6 @@ type LinkData struct {
 3. **Performance**: Pre-allocate string builders for complex formatting
 4. **Error Handling**: Return meaningful errors and provide safe fallbacks
 5. **Testing**: Structure formatters to be easily testable with dependency injection
-
-## Advanced Examples
-
-For more advanced usage patterns, see:
-- [`examples/terminal_detection/`](../terminal_detection/) - Terminal capability detection
-- [`examples/context_aware/`](../context_aware/) - Context-sensitive formatting
 
 ## Contributing
 
