@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/charmbracelet/glamour/internal/autolink"
+	"github.com/charmbracelet/glamour/v2/internal/autolink"
 	xansi "github.com/charmbracelet/x/ansi"
 	"github.com/charmbracelet/x/exp/slice"
 	"github.com/yuin/goldmark/ast"
@@ -60,23 +60,22 @@ func (e *TableElement) printTableLinks(ctx RenderContext) {
 	}
 
 	renderLinkHref := func(link tableLink, linkText string) {
+		hyperlink, resetHyperlink, _ := makeHyperlink(link.href)
+
 		style := ctx.options.Styles.Link
 		if link.linkType == linkTypeImage {
 			style = ctx.options.Styles.Image
 		}
 
-		// XXX(@andreynering): Once #411 is merged, use the hyperlink
-		// protocol to make the link work for the full URL even if we
-		// show it truncated.
 		linkMaxWidth := max(termWidth-xansi.StringWidth(linkText)-1, 0)
-		token := xansi.Truncate(link.href, linkMaxWidth, "…")
+		token := hyperlink + xansi.Truncate(link.href, linkMaxWidth, "…") + resetHyperlink
 
 		el := &BaseElement{Token: token, Style: style}
 		_ = el.Render(w, ctx)
 	}
 
 	renderString := func(str string) {
-		renderText(w, ctx.options.ColorProfile, ctx.blockStack.Current().Style.StylePrimitive, str)
+		_, _ = renderText(w, ctx.blockStack.Current().Style.StylePrimitive, str)
 	}
 
 	paddingFor := func(total, position int) int {

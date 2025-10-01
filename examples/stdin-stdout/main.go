@@ -14,7 +14,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/charmbracelet/glamour"
+	"github.com/charmbracelet/glamour/v2"
 )
 
 const defaultWidth = 80
@@ -27,10 +27,7 @@ func main() {
 	}
 
 	// Create a new renderer.
-	r, err := glamour.NewTermRenderer(
-		glamour.WithAutoStyle(),
-		glamour.WithWordWrap(defaultWidth),
-	)
+	r, err := glamour.NewTermRenderer(glamour.WithWordWrap(defaultWidth))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error creating renderer: %s\n", err)
 	}

@@ -52,7 +52,6 @@ type StylePrimitive struct {
 	CrossedOut      *bool   `json:"crossed_out,omitempty"`
 	Faint           *bool   `json:"faint,omitempty"`
 	Conceal         *bool   `json:"conceal,omitempty"`
-	Overlined       *bool   `json:"overlined,omitempty"`
 	Inverse         *bool   `json:"inverse,omitempty"`
 	Blink           *bool   `json:"blink,omitempty"`
 	Format          string  `json:"format,omitempty"`
@@ -168,7 +167,6 @@ func cascadeStylePrimitive(parent, child StylePrimitive, toBlock bool) StylePrim
 	s.CrossedOut = parent.CrossedOut
 	s.Faint = parent.Faint
 	s.Conceal = parent.Conceal
-	s.Overlined = parent.Overlined
 	s.Inverse = parent.Inverse
 	s.Blink = parent.Blink
 
@@ -211,9 +209,6 @@ func cascadeStylePrimitive(parent, child StylePrimitive, toBlock bool) StylePrim
 	}
 	if child.Conceal != nil {
 		s.Conceal = child.Conceal
-	}
-	if child.Overlined != nil {
-		s.Overlined = child.Overlined
 	}
 	if child.Inverse != nil {
 		s.Inverse = child.Inverse

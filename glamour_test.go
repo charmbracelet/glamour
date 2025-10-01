@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/charmbracelet/glamour/styles"
+	"github.com/charmbracelet/glamour/v2/styles"
 	"github.com/charmbracelet/x/exp/golden"
 )
 
@@ -111,15 +111,13 @@ func TestWithPreservedNewLines(t *testing.T) {
 }
 
 func TestStyles(t *testing.T) {
-	_, err := NewTermRenderer(
-		WithAutoStyle(),
-	)
+	_, err := NewTermRenderer()
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	_, err = NewTermRenderer(
-		WithStandardStyle(styles.AutoStyle),
+		WithStandardStyle(styles.DarkStyle),
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -144,8 +142,8 @@ func TestCustomStyle(t *testing.T) {
 		expected  string
 	}{
 		{name: "style exists", stylePath: "testdata/custom.style", err: nil, expected: "testdata/custom.style"},
-		{name: "style doesn't exist", stylePath: "testdata/notfound.style", err: os.ErrNotExist, expected: styles.AutoStyle},
-		{name: "style is empty", stylePath: "", err: nil, expected: styles.AutoStyle},
+		{name: "style doesn't exist", stylePath: "testdata/notfound.style", err: os.ErrNotExist, expected: styles.DarkStyle},
+		{name: "style is empty", stylePath: "", err: nil, expected: styles.DarkStyle},
 	}
 
 	for _, tc := range tests {
@@ -276,11 +274,11 @@ func ExampleASCIIStyleConfig() {
 
 	// Output:
 	// ..............................................................................
-	// ...Header.A............................|.Header.B.............................
-	// ..-------------------------------------|------------------------------------..
-	// ...Cell.1..............................|.Cell.2...............................
-	// ...Cell.3..............................|.Cell.4...............................
-	// ...Cell.5..............................|.Cell.6...............................
+	// ...Header.A.............................|.Header.B............................
+	// ..--------------------------------------|-------------------------------------
+	// ...Cell.1...............................|.Cell.2..............................
+	// ...Cell.3...............................|.Cell.4..............................
+	// ...Cell.5...............................|.Cell.6..............................
 }
 
 func TestWithChromaFormatterDefault(t *testing.T) {

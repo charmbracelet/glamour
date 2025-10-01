@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/charmbracelet/x/exp/golden"
-	"github.com/muesli/termenv"
 	"github.com/yuin/goldmark"
 	emoji "github.com/yuin/goldmark-emoji"
 	"github.com/yuin/goldmark/extension"
@@ -44,8 +43,7 @@ func TestRenderer(t *testing.T) {
 			}
 
 			options := Options{
-				WordWrap:     80,
-				ColorProfile: termenv.TrueColor,
+				WordWrap: 80,
 			}
 			err = json.Unmarshal(b, &options.Styles)
 			if err != nil {
@@ -110,8 +108,7 @@ func TestRendererIssues(t *testing.T) {
 			}
 
 			options := Options{
-				WordWrap:     80,
-				ColorProfile: termenv.TrueColor,
+				WordWrap: 80,
 			}
 			err = json.Unmarshal(b, &options.Styles)
 			if err != nil {

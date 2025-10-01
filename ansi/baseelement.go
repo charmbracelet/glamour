@@ -7,7 +7,8 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/muesli/termenv"
+	"github.com/charmbracelet/lipgloss/v2"
+	"github.com/charmbracelet/x/ansi"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -35,50 +36,55 @@ func formatToken(format string, token string) (string, error) {
 	return b.String(), err
 }
 
-func renderText(w io.Writer, p termenv.Profile, rules StylePrimitive, s string) {
+func renderText(w io.Writer, rules StylePrimitive, s string) (int, error) { //nolint:unparam
 	if len(s) == 0 {
-		return
+		return 0, nil
 	}
 
-	out := termenv.String(s)
+	// XXX: We're using [ansi.Style] instead of [lipgloss.Style] because
+	// Lip Gloss has a weird bug where it adds spaces when rendering joined
+	// strings. Needs further investigation.
+	style := ansi.Style{}
 	if rules.Upper != nil && *rules.Upper {
-		out = termenv.String(cases.Upper(language.English).String(s))
+		s = cases.Upper(language.English).String(s)
 	}
 	if rules.Lower != nil && *rules.Lower {
-		out = termenv.String(cases.Lower(language.English).String(s))
+		s = cases.Lower(language.English).String(s)
 	}
 	if rules.Title != nil && *rules.Title {
-		out = termenv.String(cases.Title(language.English).String(s))
+		s = cases.Title(language.English).String(s)
 	}
 	if rules.Color != nil {
-		out = out.Foreground(p.Color(*rules.Color))
+		style = style.ForegroundColor(lipgloss.Color(*rules.Color))
 	}
 	if rules.BackgroundColor != nil {
-		out = out.Background(p.Color(*rules.BackgroundColor))
+		style = style.BackgroundColor(lipgloss.Color(*rules.BackgroundColor))
 	}
 	if rules.Underline != nil && *rules.Underline {
-		out = out.Underline()
+		style = style.Underline()
 	}
 	if rules.Bold != nil && *rules.Bold {
-		out = out.Bold()
+		style = style.Bold()
 	}
 	if rules.Italic != nil && *rules.Italic {
-		out = out.Italic()
+		style = style.Italic()
 	}
 	if rules.CrossedOut != nil && *rules.CrossedOut {
-		out = out.CrossOut()
-	}
-	if rules.Overlined != nil && *rules.Overlined {
-		out = out.Overline()
+		style = style.Strikethrough()
 	}
 	if rules.Inverse != nil && *rules.Inverse {
-		out = out.Reverse()
+		style = style.Reverse()
 	}
 	if rules.Blink != nil && *rules.Blink {
-		out = out.Blink()
+		style = style.SlowBlink()
 	}
 
-	_, _ = io.WriteString(w, out.String())
+	n, err := io.WriteString(w, style.Styled(s))
+	if err != nil {
+		return n, fmt.Errorf("glamour: error writing to writer: %w", err)
+	}
+
+	return n, nil
 }
 
 // StyleOverrideRender renders a BaseElement with an overridden style.
@@ -87,7 +93,7 @@ func (e *BaseElement) StyleOverrideRender(w io.Writer, ctx RenderContext, style 
 	st1 := cascadeStylePrimitives(bs.Current().Style.StylePrimitive, style)
 	st2 := cascadeStylePrimitives(bs.With(e.Style), style)
 
-	return e.doRender(w, ctx.options.ColorProfile, st1, st2)
+	return e.doRender(w, st1, st2)
 }
 
 // Render renders a BaseElement.
@@ -95,25 +101,25 @@ func (e *BaseElement) Render(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 	st1 := bs.Current().Style.StylePrimitive
 	st2 := bs.With(e.Style)
-	return e.doRender(w, ctx.options.ColorProfile, st1, st2)
+	return e.doRender(w, st1, st2)
 }
 
-func (e *BaseElement) doRender(w io.Writer, p termenv.Profile, st1, st2 StylePrimitive) error {
-	renderText(w, p, st1, e.Prefix)
+func (e *BaseElement) doRender(w io.Writer, st1, st2 StylePrimitive) error {
+	_, _ = renderText(w, st1, e.Prefix)
 	defer func() {
-		renderText(w, p, st1, e.Suffix)
+		_, _ = renderText(w, st1, e.Suffix)
 	}()
 
 	// render unstyled prefix/suffix
-	renderText(w, p, st1, st2.BlockPrefix)
+	_, _ = renderText(w, st1, st2.BlockPrefix)
 	defer func() {
-		renderText(w, p, st1, st2.BlockSuffix)
+		_, _ = renderText(w, st1, st2.BlockSuffix)
 	}()
 
 	// render styled prefix/suffix
-	renderText(w, p, st2, st2.Prefix)
+	_, _ = renderText(w, st2, st2.Prefix)
 	defer func() {
-		renderText(w, p, st2, st2.Suffix)
+		_, _ = renderText(w, st2, st2.Suffix)
 	}()
 
 	s := e.Token
@@ -124,7 +130,7 @@ func (e *BaseElement) doRender(w io.Writer, p termenv.Profile, st1, st2 StylePri
 			return err
 		}
 	}
-	renderText(w, p, st2, escapeReplacer.Replace(s))
+	_, _ = renderText(w, st2, escapeReplacer.Replace(s))
 	return nil
 }
 
