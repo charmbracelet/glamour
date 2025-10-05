@@ -9,15 +9,61 @@ import (
 
 // A LinkElement is used to render hyperlinks.
 type LinkElement struct {
-	BaseURL  string
-	URL      string
-	Children []ElementRenderer
-	SkipText bool
-	SkipHref bool
+	BaseURL    string
+	URL        string
+	Children   []ElementRenderer
+	SkipText   bool
+	SkipHref   bool
+	Title      string        // Optional title attribute from markdown
+	Formatter  LinkFormatter // Custom formatter reference (nil = default behavior)
+	IsAutoLink bool          // Track if this is an autolink
+	IsInTable  bool          // Track table context
 }
 
 // Render renders a LinkElement.
 func (e *LinkElement) Render(w io.Writer, ctx RenderContext) error {
+	// Check if custom formatter is set
+	if e.Formatter != nil {
+		return e.renderWithFormatter(w, ctx)
+	}
+	// If no formatter, use default behavior
+	return e.renderDefault(w, ctx)
+}
+
+// renderWithFormatter creates LinkData struct and calls the custom formatter.
+func (e *LinkElement) renderWithFormatter(w io.Writer, ctx RenderContext) error {
+	// Extract text from children
+	text, err := extractTextFromChildren(e.Children, ctx)
+	if err != nil {
+		return fmt.Errorf("failed to extract text from children: %w", err)
+	}
+
+	// Create LinkData with all context
+	data := LinkData{
+		URL:        e.URL,
+		Text:       text,
+		Title:      e.Title,
+		BaseURL:    e.BaseURL,
+		IsAutoLink: e.IsAutoLink,
+		IsInTable:  e.IsInTable,
+		Children:   e.Children,
+		LinkStyle:  ctx.options.Styles.Link,
+		TextStyle:  ctx.options.Styles.LinkText,
+	}
+
+	// Call the custom formatter
+	result, err := e.Formatter.FormatLink(data, ctx)
+	if err != nil {
+		return fmt.Errorf("custom formatter error: %w", err)
+	}
+
+	// Write the result
+	_, err = w.Write([]byte(result))
+	return err
+}
+
+// renderDefault moves existing rendering logic here for backward compatibility.
+func (e *LinkElement) renderDefault(w io.Writer, ctx RenderContext) error {
 	if !e.SkipText {
 		if err := e.renderTextPart(w, ctx); err != nil {
 			return err
