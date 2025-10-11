@@ -97,26 +97,18 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 
 	// Lists
 	case ast.KindList:
-		s := ctx.options.Styles.List.StyleBlock
-		if s.Indent == nil {
-			var i uint
-			s.Indent = &i
-		}
+		isNested := false
 		n := node.Parent()
 		for n != nil {
 			if n.Kind() == ast.KindList {
-				i := ctx.options.Styles.List.LevelIndent
-				s.Indent = &i
+				isNested = true
 				break
 			}
 			n = n.Parent()
 		}
 
-		e := &BlockElement{
-			Block:   &bytes.Buffer{},
-			Style:   cascadeStyle(ctx.blockStack.Current().Style, s, false),
-			Margin:  true,
-			Newline: true,
+		e := &ListElement{
+			IsNested: isNested,
 		}
 		return Element{
 			Entering: "\n",
@@ -141,8 +133,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		}
 
 		post := "\n"
-		if (node.LastChild() != nil && node.LastChild().Kind() == ast.KindList) ||
-			node.NextSibling() == nil {
+		if node.NextSibling() == nil {
 			post = ""
 		}
 
