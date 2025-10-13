@@ -13,8 +13,8 @@ require (
 	github.com/muesli/termenv v0.16.0
 	github.com/yuin/goldmark v1.7.13
 	github.com/yuin/goldmark-emoji v1.0.6
-	golang.org/x/term v0.35.0
-	golang.org/x/text v0.29.0
+	golang.org/x/term v0.36.0
+	golang.org/x/text v0.30.0
 )
 
 require (
@@ -32,5 +32,5 @@ require (
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	golang.org/x/net v0.38.0 // indirect
-	golang.org/x/sys v0.36.0 // indirect
+	golang.org/x/sys v0.37.0 // indirect
 )
