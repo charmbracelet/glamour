@@ -67,7 +67,7 @@ func (s BlockStack) Width(ctx RenderContext) uint {
 
 // Parent returns the current BlockElement's parent.
 func (s BlockStack) Parent() BlockElement {
-	if len(s) == 1 {
+	if len(s) <= 1 {
 		return BlockElement{
 			Block: &bytes.Buffer{},
 		}
