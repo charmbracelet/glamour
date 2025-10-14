@@ -40,6 +40,10 @@ func renderText(w io.Writer, p termenv.Profile, rules StylePrimitive, s string) 
 		return
 	}
 
+	if rules.Conceal != nil && *rules.Conceal {
+		return
+	}
+
 	out := termenv.String(s)
 	if rules.Upper != nil && *rules.Upper {
 		out = termenv.String(cases.Upper(language.English).String(s))
