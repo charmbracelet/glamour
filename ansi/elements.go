@@ -246,10 +246,12 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 
 		return Element{
 			Renderer: &LinkElement{
-				BaseURL:  ctx.options.BaseURL,
-				URL:      string(n.Destination),
-				Children: children,
-				SkipHref: isFooterLinks,
+				BaseURL:   ctx.options.BaseURL,
+				URL:       string(n.Destination),
+				Children:  children,
+				SkipHref:  isFooterLinks,
+				Formatter: ctx.options.LinkFormatter,
+				IsInTable: isFooterLinks,
 			},
 		}
 	case ast.KindAutoLink:
@@ -286,15 +288,20 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 			text := linkWithSuffix(tl, ctx.table.tableLinks)
 
 			renderer = &LinkElement{
-				Children: []ElementRenderer{&BaseElement{Token: text}},
-				URL:      u,
-				SkipHref: true,
+				Children:   []ElementRenderer{&BaseElement{Token: text}},
+				URL:        u,
+				SkipHref:   true,
+				Formatter:  ctx.options.LinkFormatter, // Only set when explicitly provided
+				IsAutoLink: true,
+				IsInTable:  isFooterLinks,
 			}
 		} else {
 			renderer = &LinkElement{
-				Children: children,
-				URL:      u,
-				SkipText: n.AutoLinkType != ast.AutoLinkEmail,
+				Children:   children,
+				URL:        u,
+				SkipText:   n.AutoLinkType != ast.AutoLinkEmail,
+				Formatter:  ctx.options.LinkFormatter, // Only set when explicitly provided
+				IsAutoLink: true,
 			}
 		}
 		return Element{Renderer: renderer}

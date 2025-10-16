@@ -79,8 +79,9 @@ func NewTermRenderer(options ...TermRendererOption) (*TermRenderer, error) {
 			),
 		),
 		ansiOptions: ansi.Options{
-			WordWrap:     defaultWidth,
-			ColorProfile: termenv.TrueColor,
+			WordWrap:      defaultWidth,
+			ColorProfile:  termenv.TrueColor,
+			LinkFormatter: ansi.DefaultFormatter, // Ensure consistent rendering path
 		},
 	}
 	for _, o := range options {
@@ -248,6 +249,118 @@ func WithOptions(options ...TermRendererOption) TermRendererOption {
 		}
 		return nil
 	}
+}
+
+// WithLinkFormatter sets a TermRenderer's custom link formatter.
+//
+// Link formatters control how markdown links are rendered in the terminal output.
+// When set to nil (default), the standard Glamour link formatting is used.
+//
+// Example:
+//
+//	// Use a custom formatter
+//	customFormatter := ansi.LinkFormatterFunc(func(data ansi.LinkData, ctx ansi.RenderContext) (string, error) {
+//		return fmt.Sprintf("[%s](%s)", data.Text, data.URL), nil
+//	})
+//	renderer, err := glamour.NewTermRenderer(
+//		glamour.WithLinkFormatter(customFormatter),
+//	)
+//
+// See the ansi package documentation for available built-in formatters and
+// examples of creating custom formatters.
+func WithLinkFormatter(formatter ansi.LinkFormatter) TermRendererOption {
+	return func(tr *TermRenderer) error {
+		tr.ansiOptions.LinkFormatter = formatter
+		return nil
+	}
+}
+
+// WithTextOnlyLinks configures the TermRenderer to show only link text.
+//
+// This formatter renders links showing only their text content, hiding URLs.
+// In terminals that support OSC 8 hyperlinks, the text becomes clickable.
+// In other terminals, only the styled text is displayed.
+//
+// This is useful when you want a cleaner appearance without visible URLs,
+// especially in terminals that support hyperlink functionality.
+//
+// Example:
+//
+//	renderer, err := glamour.NewTermRenderer(
+//		glamour.WithTextOnlyLinks(),
+//	)
+//
+// Terminal compatibility:
+// - Terminals with OSC 8 support: Clickable text links
+// - Other terminals: Text only, URLs hidden
+func WithTextOnlyLinks() TermRendererOption {
+	return WithLinkFormatter(ansi.TextOnlyFormatter)
+}
+
+// WithURLOnlyLinks configures the TermRenderer to show only URLs.
+//
+// This formatter renders links showing only the URL, hiding link text.
+// This is useful when space is limited or when the URL itself is more
+// important than descriptive text.
+//
+// Fragment-only URLs (like "#section") are not displayed as they typically
+// refer to document anchors rather than external resources.
+//
+// Example:
+//
+//	renderer, err := glamour.NewTermRenderer(
+//		glamour.WithURLOnlyLinks(),
+//	)
+//
+// Terminal compatibility: Works in all terminals
+func WithURLOnlyLinks() TermRendererOption {
+	return WithLinkFormatter(ansi.URLOnlyFormatter)
+}
+
+// WithHyperlinks configures the TermRenderer to use OSC 8 hyperlinks.
+//
+// This formatter renders links as OSC 8 hyperlinks, making the link text
+// clickable in supporting terminals while keeping URLs hidden from view.
+// This provides the cleanest visual appearance when terminal support is available.
+//
+// WARNING: This formatter does not provide fallback for terminals without
+// OSC 8 support, which may result in escape sequences being displayed.
+// Use WithSmartHyperlinks() for automatic fallback behavior.
+//
+// Example:
+//
+//	renderer, err := glamour.NewTermRenderer(
+//		glamour.WithHyperlinks(),
+//	)
+//
+// Terminal compatibility:
+// - Modern terminals (iTerm2, Windows Terminal, etc.): Clickable hyperlinks
+// - Legacy terminals: May display escape sequences
+func WithHyperlinks() TermRendererOption {
+	return WithLinkFormatter(ansi.HyperlinkFormatter)
+}
+
+// WithSmartHyperlinks configures the TermRenderer with intelligent hyperlink handling.
+//
+// This formatter automatically detects terminal hyperlink support:
+// - In terminals that support OSC 8: Shows clickable hyperlinks (text only)
+// - In other terminals: Falls back to standard "text url" format
+//
+// This provides the best user experience across different terminal environments
+// by combining modern hyperlink capabilities with universal fallback support.
+//
+// Example:
+//
+//	renderer, err := glamour.NewTermRenderer(
+//		glamour.WithSmartHyperlinks(),
+//	)
+//
+// Terminal compatibility:
+// - Modern terminals: Clickable hyperlinks with hidden URLs
+// - Legacy terminals: Standard "text url" format
+// - All terminals: Graceful degradation
+func WithSmartHyperlinks() TermRendererOption {
+	return WithLinkFormatter(ansi.SmartHyperlinkFormatter)
 }
 
 func (tr *TermRenderer) Read(b []byte) (int, error) {

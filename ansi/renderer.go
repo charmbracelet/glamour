@@ -24,6 +24,7 @@ type Options struct {
 	ColorProfile     termenv.Profile
 	Styles           StyleConfig
 	ChromaFormatter  string
+	LinkFormatter    LinkFormatter // Custom link formatter (optional, nil = default behavior)
 }
 
 // ANSIRenderer renders markdown content as ANSI escaped sequences.
