@@ -49,6 +49,7 @@ func NewMarginWriter(ctx RenderContext, w io.Writer, rules StyleBlock) *MarginWr
 	}
 }
 
+// Write writes to the margin writer and implements [io.Writer].
 func (w *MarginWriter) Write(b []byte) (int, error) {
 	n, err := w.iw.Write(b)
 	if err != nil {
@@ -57,6 +58,7 @@ func (w *MarginWriter) Write(b []byte) (int, error) {
 	return n, nil
 }
 
+// Close closes the [MarginWriter].
 func (w *MarginWriter) Close() error {
 	var werr error
 	if w, ok := w.w.(io.WriteCloser); ok {
@@ -119,8 +121,9 @@ func (w *PaddingWriter) Write(p []byte) (int, error) {
 	return len(p), nil
 }
 
+// Close closes the [PaddingWriter].
 func (w *PaddingWriter) Close() error {
-	return w.w.Close()
+	return w.w.Close() //nolint:wrapcheck
 }
 
 // IndentFunc is a function that applies indentation around whatever you write to
@@ -202,6 +205,7 @@ func (w *IndentWriter) Write(p []byte) (int, error) {
 	return len(p), nil
 }
 
+// Close closes the [IndentWriter].
 func (w *IndentWriter) Close() error {
 	var werr error
 	if w, ok := w.w.(io.WriteCloser); ok {
