@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"math"
 	"regexp"
 	"strings"
 	"unicode/utf8"
@@ -49,7 +50,8 @@ func (e *ListElement) Finish(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 	rules := bs.Current().Style
 
-	wrapWidth := int(bs.Width(ctx))
+	width := min(bs.Width(ctx), uint(math.MaxInt))
+	wrapWidth := int(width) //nolint:gosec
 	content := bs.Current().Block.String()
 
 	wrapped := wrapListContent(content, wrapWidth)
@@ -213,40 +215,7 @@ func splitAtPlainTextPosition(ansiString string, plainTextPos int) (before, afte
 		// Check for ANSI escape sequence
 		if i < len(ansiString) && ansiString[i] == '\x1b' {
 			escapeStart := i
-			i++
-
-			// Handle different escape sequence types
-			if i < len(ansiString) {
-				switch ansiString[i] {
-				case '[': // CSI sequence
-					i++
-					for i < len(ansiString) && !isCSITerminator(ansiString[i]) {
-						i++
-					}
-					if i < len(ansiString) {
-						i++
-					}
-				case ']': // OSC sequence
-					i++
-					// OSC sequences end with BEL (\x07) or ST (\x1b\\)
-					for i < len(ansiString) {
-						if ansiString[i] == '\x07' {
-							i++
-							break
-						}
-						if i+1 < len(ansiString) && ansiString[i] == '\x1b' && ansiString[i+1] == '\\' {
-							i += 2
-							break
-						}
-						i++
-					}
-				default:
-					if i < len(ansiString) {
-						i++
-					}
-				}
-			}
-
+			i = consumeEscapeSequence(ansiString, i)
 			beforeBuf.WriteString(ansiString[escapeStart:i])
 		} else {
 			r, size := utf8.DecodeRuneInString(ansiString[i:])
@@ -257,6 +226,54 @@ func splitAtPlainTextPosition(ansiString string, plainTextPos int) (before, afte
 	}
 
 	return beforeBuf.String(), ansiString[i:]
+}
+
+// consumeEscapeSequence consumes an ANSI escape sequence starting at position i.
+// Returns the position after the escape sequence.
+func consumeEscapeSequence(ansiString string, i int) int {
+	if i >= len(ansiString) || ansiString[i] != '\x1b' {
+		return i
+	}
+
+	i++ // Skip ESC
+	if i >= len(ansiString) {
+		return i
+	}
+
+	switch ansiString[i] {
+	case '[':
+		i++
+		for i < len(ansiString) && !isCSITerminator(ansiString[i]) {
+			i++
+		}
+		if i < len(ansiString) {
+			i++
+		}
+	case ']':
+		i++
+		i = consumeOSCSequence(ansiString, i)
+	default:
+		if i < len(ansiString) {
+			i++
+		}
+	}
+
+	return i
+}
+
+// consumeOSCSequence consumes an OSC sequence starting after the ']'.
+// OSC sequences end with BEL (\x07) or ST (\x1b\\).
+func consumeOSCSequence(ansiString string, i int) int {
+	for i < len(ansiString) {
+		if ansiString[i] == '\x07' {
+			return i + 1
+		}
+		if i+1 < len(ansiString) && ansiString[i] == '\x1b' && ansiString[i+1] == '\\' {
+			return i + 2
+		}
+		i++
+	}
+	return i
 }
 
 // isCSITerminator checks if a byte is a CSI sequence terminator.
