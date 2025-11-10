@@ -17,8 +17,8 @@ import (
 	"github.com/yuin/goldmark/renderer"
 	"github.com/yuin/goldmark/util"
 
-	"github.com/charmbracelet/glamour/v2/ansi"
-	styles "github.com/charmbracelet/glamour/v2/styles"
+	"charm.land/glamour/v2/ansi"
+	styles "charm.land/glamour/v2/styles"
 )
 
 const (

@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/charmbracelet/glamour/v2/internal/autolink"
+	"charm.land/glamour/v2/internal/autolink"
 	xansi "github.com/charmbracelet/x/ansi"
 	"github.com/charmbracelet/x/exp/slice"
 	"github.com/yuin/goldmark/ast"

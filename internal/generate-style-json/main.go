@@ -6,8 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/charmbracelet/glamour/v2/ansi"
-	styles "github.com/charmbracelet/glamour/v2/styles"
+	"charm.land/glamour/v2/ansi"
+	styles "charm.land/glamour/v2/styles"
 )
 
 func writeStyleJSON(filename string, styleConfig *ansi.StyleConfig) error {

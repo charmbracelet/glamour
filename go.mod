@@ -1,4 +1,4 @@
-module github.com/charmbracelet/glamour/v2
+module charm.land/glamour/v2
 
 go 1.24.2
 

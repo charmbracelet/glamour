@@ -1,6 +1,6 @@
 package styles
 
-import "github.com/charmbracelet/glamour/v2/ansi"
+import "charm.land/glamour/v2/ansi"
 
 // DraculaStyleConfig is the dracula style.
 var DraculaStyleConfig = ansi.StyleConfig{

@@ -10,8 +10,8 @@ import (
 	"log"
 	"os"
 
+	"charm.land/glamour/v2"
 	"github.com/charmbracelet/colorprofile"
-	"github.com/charmbracelet/glamour/v2"
 )
 
 //go:embed artichokes.md
