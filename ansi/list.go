@@ -9,7 +9,9 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/ansi"
+	"github.com/charmbracelet/x/ansi/parser"
 )
 
 // ListElement renders a list with proper hanging indentation.
@@ -78,8 +80,8 @@ func (e *ListElement) Finish(w io.Writer, ctx RenderContext) error {
 // listItemPrefix represents a detected list item prefix.
 type listItemPrefix struct {
 	isListItem bool
-	width      int
-	length     int
+	width      int // Visual width
+	length     int // Byte length in memory
 }
 
 var numberedListRegex = regexp.MustCompile(`^(\d{1,3})\.\s`)
@@ -176,9 +178,10 @@ func wrapListItem(line string, effectiveWidth, baseIndent int, prefix listItemPr
 	leadingSpaces := len(plainLine) - len(strings.TrimLeft(plainLine, " "))
 	contentStartInPlain := leadingSpaces + prefix.length
 
-	prefixPart, content := splitAtPlainTextPosition(line, contentStartInPlain)
+	// Split at the content start position (preserving ANSI codes)
+	prefixPart, content := splitAtPlainPosition(line, contentStartInPlain)
 
-	contentWrapped := ansi.Wordwrap(content, effectiveWidth, " ,.;-+|")
+	contentWrapped := lipgloss.Wrap(content, effectiveWidth, " ,.;-+|")
 	contentLines := strings.Split(contentWrapped, "\n")
 
 	var lines []string
@@ -195,88 +198,44 @@ func wrapListItem(line string, effectiveWidth, baseIndent int, prefix listItemPr
 	return strings.Join(lines, "\n")
 }
 
-// splitAtPlainTextPosition splits an ANSI string at a position in its plain text.
-func splitAtPlainTextPosition(ansiString string, plainTextPos int) (before, after string) {
-	if plainTextPos <= 0 {
-		return "", ansiString
+// splitAtPlainPosition splits an ANSI string at a position in its plain text.
+func splitAtPlainPosition(s string, pos int) (before, after string) {
+	if pos <= 0 {
+		return "", s
 	}
 
-	plainText := ansi.Strip(ansiString)
-	if plainTextPos >= len(plainText) {
-		return ansiString, ""
-	}
+	var (
+		buf          bytes.Buffer
+		visibleCount int
+		pstate       = parser.GroundState
+		i            = 0
+	)
 
-	// Build the before part by consuming chars until we hit plainTextPos visible chars
-	var beforeBuf strings.Builder
-	visibleCount := 0
-	i := 0
+	for i < len(s) && visibleCount < pos {
+		state, action := parser.Table.Transition(pstate, s[i])
 
-	for i < len(ansiString) && visibleCount < plainTextPos {
-		// Check for ANSI escape sequence
-		if i < len(ansiString) && ansiString[i] == '\x1b' {
-			escapeStart := i
-			i = consumeEscapeSequence(ansiString, i)
-			beforeBuf.WriteString(ansiString[escapeStart:i])
-		} else {
-			r, size := utf8.DecodeRuneInString(ansiString[i:])
-			beforeBuf.WriteRune(r)
+		if state == parser.Utf8State {
+			// Multi-byte UTF-8 character
+			r, size := utf8.DecodeRuneInString(s[i:])
+			buf.WriteRune(r)
 			i += size
 			visibleCount++
+			pstate = parser.GroundState
+			continue
 		}
-	}
 
-	return beforeBuf.String(), ansiString[i:]
-}
-
-// consumeEscapeSequence consumes an ANSI escape sequence starting at position i.
-// Returns the position after the escape sequence.
-func consumeEscapeSequence(ansiString string, i int) int {
-	if i >= len(ansiString) || ansiString[i] != '\x1b' {
-		return i
-	}
-
-	i++ // Skip ESC
-	if i >= len(ansiString) {
-		return i
-	}
-
-	switch ansiString[i] {
-	case '[':
-		i++
-		for i < len(ansiString) && !isCSITerminator(ansiString[i]) {
-			i++
+		// Single byte - check if it's printable
+		if action == parser.PrintAction {
+			buf.WriteByte(s[i])
+			visibleCount++
+		} else if action != parser.ExecuteAction || s[i] != '\n' {
+			// Include ANSI sequences and control chars (except newlines)
+			buf.WriteByte(s[i])
 		}
-		if i < len(ansiString) {
-			i++
-		}
-	case ']':
-		i++
-		i = consumeOSCSequence(ansiString, i)
-	default:
-		if i < len(ansiString) {
-			i++
-		}
-	}
 
-	return i
-}
-
-// consumeOSCSequence consumes an OSC sequence starting after the ']'.
-// OSC sequences end with BEL (\x07) or ST (\x1b\\).
-func consumeOSCSequence(ansiString string, i int) int {
-	for i < len(ansiString) {
-		if ansiString[i] == '\x07' {
-			return i + 1
-		}
-		if i+1 < len(ansiString) && ansiString[i] == '\x1b' && ansiString[i+1] == '\\' {
-			return i + 2
-		}
+		pstate = state
 		i++
 	}
-	return i
-}
 
-// isCSITerminator checks if a byte is a CSI sequence terminator.
-func isCSITerminator(b byte) bool {
-	return b >= 0x40 && b <= 0x7E
+	return buf.String(), s[i:]
 }
