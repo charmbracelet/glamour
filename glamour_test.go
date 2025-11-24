@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/charmbracelet/glamour/ansi"
 	"github.com/charmbracelet/glamour/styles"
 	"github.com/charmbracelet/x/exp/golden"
 )
@@ -324,4 +325,452 @@ func TestWithChromaFormatterCustom(t *testing.T) {
 	}
 
 	golden.RequireEqual(t, []byte(b))
+}
+
+func TestWithLinkFormatter(t *testing.T) {
+	customFormatter := ansi.LinkFormatterFunc(func(data ansi.LinkData, ctx ansi.RenderContext) (string, error) {
+		return fmt.Sprintf("CUSTOM[%s](%s)", data.Text, data.URL), nil
+	})
+
+	r, err := NewTermRenderer(
+		WithStandardStyle("dark"),
+		WithLinkFormatter(customFormatter),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	markdown := "[example](https://example.com)"
+	result, err := r.Render(markdown)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !strings.Contains(result, "CUSTOM[example](https://example.com)") {
+		t.Errorf("expected custom formatter output, got: %s", result)
+	}
+}
+
+func TestWithTextOnlyLinks(t *testing.T) {
+	tests := []struct {
+		name               string
+		markdown           string
+		supportsHyperlinks bool
+		wantContains       []string
+		wantNotContains    []string
+	}{
+		{
+			name:               "hyperlink support",
+			markdown:           "[example](https://example.com)",
+			supportsHyperlinks: true,
+			wantContains:       []string{"example", "\x1b]8;;https://example.com\x1b\\"},
+			wantNotContains:    []string{},
+		},
+		{
+			name:               "no hyperlink support",
+			markdown:           "[example](https://example.com)",
+			supportsHyperlinks: false,
+			wantContains:       []string{"example"},
+			wantNotContains:    []string{"https://example.com"},
+		},
+		{
+			name:               "multiple links",
+			markdown:           "[first](https://first.com) and [second](https://second.com)",
+			supportsHyperlinks: false,
+			wantContains:       []string{"first", "second"},
+			wantNotContains:    []string{"https://first.com", "https://second.com"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set up terminal environment
+			if tt.supportsHyperlinks {
+				t.Setenv("TERM_PROGRAM", "iTerm.app")
+			} else {
+				t.Setenv("TERM_PROGRAM", "")
+				t.Setenv("TERM", "")
+			}
+
+			r, err := NewTermRenderer(
+				WithStandardStyle("dark"),
+				WithTextOnlyLinks(),
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			result, err := r.Render(tt.markdown)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			for _, expected := range tt.wantContains {
+				if !strings.Contains(result, expected) {
+					t.Errorf("expected result to contain %q, got: %s", expected, result)
+				}
+			}
+
+			for _, notExpected := range tt.wantNotContains {
+				if strings.Contains(result, notExpected) {
+					t.Errorf("expected result NOT to contain %q, got: %s", notExpected, result)
+				}
+			}
+		})
+	}
+}
+
+func TestWithURLOnlyLinks(t *testing.T) {
+	tests := []struct {
+		name            string
+		markdown        string
+		wantContains    []string
+		wantNotContains []string
+	}{
+		{
+			name:            "normal link",
+			markdown:        "[example text](https://example.com)",
+			wantContains:    []string{"https://example.com"},
+			wantNotContains: []string{"example text"},
+		},
+		{
+			name:            "fragment link ignored",
+			markdown:        "[section](#fragment)",
+			wantContains:    []string{},
+			wantNotContains: []string{"#fragment", "section"},
+		},
+		{
+			name:            "multiple links",
+			markdown:        "[Click here](https://example.com) and [Visit site](https://test.org)",
+			wantContains:    []string{"https://example.com", "https://test.org"},
+			wantNotContains: []string{"Click here", "Visit site"},
+		},
+		{
+			name:            "relative URL with base",
+			markdown:        "[path](/relative)",
+			wantContains:    []string{"/relative"}, // Base URL would be resolved by formatter
+			wantNotContains: []string{"path"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r, err := NewTermRenderer(
+				WithStandardStyle("dark"),
+				WithURLOnlyLinks(),
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			result, err := r.Render(tt.markdown)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			// Strip ANSI codes for easier checking
+			plainResult := stripANSISequences(result)
+
+			for _, expected := range tt.wantContains {
+				if !strings.Contains(plainResult, expected) {
+					t.Errorf("expected result to contain %q, got: %s", expected, plainResult)
+				}
+			}
+
+			for _, notExpected := range tt.wantNotContains {
+				if strings.Contains(plainResult, notExpected) {
+					t.Errorf("expected result NOT to contain %q, got: %s", notExpected, plainResult)
+				}
+			}
+		})
+	}
+}
+
+func TestWithHyperlinks(t *testing.T) {
+	r, err := NewTermRenderer(
+		WithStandardStyle("dark"),
+		WithHyperlinks(),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	markdown := "[example](https://example.com)"
+	result, err := r.Render(markdown)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Should contain OSC 8 sequences regardless of terminal support
+	if !strings.Contains(result, "\x1b]8;;https://example.com\x1b\\") {
+		t.Errorf("expected OSC 8 hyperlink sequences, got: %s", result)
+	}
+	if !strings.Contains(result, "example") {
+		t.Errorf("expected link text, got: %s", result)
+	}
+	if !strings.Contains(result, "\x1b]8;;\x1b\\") {
+		t.Errorf("expected OSC 8 end sequence, got: %s", result)
+	}
+}
+
+func TestWithSmartHyperlinks(t *testing.T) {
+	tests := []struct {
+		name               string
+		supportsHyperlinks bool
+		wantHyperlink      bool
+		wantFallback       bool
+	}{
+		{
+			name:               "modern terminal",
+			supportsHyperlinks: true,
+			wantHyperlink:      true,
+			wantFallback:       false,
+		},
+		{
+			name:               "legacy terminal",
+			supportsHyperlinks: false,
+			wantHyperlink:      false,
+			wantFallback:       true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set up terminal environment
+			if tt.supportsHyperlinks {
+				t.Setenv("TERM_PROGRAM", "iTerm.app")
+			} else {
+				t.Setenv("TERM_PROGRAM", "")
+				t.Setenv("TERM", "")
+			}
+
+			r, err := NewTermRenderer(
+				WithStandardStyle("dark"),
+				WithSmartHyperlinks(),
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			markdown := "[example](https://example.com)"
+			result, err := r.Render(markdown)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if tt.wantHyperlink {
+				if !strings.Contains(result, "\x1b]8;;") {
+					t.Errorf("expected hyperlink sequences in modern terminal, got: %s", result)
+				}
+			}
+
+			if tt.wantFallback {
+				plainResult := stripANSISequences(result)
+				if !strings.Contains(plainResult, "example") {
+					t.Errorf("expected link text in fallback, got: %s", plainResult)
+				}
+				if !strings.Contains(plainResult, "https://example.com") {
+					t.Errorf("expected URL in fallback, got: %s", plainResult)
+				}
+			}
+		})
+	}
+}
+
+func TestLinkFormatterIntegration(t *testing.T) {
+	// Test complex markdown with multiple link types
+	complexMarkdown := `# Test Document
+
+Regular link: [GitHub](https://github.com)
+Autolink: <https://example.com>
+Reference link: [Google][1]
+
+[1]: https://google.com "Google Search"
+
+## In Lists
+
+* [Link 1](https://one.com)
+* [Link 2](https://two.com)
+
+## In Tables
+
+| Name | URL |
+|------|-----|
+| [Site 1](https://site1.com) | Description 1 |
+| [Site 2](https://site2.com) | Description 2 |
+`
+
+	tests := []struct {
+		name   string
+		option TermRendererOption
+		check  func(t *testing.T, result string)
+	}{
+		{
+			name:   "default behavior",
+			option: WithStandardStyle("dark"),
+			check: func(t *testing.T, result string) {
+				plain := stripANSISequences(result)
+				// Should contain both text and URLs
+				if !strings.Contains(plain, "GitHub") || !strings.Contains(plain, "https://github.com") {
+					t.Error("default should show both text and URL")
+				}
+			},
+		},
+		{
+			name:   "text only",
+			option: WithOptions(WithStandardStyle("dark"), WithTextOnlyLinks()),
+			check: func(t *testing.T, result string) {
+				plain := stripANSISequences(result)
+				// Should contain text but not visible URLs (unless in hyperlinks)
+				if !strings.Contains(plain, "GitHub") {
+					t.Error("should contain link text")
+				}
+			},
+		},
+		{
+			name:   "URL only",
+			option: WithOptions(WithStandardStyle("dark"), WithURLOnlyLinks()),
+			check: func(t *testing.T, result string) {
+				plain := stripANSISequences(result)
+				// Should contain URLs but not descriptive text
+				if !strings.Contains(plain, "https://github.com") {
+					t.Error("should contain URLs")
+				}
+				if strings.Contains(plain, "GitHub") {
+					t.Error("should not contain link text")
+				}
+			},
+		},
+		{
+			name: "custom formatter",
+			option: WithOptions(WithStandardStyle("dark"), WithLinkFormatter(ansi.LinkFormatterFunc(func(data ansi.LinkData, ctx ansi.RenderContext) (string, error) {
+				return fmt.Sprintf("{%s->%s}", data.Text, data.URL), nil
+			}))),
+			check: func(t *testing.T, result string) {
+				plain := stripANSISequences(result)
+				if !strings.Contains(plain, "{GitHub->https://github.com}") {
+					t.Error("should contain custom format")
+				}
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r, err := NewTermRenderer(tt.option)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			result, err := r.Render(complexMarkdown)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			tt.check(t, result)
+		})
+	}
+}
+
+func TestLinkFormatterErrorHandling(t *testing.T) {
+	errorFormatter := ansi.LinkFormatterFunc(func(data ansi.LinkData, ctx ansi.RenderContext) (string, error) {
+		return "", fmt.Errorf("formatter error")
+	})
+
+	r, err := NewTermRenderer(
+		WithStandardStyle("dark"),
+		WithLinkFormatter(errorFormatter),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	markdown := "[example](https://example.com)"
+	_, err = r.Render(markdown)
+	if err == nil {
+		t.Error("expected formatter error to be propagated")
+	}
+	if !strings.Contains(err.Error(), "formatter error") {
+		t.Errorf("expected formatter error in message, got: %s", err.Error())
+	}
+}
+
+func TestBackwardCompatibility(t *testing.T) {
+	// Test that existing behavior is preserved when no custom formatter is set
+	markdown := "[GitHub](https://github.com) and <https://example.com>"
+
+	// Render without custom formatter (current behavior)
+	r1, err := NewTermRenderer(WithStandardStyle("dark"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	result1, err := r1.Render(markdown)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Render with explicit default formatter
+	r2, err := NewTermRenderer(
+		WithStandardStyle("dark"),
+		WithLinkFormatter(ansi.DefaultFormatter),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result2, err := r2.Render(markdown)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Results should be identical
+	if result1 != result2 {
+		t.Error("default behavior should match explicit DefaultFormatter")
+	}
+
+	// Both should contain text and URLs
+	plain := stripANSISequences(result1)
+	if !strings.Contains(plain, "GitHub") {
+		t.Error("should contain link text")
+	}
+	if !strings.Contains(plain, "https://github.com") {
+		t.Error("should contain GitHub URL")
+	}
+	if !strings.Contains(plain, "https://example.com") {
+		t.Error("should contain example URL")
+	}
+}
+
+// Helper function to strip ANSI sequences for testing
+func stripANSISequences(text string) string {
+	// Use the same regex as in hyperlink.go
+	re := regexp.MustCompile(`\x1b\[[0-9;]*[a-zA-Z]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[a-zA-Z]`)
+	return re.ReplaceAllString(text, "")
+}
+
+// Performance benchmarks
+func BenchmarkLinkRenderingDefault(b *testing.B) {
+	r, _ := NewTermRenderer(WithStandardStyle("dark"))
+	markdown := "[example](https://example.com)"
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		r.Render(markdown)
+	}
+}
+
+func BenchmarkLinkRenderingCustomFormatter(b *testing.B) {
+	formatter := ansi.LinkFormatterFunc(func(data ansi.LinkData, ctx ansi.RenderContext) (string, error) {
+		return fmt.Sprintf("%s %s", data.Text, data.URL), nil
+	})
+
+	r, _ := NewTermRenderer(
+		WithStandardStyle("dark"),
+		WithLinkFormatter(formatter),
+	)
+	markdown := "[example](https://example.com)"
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		r.Render(markdown)
+	}
 }
