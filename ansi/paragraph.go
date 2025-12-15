@@ -47,7 +47,11 @@ func (e *ParagraphElement) Finish(w io.Writer, ctx RenderContext) error {
 			return fmt.Errorf("glamour: error closing flow: %w", err)
 		}
 
-		_, err := mw.Write(flow.Bytes())
+		content := string(flow.Bytes())
+
+		// Write content through margin writer. Image placeholders will pass through
+		// and be replaced at the document level when writing to final output.
+		_, err := mw.Write([]byte(content))
 		if err != nil {
 			return err
 		}

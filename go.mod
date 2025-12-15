@@ -3,6 +3,7 @@ module github.com/charmbracelet/glamour
 go 1.24.0
 
 require (
+	github.com/BourgeoisBear/rasterm v1.1.1
 	github.com/alecthomas/chroma/v2 v2.20.0
 	github.com/charmbracelet/lipgloss v1.1.1-0.20250404203927-76690c660834
 	github.com/charmbracelet/x/ansi v0.10.2
