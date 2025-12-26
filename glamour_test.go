@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/charmbracelet/glamour/ansi"
 	"github.com/charmbracelet/glamour/styles"
 	"github.com/charmbracelet/x/exp/golden"
 )
@@ -324,4 +325,72 @@ func TestWithChromaFormatterCustom(t *testing.T) {
 	}
 
 	golden.RequireEqual(t, []byte(b))
+}
+
+func TestWithImageProtocol(t *testing.T) {
+	tests := []struct {
+		name     string
+		protocol ansi.ImageProtocol
+	}{
+		{"none", ansi.ImageProtocolNone},
+		{"auto", ansi.ImageProtocolAuto},
+		{"kitty", ansi.ImageProtocolKitty},
+		{"sixel", ansi.ImageProtocolSixel},
+		{"iterm", ansi.ImageProtocolITerm},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r, err := NewTermRenderer(
+				WithStandardStyle(styles.DarkStyle),
+				WithImageProtocol(tt.protocol),
+			)
+			if err != nil {
+				t.Fatalf("NewTermRenderer() error = %v", err)
+			}
+			if r == nil {
+				t.Fatal("NewTermRenderer() returned nil")
+			}
+		})
+	}
+}
+
+func TestWithImageFetchRemote(t *testing.T) {
+	tests := []struct {
+		name  string
+		allow bool
+	}{
+		{"enabled", true},
+		{"disabled", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r, err := NewTermRenderer(
+				WithStandardStyle(styles.DarkStyle),
+				WithImageFetchRemote(tt.allow),
+			)
+			if err != nil {
+				t.Fatalf("NewTermRenderer() error = %v", err)
+			}
+			if r == nil {
+				t.Fatal("NewTermRenderer() returned nil")
+			}
+		})
+	}
+}
+
+func TestWithImageOptions(t *testing.T) {
+	// Test combining both image options
+	r, err := NewTermRenderer(
+		WithStandardStyle(styles.DarkStyle),
+		WithImageProtocol("kitty"),
+		WithImageFetchRemote(true),
+	)
+	if err != nil {
+		t.Fatalf("NewTermRenderer() error = %v", err)
+	}
+	if r == nil {
+		t.Fatal("NewTermRenderer() returned nil")
+	}
 }

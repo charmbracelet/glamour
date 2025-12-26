@@ -14,6 +14,22 @@ import (
 	"github.com/yuin/goldmark/util"
 )
 
+// ImageProtocol represents the terminal image protocol to use.
+type ImageProtocol string
+
+const (
+	// ImageProtocolNone disables image rendering.
+	ImageProtocolNone ImageProtocol = "none"
+	// ImageProtocolAuto automatically detects the best protocol.
+	ImageProtocolAuto ImageProtocol = "auto"
+	// ImageProtocolKitty uses the Kitty graphics protocol.
+	ImageProtocolKitty ImageProtocol = "kitty"
+	// ImageProtocolSixel uses the SIXEL protocol.
+	ImageProtocolSixel ImageProtocol = "sixel"
+	// ImageProtocolITerm uses the iTerm2 inline image protocol.
+	ImageProtocolITerm ImageProtocol = "iterm"
+)
+
 // Options is used to configure an ANSIRenderer.
 type Options struct {
 	BaseURL          string
@@ -24,6 +40,10 @@ type Options struct {
 	ColorProfile     termenv.Profile
 	Styles           StyleConfig
 	ChromaFormatter  string
+
+	// Image rendering options
+	ImageProtocol    ImageProtocol // Protocol to use for image rendering (default: none)
+	ImageFetchRemote bool          // Allow fetching remote images via HTTP (default: false for security)
 }
 
 // ANSIRenderer renders markdown content as ANSI escaped sequences.

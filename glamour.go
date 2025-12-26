@@ -238,6 +238,26 @@ func WithChromaFormatter(formatter string) TermRendererOption {
 	}
 }
 
+// WithImageProtocol sets the terminal image protocol to use for rendering images.
+// Supported protocols: "auto", "kitty", "sixel", "iterm", "none".
+// Default is "none" (images are not rendered).
+func WithImageProtocol(protocol ansi.ImageProtocol) TermRendererOption {
+	return func(tr *TermRenderer) error {
+		tr.ansiOptions.ImageProtocol = protocol
+		return nil
+	}
+}
+
+// WithImageFetchRemote enables or disables fetching remote images via HTTP/HTTPS.
+// This is disabled by default for security reasons.
+// When disabled, only local files and data URIs are supported.
+func WithImageFetchRemote(fetch bool) TermRendererOption {
+	return func(tr *TermRenderer) error {
+		tr.ansiOptions.ImageFetchRemote = fetch
+		return nil
+	}
+}
+
 // WithOptions sets multiple TermRenderer options within a single TermRendererOption.
 func WithOptions(options ...TermRendererOption) TermRendererOption {
 	return func(tr *TermRenderer) error {
