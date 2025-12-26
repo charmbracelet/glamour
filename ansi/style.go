@@ -68,9 +68,12 @@ type StyleTask struct {
 // StyleBlock holds the basic style settings for block elements.
 type StyleBlock struct {
 	StylePrimitive
-	Indent      *uint   `json:"indent,omitempty"`
-	IndentToken *string `json:"indent_token,omitempty"`
-	Margin      *uint   `json:"margin,omitempty"`
+	Indent       *uint   `json:"indent,omitempty"`
+	IndentToken  *string `json:"indent_token,omitempty"`
+	Margin       *uint   `json:"margin,omitempty"`
+	MarginLeft   *uint   `json:"margin_left,omitempty"`
+	MarginRight  *uint   `json:"margin_right,omitempty"`
+	Align        *string `json:"align,omitempty"`
 }
 
 // StyleCodeBlock holds the style settings for a code block.
@@ -247,10 +250,25 @@ func cascadeStyle(parent StyleBlock, child StyleBlock, toBlock bool) StyleBlock 
 	if toBlock {
 		s.Indent = parent.Indent
 		s.Margin = parent.Margin
+		s.MarginLeft = parent.MarginLeft
+		s.MarginRight = parent.MarginRight
+		s.Align = parent.Align
 	}
 
 	if child.Indent != nil {
 		s.Indent = child.Indent
+	}
+
+	if child.MarginLeft != nil {
+		s.MarginLeft = child.MarginLeft
+	}
+
+	if child.MarginRight != nil {
+		s.MarginRight = child.MarginRight
+	}
+
+	if child.Align != nil {
+		s.Align = child.Align
 	}
 
 	return s
