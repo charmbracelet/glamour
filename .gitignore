@@ -1,2 +1,3 @@
 cmd/
 !*.test
+coverage.out

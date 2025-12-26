@@ -3,7 +3,7 @@ module github.com/charmbracelet/glamour
 go 1.24.0
 
 require (
-	github.com/BourgeoisBear/rasterm v1.1.1
+	github.com/BourgeoisBear/rasterm v1.1.2
 	github.com/alecthomas/chroma/v2 v2.20.0
 	github.com/charmbracelet/lipgloss v1.1.1-0.20250404203927-76690c660834
 	github.com/charmbracelet/x/ansi v0.10.2
@@ -14,8 +14,9 @@ require (
 	github.com/muesli/termenv v0.16.0
 	github.com/yuin/goldmark v1.7.13
 	github.com/yuin/goldmark-emoji v1.0.6
+	golang.org/x/image v0.34.0
 	golang.org/x/term v0.36.0
-	golang.org/x/text v0.30.0
+	golang.org/x/text v0.32.0
 )
 
 require (
