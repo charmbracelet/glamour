@@ -21,12 +21,12 @@ the stylish defaults.
 ## Usage
 
 ```go
-import "github.com/charmbracelet/glamour"
+import "charm.land/glamour/v2"
 
 in := `# Hello World
 
 This is a simple example of Markdown rendering with Glamour!
-Check out the [other examples](https://github.com/charmbracelet/glamour/tree/master/examples) too.
+Check out the [other examples](https://github.com/charmbracelet/glamour/tree/main/examples) too.
 
 Bye!
 `
@@ -40,7 +40,7 @@ fmt.Print(out)
 ### Custom Renderer
 
 ```go
-import "github.com/charmbracelet/glamour"
+import "charm.land/glamour/v2"
 
 r, _ := glamour.NewTermRenderer(
     // wrap output at specific width (default is 80)
@@ -51,10 +51,39 @@ out, err := r.Render(in)
 fmt.Print(out)
 ```
 
+### Color Downsampling
+
+Since the renderer is designed to be "pure" and always produce the same output
+for the same input, it doesn't have access to the terminal's capabilities. This
+means that color downsampling is not performed by default. In this case, use [Lip Gloss][lipgloss]
+to perform downsampling before rendering:
+
+```go
+import (
+    "charm.land/glamour/v2"
+    "charm.land/lipgloss/v2"
+)
+
+r, _ := glamour.NewTermRenderer(
+    // wrap output at specific width (default is 80)
+    glamour.WithWordWrap(40),
+)
+
+out, err := r.Render(in)
+if err != nil {
+    // handle error
+}
+
+// downsample colors based on terminal capabilities.
+lipgloss.Print(out)
+```
+
+[lipgloss]: https://github.com/charmbracelet/lipgloss
+
 ## Styles
 
-You can find all available default styles in our [gallery](https://github.com/charmbracelet/glamour/tree/master/styles/gallery).
-Want to create your own style? [Learn how!](https://github.com/charmbracelet/glamour/tree/master/styles)
+You can find all available default styles in our [gallery](https://github.com/charmbracelet/glamour/tree/main/styles/gallery).
+Want to create your own style? [Learn how!](https://github.com/charmbracelet/glamour/tree/main/styles)
 
 There are a few options for using a custom style:
 
