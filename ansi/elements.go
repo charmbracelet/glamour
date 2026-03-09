@@ -11,6 +11,7 @@ import (
 	east "github.com/yuin/goldmark-emoji/ast"
 	"github.com/yuin/goldmark/ast"
 	astext "github.com/yuin/goldmark/extension/ast"
+	"github.com/yuin/goldmark/util"
 )
 
 // ElementRenderer is called when entering a markdown node.
@@ -170,7 +171,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 	// Text Elements
 	case ast.KindText:
 		n := node.(*ast.Text)
-		s := string(n.Segment.Value(source))
+		s := string(util.UnescapePunctuations(n.Segment.Value(source)))
 
 		if n.HardLineBreak() || (n.SoftLineBreak()) {
 			s += "\n"
