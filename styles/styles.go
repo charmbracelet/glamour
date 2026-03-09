@@ -4,7 +4,7 @@ package styles
 //go:generate go run ../internal/generate-style-json
 
 import (
-	"github.com/charmbracelet/glamour/ansi"
+	"charm.land/glamour/v2/ansi"
 )
 
 const (
@@ -16,7 +16,6 @@ const (
 // Default styles.
 const (
 	AsciiStyle      = "ascii" //nolint: revive
-	AutoStyle       = "auto"
 	DarkStyle       = "dark"
 	DraculaStyle    = "dracula"
 	TokyoNightStyle = "tokyo-night"
@@ -236,8 +235,8 @@ var (
 		},
 		Code: ansi.StyleBlock{
 			StylePrimitive: ansi.StylePrimitive{
-				Prefix:          " ",
-				Suffix:          " ",
+				Prefix:          "\u00a0", // Use non-breaking space to prevent hard breaks
+				Suffix:          "\u00a0", // Use non-breaking space to prevent hard breaks
 				Color:           stringPtr("203"),
 				BackgroundColor: stringPtr("236"),
 			},
@@ -445,8 +444,8 @@ var (
 		},
 		Code: ansi.StyleBlock{
 			StylePrimitive: ansi.StylePrimitive{
-				Prefix:          " ",
-				Suffix:          " ",
+				Prefix:          "\u00a0", // Use non-breaking space to prevent hard breaks
+				Suffix:          "\u00a0", // Use non-breaking space to prevent hard breaks
 				Color:           stringPtr("203"),
 				BackgroundColor: stringPtr("254"),
 			},
@@ -645,8 +644,8 @@ var (
 			StylePrimitive: ansi.StylePrimitive{
 				Color:           stringPtr("212"),
 				BackgroundColor: stringPtr("236"),
-				Prefix:          " ",
-				Suffix:          " ",
+				Prefix:          "\u00a0", // Use non-breaking space to prevent hard breaks
+				Suffix:          "\u00a0", // Use non-breaking space to prevent hard breaks
 			},
 		},
 		Table:          ansi.StyleTable{},

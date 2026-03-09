@@ -73,8 +73,8 @@
     "format": "Image: {{.text}}"
   },
   "code": {
-    "prefix": " ",
-    "suffix": " ",
+    "prefix": " ",
+    "suffix": " ",
     "color": "212",
     "background_color": "236"
   },

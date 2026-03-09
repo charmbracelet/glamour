@@ -72,7 +72,11 @@
   "code_block": {
     "margin": 2
   },
-  "table": {},
+  "table": {
+    "center_separator": "|",
+    "column_separator": "|",
+    "row_separator": "-"
+  },
   "definition_list": {},
   "definition_term": {},
   "definition_description": {
