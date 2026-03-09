@@ -18,13 +18,13 @@ This guide will help you migrate from Glamour v1 to v2. Most upgrades are straig
 ## Update Dependencies
 
 ```bash
-go get charm.land/glamour/v2
+go get charm.land/glamour/v2@latest
 ```
 
 If you need color downsampling (most apps do):
 
 ```bash
-go get charm.land/lipgloss/v2
+go get charm.land/lipgloss/v2@latest
 ```
 
 ## Remove Auto Style Detection
