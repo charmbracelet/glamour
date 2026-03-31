@@ -154,4 +154,5 @@ var escapeReplacer = strings.NewReplacer(
 	"\\.", ".",
 	"\\!", "!",
 	"\\|", "|",
+	"\\~", "~",
 )
