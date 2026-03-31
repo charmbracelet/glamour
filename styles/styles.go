@@ -18,6 +18,7 @@ const (
 	AsciiStyle      = "ascii" //nolint: revive
 	DarkStyle       = "dark"
 	DraculaStyle    = "dracula"
+	GruvboxStyle    = "gruvbox"
 	TokyoNightStyle = "tokyo-night"
 	LightStyle      = "light"
 	NoTTYStyle      = "notty"
@@ -671,6 +672,7 @@ var (
 
 		// Popular themes
 		DraculaStyle:    &DraculaStyleConfig,
+		GruvboxStyle:    &GruvboxStyleConfig,
 		TokyoNightStyle: &TokyoNightStyleConfig,
 	}
 )
