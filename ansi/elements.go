@@ -175,10 +175,14 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		if n.HardLineBreak() || (n.SoftLineBreak()) {
 			s += "\n"
 		}
+		textStyle := ctx.options.Styles.Text
+		if htmlStyle := ctx.CurrentHTMLStyle(); htmlStyle != (StylePrimitive{}) {
+			textStyle = cascadeStylePrimitive(textStyle, htmlStyle, false)
+		}
 		return Element{
 			Renderer: &BaseElement{
 				Token: html.UnescapeString(s),
-				Style: ctx.options.Styles.Text,
+				Style: textStyle,
 			},
 		}
 
@@ -422,9 +426,21 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		}
 	case ast.KindRawHTML:
 		n := node.(*ast.RawHTML)
+		tag := string(n.Text(source)) //nolint: staticcheck
+
+		// Handle inline formatting tags: <b>, <i>, <u>, <s>, <strong>, <em>, etc.
+		if style, ok := htmlInlineTagStyle(tag); ok {
+			ctx.PushHTMLStyle(style)
+			return Element{}
+		}
+		if isHTMLClosingTag(tag) {
+			ctx.PopHTMLStyle()
+			return Element{}
+		}
+
 		return Element{
 			Renderer: &BaseElement{
-				Token: ctx.SanitizeHTML(string(n.Text(source)), true), //nolint: staticcheck
+				Token: ctx.SanitizeHTML(tag, true),
 				Style: ctx.options.Styles.HTMLSpan.StylePrimitive,
 			},
 		}
