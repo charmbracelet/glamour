@@ -69,9 +69,11 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 
 	// Paragraph
 	case ast.KindParagraph:
-		if node.Parent() != nil {
-			kind := node.Parent().Kind()
-			if kind == ast.KindListItem {
+		if node.Parent() != nil && node.Parent().Kind() == ast.KindListItem {
+			// Skip the first paragraph in a list item — the item itself
+			// handles rendering. Subsequent paragraphs (loose lists) need
+			// to be rendered with proper separation.
+			if node.PreviousSibling() == nil {
 				return Element{}
 			}
 		}
