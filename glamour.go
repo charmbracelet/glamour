@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/yuin/goldmark"
 	emoji "github.com/yuin/goldmark-emoji"
@@ -273,7 +274,7 @@ func (tr *TermRenderer) Render(in string) (string, error) {
 func (tr *TermRenderer) RenderBytes(in []byte) ([]byte, error) {
 	var buf bytes.Buffer
 	err := tr.md.Convert(in, &buf)
-	return buf.Bytes(), err
+	return trimTrailingWhitespace(buf.Bytes()), err
 }
 
 func getEnvironmentStyle() string {
@@ -283,6 +284,18 @@ func getEnvironmentStyle() string {
 	}
 
 	return glamourStyle
+}
+
+// trimTrailingWhitespace removes trailing spaces from each line while
+// preserving ANSI reset sequences at the end of lines. This prevents
+// the PaddingWriter from filling every line to the full document width
+// with invisible spaces.
+func trimTrailingWhitespace(b []byte) []byte {
+	lines := strings.Split(string(b), "\n")
+	for i, line := range lines {
+		lines[i] = strings.TrimRight(line, " ")
+	}
+	return []byte(strings.Join(lines, "\n"))
 }
 
 func getDefaultStyle(style string) (*ansi.StyleConfig, error) {
