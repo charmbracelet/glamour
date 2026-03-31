@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
 
 	"github.com/yuin/goldmark"
 	emoji "github.com/yuin/goldmark-emoji"
@@ -254,7 +255,7 @@ func (tr *TermRenderer) Write(b []byte) (int, error) {
 // Close must be called after writing to TermRenderer. You can then retrieve
 // the rendered markdown by calling Read.
 func (tr *TermRenderer) Close() error {
-	err := tr.md.Convert(tr.buf.Bytes(), &tr.renderBuf)
+	err := tr.md.Convert(convertWikilinks(tr.buf.Bytes()), &tr.renderBuf)
 	if err != nil {
 		return fmt.Errorf("glamour: error converting markdown: %w", err)
 	}
@@ -272,6 +273,7 @@ func (tr *TermRenderer) Render(in string) (string, error) {
 // RenderBytes returns the markdown rendered into a byte slice.
 func (tr *TermRenderer) RenderBytes(in []byte) ([]byte, error) {
 	var buf bytes.Buffer
+	in = convertWikilinks(in)
 	err := tr.md.Convert(in, &buf)
 	return buf.Bytes(), err
 }
@@ -283,6 +285,24 @@ func getEnvironmentStyle() string {
 	}
 
 	return glamourStyle
+}
+
+// wikilinkRegexp matches [[target]] and [[target|display text]] patterns.
+var wikilinkRegexp = regexp.MustCompile(`\[\[([^\]|]+?)(?:\|([^\]]+?))?\]\]`)
+
+// convertWikilinks transforms Obsidian/wiki-style links into standard markdown
+// links before parsing. [[page]] becomes [page](page) and [[page|text]]
+// becomes [text](page).
+func convertWikilinks(in []byte) []byte {
+	return wikilinkRegexp.ReplaceAllFunc(in, func(match []byte) []byte {
+		groups := wikilinkRegexp.FindSubmatch(match)
+		target := string(groups[1])
+		display := target
+		if len(groups) > 2 && len(groups[2]) > 0 {
+			display = string(groups[2])
+		}
+		return []byte("[" + display + "](" + target + ")")
+	})
 }
 
 func getDefaultStyle(style string) (*ansi.StyleConfig, error) {
