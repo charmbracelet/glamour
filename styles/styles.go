@@ -147,6 +147,46 @@ var (
 			Indent:         uintPtr(1),
 			IndentToken:    stringPtr("│ "),
 		},
+		AlertNote: ansi.StyleBlock{
+			StylePrimitive: ansi.StylePrimitive{
+				Color:       stringPtr("39"),
+				BlockPrefix: "ℹ️  Note\n",
+			},
+			Indent:      uintPtr(1),
+			IndentToken: stringPtr("│ "),
+		},
+		AlertTip: ansi.StyleBlock{
+			StylePrimitive: ansi.StylePrimitive{
+				Color:       stringPtr("35"),
+				BlockPrefix: "💡 Tip\n",
+			},
+			Indent:      uintPtr(1),
+			IndentToken: stringPtr("│ "),
+		},
+		AlertImportant: ansi.StyleBlock{
+			StylePrimitive: ansi.StylePrimitive{
+				Color:       stringPtr("135"),
+				BlockPrefix: "❗ Important\n",
+			},
+			Indent:      uintPtr(1),
+			IndentToken: stringPtr("│ "),
+		},
+		AlertWarning: ansi.StyleBlock{
+			StylePrimitive: ansi.StylePrimitive{
+				Color:       stringPtr("214"),
+				BlockPrefix: "⚠️  Warning\n",
+			},
+			Indent:      uintPtr(1),
+			IndentToken: stringPtr("│ "),
+		},
+		AlertCaution: ansi.StyleBlock{
+			StylePrimitive: ansi.StylePrimitive{
+				Color:       stringPtr("196"),
+				BlockPrefix: "🛑 Caution\n",
+			},
+			Indent:      uintPtr(1),
+			IndentToken: stringPtr("│ "),
+		},
 		List: ansi.StyleList{
 			LevelIndent: defaultListIndent,
 		},
@@ -356,6 +396,46 @@ var (
 			StylePrimitive: ansi.StylePrimitive{},
 			Indent:         uintPtr(1),
 			IndentToken:    stringPtr("│ "),
+		},
+		AlertNote: ansi.StyleBlock{
+			StylePrimitive: ansi.StylePrimitive{
+				Color:       stringPtr("27"),
+				BlockPrefix: "ℹ️  Note\n",
+			},
+			Indent:      uintPtr(1),
+			IndentToken: stringPtr("│ "),
+		},
+		AlertTip: ansi.StyleBlock{
+			StylePrimitive: ansi.StylePrimitive{
+				Color:       stringPtr("29"),
+				BlockPrefix: "💡 Tip\n",
+			},
+			Indent:      uintPtr(1),
+			IndentToken: stringPtr("│ "),
+		},
+		AlertImportant: ansi.StyleBlock{
+			StylePrimitive: ansi.StylePrimitive{
+				Color:       stringPtr("91"),
+				BlockPrefix: "❗ Important\n",
+			},
+			Indent:      uintPtr(1),
+			IndentToken: stringPtr("│ "),
+		},
+		AlertWarning: ansi.StyleBlock{
+			StylePrimitive: ansi.StylePrimitive{
+				Color:       stringPtr("172"),
+				BlockPrefix: "⚠️  Warning\n",
+			},
+			Indent:      uintPtr(1),
+			IndentToken: stringPtr("│ "),
+		},
+		AlertCaution: ansi.StyleBlock{
+			StylePrimitive: ansi.StylePrimitive{
+				Color:       stringPtr("160"),
+				BlockPrefix: "🛑 Caution\n",
+			},
+			Indent:      uintPtr(1),
+			IndentToken: stringPtr("│ "),
 		},
 		List: ansi.StyleList{
 			LevelIndent: defaultListIndent,

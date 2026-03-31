@@ -84,9 +84,26 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 
 	// Blockquote
 	case ast.KindBlockquote:
+		style := ctx.options.Styles.BlockQuote
+		alertType := detectAlertType(node, source)
+		if alertType != "" {
+			switch alertType {
+			case "NOTE":
+				style = ctx.options.Styles.AlertNote
+			case "TIP":
+				style = ctx.options.Styles.AlertTip
+			case "IMPORTANT":
+				style = ctx.options.Styles.AlertImportant
+			case "WARNING":
+				style = ctx.options.Styles.AlertWarning
+			case "CAUTION":
+				style = ctx.options.Styles.AlertCaution
+			}
+			stripAlertMarker(node, source, alertType)
+		}
 		e := &BlockElement{
 			Block:  &bytes.Buffer{},
-			Style:  cascadeStyle(ctx.blockStack.Current().Style, ctx.options.Styles.BlockQuote, false),
+			Style:  cascadeStyle(ctx.blockStack.Current().Style, style, false),
 			Margin: true,
 		}
 		return Element{
@@ -477,5 +494,86 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 	default:
 		fmt.Println("Warning: unhandled element", node.Kind().String())
 		return Element{}
+	}
+}
+
+// alertTypes are the supported GitHub-style alert types.
+var alertTypes = []string{"NOTE", "TIP", "IMPORTANT", "WARNING", "CAUTION"}
+
+// detectAlertType checks if a blockquote node starts with a GitHub-style alert
+// marker like [!NOTE], [!TIP], [!IMPORTANT], [!WARNING], or [!CAUTION].
+// Goldmark splits "[!NOTE]" into separate text nodes: "[", "!NOTE", "]",
+// so this function reconstructs the text from consecutive nodes.
+// Returns the alert type string (e.g. "NOTE") or empty string if not an alert.
+func detectAlertType(node ast.Node, source []byte) string {
+	if node.FirstChild() == nil {
+		return ""
+	}
+	firstChild := node.FirstChild()
+	if firstChild.Kind() != ast.KindParagraph {
+		return ""
+	}
+
+	// Collect text from the first few text nodes to reconstruct potential marker
+	var combined string
+	n := firstChild.FirstChild()
+	for n != nil && n.Kind() == ast.KindText {
+		combined += string(n.(*ast.Text).Segment.Value(source))
+		n = n.NextSibling()
+		// Stop after collecting enough text for a marker check
+		if len(combined) > 15 {
+			break
+		}
+	}
+
+	for _, at := range alertTypes {
+		if strings.HasPrefix(combined, "[!"+at+"]") {
+			return at
+		}
+	}
+	return ""
+}
+
+// stripAlertMarker removes the [!TYPE] marker text nodes from the first
+// paragraph of a blockquote. Goldmark splits "[!NOTE]" into separate text
+// nodes: "[", "!NOTE", "]", so we remove all nodes that form the marker.
+func stripAlertMarker(node ast.Node, source []byte, alertType string) {
+	para := node.FirstChild()
+	if para == nil || para.Kind() != ast.KindParagraph {
+		return
+	}
+
+	marker := "[!" + alertType + "]"
+	var consumed int
+	var toRemove []ast.Node
+
+	n := para.FirstChild()
+	for n != nil && n.Kind() == ast.KindText {
+		tn := n.(*ast.Text)
+		text := string(tn.Segment.Value(source))
+		remaining := marker[consumed:]
+
+		if len(text) <= len(remaining) && strings.HasPrefix(remaining, text) {
+			// This entire text node is part of the marker
+			consumed += len(text)
+			toRemove = append(toRemove, n)
+			n = n.NextSibling()
+		} else if strings.HasPrefix(text, remaining) {
+			// This text node contains the end of the marker and more text
+			consumed += len(remaining)
+			tn.Segment.Start += len(remaining)
+			break
+		} else {
+			break
+		}
+
+		if consumed >= len(marker) {
+			break
+		}
+	}
+
+	// Remove all text nodes that were fully consumed by the marker
+	for _, r := range toRemove {
+		para.RemoveChild(para, r)
 	}
 }

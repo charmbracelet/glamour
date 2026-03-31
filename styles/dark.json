@@ -187,5 +187,35 @@
     "block_prefix": "\n🠶 "
   },
   "html_block": {},
-  "html_span": {}
+  "html_span": {},
+  "alert_note": {
+    "color": "39",
+    "block_prefix": "ℹ️  Note\n",
+    "indent": 1,
+    "indent_token": "│ "
+  },
+  "alert_tip": {
+    "color": "35",
+    "block_prefix": "💡 Tip\n",
+    "indent": 1,
+    "indent_token": "│ "
+  },
+  "alert_important": {
+    "color": "135",
+    "block_prefix": "❗ Important\n",
+    "indent": 1,
+    "indent_token": "│ "
+  },
+  "alert_warning": {
+    "color": "214",
+    "block_prefix": "⚠️  Warning\n",
+    "indent": 1,
+    "indent_token": "│ "
+  },
+  "alert_caution": {
+    "color": "196",
+    "block_prefix": "🛑 Caution\n",
+    "indent": 1,
+    "indent_token": "│ "
+  }
 }

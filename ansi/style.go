@@ -135,6 +135,13 @@ type StyleConfig struct {
 
 	HTMLBlock StyleBlock `json:"html_block,omitempty"`
 	HTMLSpan  StyleBlock `json:"html_span,omitempty"`
+
+	// GitHub-style alerts (> [!NOTE], > [!TIP], etc.)
+	AlertNote      StyleBlock `json:"alert_note,omitempty"`
+	AlertTip       StyleBlock `json:"alert_tip,omitempty"`
+	AlertImportant StyleBlock `json:"alert_important,omitempty"`
+	AlertWarning   StyleBlock `json:"alert_warning,omitempty"`
+	AlertCaution   StyleBlock `json:"alert_caution,omitempty"`
 }
 
 func cascadeStyles(s ...StyleBlock) StyleBlock {
