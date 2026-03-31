@@ -10,6 +10,8 @@ import (
 	"io"
 	"os"
 
+	"golang.org/x/term"
+
 	"github.com/yuin/goldmark"
 	emoji "github.com/yuin/goldmark-emoji"
 	"github.com/yuin/goldmark/extension"
@@ -24,6 +26,12 @@ import (
 const (
 	defaultWidth = 80
 	highPriority = 1000
+
+	// AutoStyle automatically selects a style based on the terminal.
+	// When stdout is a TTY, it uses DarkStyle. When stdout is not a TTY
+	// (e.g. piped to a file or another command), it falls back to NoTTYStyle
+	// which strips ANSI escape sequences.
+	AutoStyle = "auto"
 )
 
 // A TermRendererOption sets an option on a TermRenderer.
@@ -286,9 +294,18 @@ func getEnvironmentStyle() string {
 }
 
 func getDefaultStyle(style string) (*ansi.StyleConfig, error) {
-	styles, ok := styles.DefaultStyles[style]
+	// Auto-detect: use NoTTY when stdout is not a terminal
+	if style == AutoStyle {
+		if term.IsTerminal(int(os.Stdout.Fd())) {
+			style = styles.DarkStyle
+		} else {
+			style = styles.NoTTYStyle
+		}
+	}
+
+	s, ok := styles.DefaultStyles[style]
 	if !ok {
 		return nil, fmt.Errorf("%s: style not found", style)
 	}
-	return styles, nil
+	return s, nil
 }
