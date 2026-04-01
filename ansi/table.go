@@ -79,7 +79,7 @@ func (e *TableElement) setStyles(ctx RenderContext) {
 		ctx.table.lipgloss.BaseStyle(baseStyle)
 	}
 
-	ctx.table.lipgloss = ctx.table.lipgloss.StyleFunc(func(_, col int) lipgloss.Style {
+	ctx.table.lipgloss = ctx.table.lipgloss.StyleFunc(func(row, col int) lipgloss.Style {
 		st := lipgloss.NewStyle().Inline(false)
 		// Default Styles
 		st = st.Margin(0, 1)
@@ -97,6 +97,23 @@ func (e *TableElement) setStyles(ctx RenderContext) {
 			st = st.Align(lipgloss.Right).PaddingLeft(0)
 		case astext.AlignNone:
 			// do nothing
+		}
+
+		// Apply alternating row style for even rows (0-indexed, row 0 is header)
+		evenRow := ctx.options.Styles.Table.EvenRow
+		if row > 0 && row%2 == 0 {
+			if evenRow.BackgroundColor != nil {
+				st = st.Background(lipgloss.Color(*evenRow.BackgroundColor))
+			}
+			if evenRow.Color != nil {
+				st = st.Foreground(lipgloss.Color(*evenRow.Color))
+			}
+			if evenRow.Bold != nil && *evenRow.Bold {
+				st = st.Bold(true)
+			}
+			if evenRow.Faint != nil && *evenRow.Faint {
+				st = st.Faint(true)
+			}
 		}
 
 		return st
