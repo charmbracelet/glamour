@@ -33,11 +33,13 @@ func (e *BlockElement) Finish(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 
 	if e.Margin { //nolint: nestif
-		s := lipgloss.Wrap(
-			bs.Current().Block.String(),
-			int(bs.Width(ctx)), //nolint: gosec
-			" ,.;-+|",
-		)
+		content := bs.Current().Block.String()
+		var s string
+		if e.Style.NoWrap != nil && *e.Style.NoWrap {
+			s = content
+		} else {
+			s = lipgloss.Wrap(content, int(bs.Width(ctx)), " ,.;-+|") //nolint: gosec
+		}
 
 		mw := NewMarginWriter(ctx, w, bs.Current().Style)
 		defer mw.Close() //nolint:errcheck

@@ -70,6 +70,7 @@ type StyleBlock struct {
 	Indent      *uint   `json:"indent,omitempty"`
 	IndentToken *string `json:"indent_token,omitempty"`
 	Margin      *uint   `json:"margin,omitempty"`
+	NoWrap      *bool   `json:"no_wrap,omitempty"`
 }
 
 // StyleCodeBlock holds the style settings for a code block.
