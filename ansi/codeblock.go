@@ -84,9 +84,10 @@ func (e *CodeBlockElement) Render(w io.Writer, ctx RenderContext) error {
 	if rules.Chroma != nil {
 		theme = chromaStyleTheme
 		mutex.Lock()
-		// Don't register the style if it's already registered.
-		_, ok := styles.Registry[theme]
-		if !ok {
+		// Always re-register the style to support runtime theme changes.
+		// Previously, the style was only registered once, which prevented
+		// switching themes while the application is running (#436).
+		{
 			styles.Register(chroma.MustNewStyle(theme,
 				chroma.StyleEntries{
 					chroma.Text:                chromaStyle(rules.Chroma.Text),
@@ -123,7 +124,7 @@ func (e *CodeBlockElement) Render(w io.Writer, ctx RenderContext) error {
 				}))
 		}
 		mutex.Unlock()
-	}
+	} //nolint:wsl
 
 	iw := NewIndentWriter(w, int(indentation+margin), func(_ io.Writer) { //nolint:gosec
 		_, _ = renderText(w, bs.Current().Style.StylePrimitive, " ")
