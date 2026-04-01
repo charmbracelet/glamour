@@ -414,9 +414,24 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 	// HTML Elements
 	case ast.KindHTMLBlock:
 		n := node.(*ast.HTMLBlock)
+		text := string(n.Text(source)) //nolint: staticcheck
+
+		// Render <summary> and <details> elements as styled blocks
+		// instead of stripping them via the sanitizer.
+		sanitized := ctx.SanitizeHTML(text, true)
+		if strings.Contains(strings.ToLower(text), "<summary>") && sanitized != "" {
+			return Element{
+				Renderer: &BaseElement{
+					Token: "▶ " + sanitized,
+					Style: cascadeStylePrimitive(ctx.options.Styles.HTMLBlock.StylePrimitive,
+						StylePrimitive{Bold: func() *bool { t := true; return &t }()}, false),
+				},
+			}
+		}
+
 		return Element{
 			Renderer: &BaseElement{
-				Token: ctx.SanitizeHTML(string(n.Text(source)), true), //nolint: staticcheck
+				Token: sanitized,
 				Style: ctx.options.Styles.HTMLBlock.StylePrimitive,
 			},
 		}
