@@ -196,6 +196,16 @@ func WithInlineTableLinks(inlineTableLinks bool) TermRendererOption {
 	}
 }
 
+// WithHiddenLinks hides the URL portion of links, showing only the link text.
+// This is useful when the terminal supports OSC 8 hyperlinks (clickable links)
+// and displaying the raw URL is redundant.
+func WithHiddenLinks() TermRendererOption {
+	return func(tr *TermRenderer) error {
+		tr.ansiOptions.HideLinks = true
+		return nil
+	}
+}
+
 // WithPreservedNewLines preserves newlines from being replaced.
 func WithPreservedNewLines() TermRendererOption {
 	return func(tr *TermRenderer) error {

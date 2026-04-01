@@ -20,6 +20,7 @@ type Options struct {
 	TableWrap        *bool
 	InlineTableLinks bool
 	PreserveNewLines bool
+	HideLinks        bool
 	Styles           StyleConfig
 	ChromaFormatter  string
 }
