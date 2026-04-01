@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"strings"
 
 	"charm.land/lipgloss/v2"
+	"github.com/charmbracelet/x/ansi"
 )
 
 // A HeadingElement is used to render headings.
@@ -66,6 +68,16 @@ func (e *HeadingElement) Finish(w io.Writer, ctx RenderContext) error {
 	defer mw.Close() //nolint:errcheck
 
 	flow := lipgloss.Wrap(bs.Current().Block.String(), int(bs.Width(ctx)), "") //nolint: gosec
+
+	// Fill the line with background color if Fill is enabled
+	if rules.Fill != nil && *rules.Fill {
+		width := int(bs.Width(ctx)) //nolint: gosec
+		stripped := ansi.Strip(flow)
+		if pad := width - ansi.StringWidth(stripped); pad > 0 {
+			flow += strings.Repeat(" ", pad)
+		}
+	}
+
 	_, err := io.WriteString(mw, flow)
 	if err != nil {
 		return fmt.Errorf("glamour: error writing to writer: %w", err)

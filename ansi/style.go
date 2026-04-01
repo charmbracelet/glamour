@@ -55,6 +55,7 @@ type StylePrimitive struct {
 	Inverse         *bool   `json:"inverse,omitempty"`
 	Blink           *bool   `json:"blink,omitempty"`
 	Format          string  `json:"format,omitempty"`
+	Fill            *bool   `json:"fill,omitempty"`
 }
 
 // StyleTask holds the style settings for a task item.
