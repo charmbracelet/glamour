@@ -1,0 +1,12 @@
+{
+    "link": {
+        "color": "123",
+        "underline": true,
+        "block_prefix": "(",
+        "block_suffix": ")"
+    },
+    "link_text": {
+        "color": "123",
+        "bold": true
+    }
+}

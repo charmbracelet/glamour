@@ -1,0 +1,9 @@
+{
+    "list": {
+        "color": "15",
+        "background_color": "52"
+    },
+    "enumeration": {
+        "block_prefix": ". "
+    }
+}

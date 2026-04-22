@@ -1,0 +1,16 @@
+name: build
+on: [push, pull_request]
+
+jobs:
+  build:
+    uses: charmbracelet/meta/.github/workflows/build.yml@main
+    secrets:
+      gh_pat: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
+  semgrep:
+    uses: charmbracelet/meta/.github/workflows/semgrep.yml@main
+
+  ruleguard:
+    uses: charmbracelet/meta/.github/workflows/ruleguard.yml@main
+    with:
+      go-version: stable

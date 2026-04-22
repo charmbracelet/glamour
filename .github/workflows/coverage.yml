@@ -1,0 +1,24 @@
+name: coverage
+on: [push, pull_request]
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    env:
+      GO111MODULE: "on"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Install Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: stable
+
+      - name: Coverage
+        env:
+          COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          go test -race -covermode atomic -coverprofile=profile.cov ./...
+          go install github.com/mattn/goveralls@latest
+          goveralls -coverprofile=profile.cov -service=github
