@@ -15,13 +15,15 @@ const (
 
 // Default styles.
 const (
-	AsciiStyle      = "ascii" //nolint: revive
-	DarkStyle       = "dark"
-	DraculaStyle    = "dracula"
-	TokyoNightStyle = "tokyo-night"
-	LightStyle      = "light"
-	NoTTYStyle      = "notty"
-	PinkStyle       = "pink"
+	AsciiStyle        = "ascii" //nolint: revive
+	DarkStyle         = "dark"
+	DraculaStyle      = "dracula"
+	GruvboxDarkStyle  = "gruvbox-dark"
+	GruvboxLightStyle = "gruvbox-light"
+	TokyoNightStyle   = "tokyo-night"
+	LightStyle        = "light"
+	NoTTYStyle        = "notty"
+	PinkStyle         = "pink"
 )
 
 var (
@@ -670,8 +672,10 @@ var (
 		PinkStyle:  &PinkStyleConfig,
 
 		// Popular themes
-		DraculaStyle:    &DraculaStyleConfig,
-		TokyoNightStyle: &TokyoNightStyleConfig,
+		DraculaStyle:      &DraculaStyleConfig,
+		GruvboxDarkStyle:  &GruvboxDarkStyleConfig,
+		GruvboxLightStyle: &GruvboxLightStyleConfig,
+		TokyoNightStyle:   &TokyoNightStyleConfig,
 	}
 )
 
