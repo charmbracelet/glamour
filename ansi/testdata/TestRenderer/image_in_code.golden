@@ -1,0 +1,19 @@
+Fenced code block with HTML image (should render literally):                    
+                                                                                
+[38;5;200m<img src="https://charm.sh/logo.png" alt="Charm Logo">[m                          
+[38;5;200m[m[38;5;200m[m                                                                                
+Fenced code block with Markdown image (should render literally):                
+                                                                                
+[38;5;200m![Charm Logo](https://charm.sh/logo.png)[m                                        
+[38;5;200m[m[38;5;200m[m                                                                                
+Indented code block with HTML image (should render literally):                  
+                                                                                
+[38;5;200m<img src="https://example.com/img.png" alt="Logo">[m                              
+[38;5;200m[m[38;5;200m[m                                                                                
+Indented code block with Markdown image (should render literally):              
+                                                                                
+[38;5;200m![Logo](https://example.com/img.png)[m                                            
+[38;5;200m[m[38;5;200m[m                                                                                
+Inline code with HTML image: [38;5;200m<img src="https://example.com/img.png" alt="Logo">[m 
+                                                                                
+Inline code with Markdown image: [38;5;200m![Logo](https://example.com/img.png)[m           
