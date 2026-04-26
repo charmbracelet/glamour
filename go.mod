@@ -1,8 +1,6 @@
 module charm.land/glamour/v2
 
-go 1.24.2
-
-toolchain go1.24.4
+go 1.25.8
 
 require (
 	charm.land/lipgloss/v2 v2.0.0
