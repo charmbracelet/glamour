@@ -225,6 +225,28 @@ Output:
 
 ![Table Example](https://github.com/charmbracelet/glamour/raw/master/styles/examples/table.png)
 
+#### Alternating row styles (zebra striping)
+
+`even_row` and `odd_row` apply a [Style Primitive](#style-primitive) (color,
+background color, bold, italic, faint, underline) to data rows based on their
+visual 1-indexed position. The first data row is *odd*, the second is *even*,
+and so on. The header row is unaffected.
+
+Either field may be set independently. To get classic GitHub-style zebra
+striping, set a background on `even_row` and leave `odd_row` unset (or set
+both for explicit control on each):
+
+```json
+"table": {
+    "row_separator": "-",
+    "column_separator": "|",
+    "center_separator": "+",
+    "even_row": {
+        "background_color": "#f6f8fa"
+    }
+}
+```
+
 ## Inline Elements
 
 All inline elements support the following style settings:
