@@ -249,7 +249,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 				BaseURL:  ctx.options.BaseURL,
 				URL:      string(n.Destination),
 				Children: children,
-				SkipHref: isFooterLinks,
+				SkipHref: isFooterLinks || ctx.options.HideLinks,
 			},
 		}
 	case ast.KindAutoLink:
