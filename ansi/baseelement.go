@@ -134,24 +134,43 @@ func (e *BaseElement) doRender(w io.Writer, st1, st2 StylePrimitive) error {
 	return nil
 }
 
-// https://www.markdownguide.org/basic-syntax/#characters-you-can-escape
+// escapeReplacer strips a leading backslash from any backslash-escaped ASCII
+// punctuation character, per the CommonMark spec
+// (https://spec.commonmark.org/current/#backslash-escapes), which says "any
+// ASCII punctuation character may be backslash-escaped". The previous list
+// was missing several characters, notably `~`, which meant `\~` rendered as
+// `\~` instead of `~`. See charmbracelet/glamour#503.
 var escapeReplacer = strings.NewReplacer(
-	"\\\\", "\\",
-	"\\`", "`",
-	"\\*", "*",
-	"\\_", "_",
-	"\\{", "{",
-	"\\}", "}",
-	"\\[", "[",
-	"\\]", "]",
-	"\\<", "<",
-	"\\>", ">",
+	`\\`, `\`,
+	"\\!", "!",
+	`\"`, `"`,
+	"\\#", "#",
+	`\$`, `$`,
+	`\%`, `%`,
+	`\&`, `&`,
+	`\'`, `'`,
 	"\\(", "(",
 	"\\)", ")",
-	"\\#", "#",
+	"\\*", "*",
 	"\\+", "+",
+	`\,`, `,`,
 	"\\-", "-",
 	"\\.", ".",
-	"\\!", "!",
+	`\/`, `/`,
+	`\:`, `:`,
+	`\;`, `;`,
+	"\\<", "<",
+	`\=`, `=`,
+	"\\>", ">",
+	`\?`, `?`,
+	`\@`, `@`,
+	"\\[", "[",
+	"\\]", "]",
+	`\^`, `^`,
+	"\\_", "_",
+	"\\`", "`",
+	"\\{", "{",
 	"\\|", "|",
+	"\\}", "}",
+	`\~`, `~`,
 )
