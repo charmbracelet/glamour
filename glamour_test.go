@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
@@ -302,6 +303,24 @@ func TestWithChromaFormatterDefault(t *testing.T) {
 	golden.RequireEqual(t, []byte(b))
 }
 
+func TestCodeSpanPreservesHTMLEntities(t *testing.T) {
+	r, err := NewTermRenderer(
+		WithStandardStyle("dark"),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	out, err := r.Render("`>` has to be escaped like `&gt;`.")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !strings.Contains(out, "&gt;") {
+		t.Fatalf("expected literal &gt; in codespan output, got %q", out)
+	}
+}
+
 func TestWithChromaFormatterCustom(t *testing.T) {
 	r, err := NewTermRenderer(
 		WithStandardStyle(styles.DarkStyle),
@@ -322,4 +341,27 @@ func TestWithChromaFormatterCustom(t *testing.T) {
 	}
 
 	golden.RequireEqual(t, []byte(b))
+}
+
+func TestExpandStylePath(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+
+	styleDir := filepath.Join(home, "config", "glow", "styles")
+	if err := os.MkdirAll(styleDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	styleFile := filepath.Join(styleDir, "tokyo-night.json")
+	if err := os.WriteFile(styleFile, []byte(`{"document":{"color":"#fff"}}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	got, err := expandStylePath("~/config/glow/styles/tokyo-night.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got != styleFile {
+		t.Fatalf("expected %q, got %q", styleFile, got)
+	}
 }
