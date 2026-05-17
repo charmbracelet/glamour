@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/yuin/goldmark"
 	emoji "github.com/yuin/goldmark-emoji"
@@ -128,6 +129,12 @@ func WithEnvironmentConfig() TermRendererOption {
 // standard style.
 func WithStylePath(stylePath string) TermRendererOption {
 	return func(tr *TermRenderer) error {
+		expanded, err := expandStylePath(stylePath)
+		if err != nil {
+			return fmt.Errorf("glamour: error expanding style path: %w", err)
+		}
+		stylePath = expanded
+
 		styles, err := getDefaultStyle(stylePath)
 		if err != nil {
 			jsonBytes, err := os.ReadFile(stylePath)
@@ -161,6 +168,12 @@ func WithStylesFromJSONBytes(jsonBytes []byte) TermRendererOption {
 // WithStylesFromJSONFile sets a TermRenderer's styles from a JSON file.
 func WithStylesFromJSONFile(filename string) TermRendererOption {
 	return func(tr *TermRenderer) error {
+		expanded, err := expandStylePath(filename)
+		if err != nil {
+			return fmt.Errorf("glamour: error expanding style path: %w", err)
+		}
+		filename = expanded
+
 		jsonBytes, err := os.ReadFile(filename)
 		if err != nil {
 			return fmt.Errorf("glamour: error reading file: %w", err)
@@ -274,6 +287,27 @@ func (tr *TermRenderer) RenderBytes(in []byte) ([]byte, error) {
 	var buf bytes.Buffer
 	err := tr.md.Convert(in, &buf)
 	return buf.Bytes(), err
+}
+
+func expandStylePath(path string) (string, error) {
+	if path == "" || path[0] != '~' {
+		return path, nil
+	}
+
+	if len(path) > 1 && path[1] != '/' && path[1] != '\\' {
+		return path, nil
+	}
+
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return path, err
+	}
+
+	if len(path) == 1 {
+		return home, nil
+	}
+
+	return filepath.Join(home, path[2:]), nil
 }
 
 func getEnvironmentStyle() string {
