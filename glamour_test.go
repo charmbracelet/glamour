@@ -302,6 +302,24 @@ func TestWithChromaFormatterDefault(t *testing.T) {
 	golden.RequireEqual(t, []byte(b))
 }
 
+func TestCodeSpanPreservesHTMLEntities(t *testing.T) {
+	r, err := NewTermRenderer(
+		WithStandardStyle("dark"),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	out, err := r.Render("`>` has to be escaped like `&gt;`.")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !strings.Contains(out, "&gt;") {
+		t.Fatalf("expected literal &gt; in codespan output, got %q", out)
+	}
+}
+
 func TestWithChromaFormatterCustom(t *testing.T) {
 	r, err := NewTermRenderer(
 		WithStandardStyle(styles.DarkStyle),
@@ -322,4 +340,40 @@ func TestWithChromaFormatterCustom(t *testing.T) {
 	}
 
 	golden.RequireEqual(t, []byte(b))
+}
+
+func TestWordWrapAtPunctuation(t *testing.T) {
+	s := "- one two three one two three f.\n- one two"
+	wrap := len("  • one two three")
+	r, err := NewTermRenderer(
+		WithStandardStyle(styles.TokyoNightStyle),
+		WithWordWrap(wrap),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	b, err := r.Render(s)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	plain := b
+	for {
+		start := strings.Index(plain, "\x1b[")
+		if start < 0 {
+			break
+		}
+		end := strings.Index(plain[start:], "m")
+		if end < 0 {
+			break
+		}
+		plain = plain[:start] + plain[start+end+1:]
+	}
+
+	for i, line := range strings.Split(strings.TrimRight(plain, "\n"), "\n") {
+		if len([]rune(strings.TrimSpace(line))) > wrap+2 {
+			t.Errorf("line %d exceeds wrap width %d: %q", i, wrap, line)
+		}
+	}
 }
