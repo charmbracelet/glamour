@@ -302,6 +302,24 @@ func TestWithChromaFormatterDefault(t *testing.T) {
 	golden.RequireEqual(t, []byte(b))
 }
 
+func TestCodeSpanPreservesHTMLEntities(t *testing.T) {
+	r, err := NewTermRenderer(
+		WithStandardStyle("dark"),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	out, err := r.Render("`>` has to be escaped like `&gt;`.")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !strings.Contains(out, "&gt;") {
+		t.Fatalf("expected literal &gt; in codespan output, got %q", out)
+	}
+}
+
 func TestWithChromaFormatterCustom(t *testing.T) {
 	r, err := NewTermRenderer(
 		WithStandardStyle(styles.DarkStyle),
