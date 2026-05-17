@@ -13,6 +13,9 @@ import (
 	"github.com/yuin/goldmark/util"
 )
 
+// WordWrapBreakChars lists runes where lipgloss.Wrap may break lines.
+const WordWrapBreakChars = " ,.;-+|"
+
 // Options is used to configure an ANSIRenderer.
 type Options struct {
 	BaseURL          string

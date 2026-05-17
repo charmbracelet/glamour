@@ -36,7 +36,7 @@ func (e *BlockElement) Finish(w io.Writer, ctx RenderContext) error {
 		s := lipgloss.Wrap(
 			bs.Current().Block.String(),
 			int(bs.Width(ctx)), //nolint: gosec
-			" ,.;-+|",
+			WordWrapBreakChars,
 		)
 
 		mw := NewMarginWriter(ctx, w, bs.Current().Style)
