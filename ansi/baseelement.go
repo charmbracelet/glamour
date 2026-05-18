@@ -40,6 +40,9 @@ func renderText(w io.Writer, rules StylePrimitive, s string) (int, error) { //no
 	if len(s) == 0 {
 		return 0, nil
 	}
+	if rules.Conceal != nil && *rules.Conceal {
+		return 0, nil
+	}
 
 	// XXX: We're using [ansi.Style] instead of [lipgloss.Style] because
 	// Lip Gloss has a weird bug where it adds spaces when rendering joined
