@@ -217,10 +217,10 @@ func (w *IndentWriter) Write(p []byte) (int, error) {
 
 // Close closes the [IndentWriter].
 func (w *IndentWriter) Close() error {
-	var werr error
-	if w, ok := w.w.(io.WriteCloser); ok {
-		werr = w.Close()
+	werr := w.pw.Close()
+	var cerr error
+	if c, ok := w.w.(io.WriteCloser); ok {
+		cerr = c.Close()
 	}
-
-	return errors.Join(werr, w.pw.Close())
+	return errors.Join(werr, cerr)
 }
