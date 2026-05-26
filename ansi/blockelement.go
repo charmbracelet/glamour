@@ -16,6 +16,15 @@ type BlockElement struct {
 	Style   StyleBlock
 	Margin  bool
 	Newline bool
+
+	// SkipWordwrap, when true, causes Finish to skip the lipgloss.Wrap call
+	// and only apply the MarginWriter (indent + padding). This is needed for
+	// elements like blockquotes whose children (paragraphs) already perform
+	// word-wrapping. Running Wrap a second time on already-wrapped content
+	// causes incorrect re-wrapping when the indent token's visual width
+	// differs from the indent count, leading to lost indent tokens on
+	// continuation lines.
+	SkipWordwrap bool
 }
 
 // Render renders a BlockElement.
@@ -33,11 +42,18 @@ func (e *BlockElement) Finish(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 
 	if e.Margin { //nolint: nestif
-		s := lipgloss.Wrap(
-			bs.Current().Block.String(),
-			int(bs.Width(ctx)), //nolint: gosec
-			" ,.;-+|",
-		)
+		var s string
+		if e.SkipWordwrap {
+			// Children (e.g. paragraphs) already word-wrapped the content.
+			// Only apply indent + padding, do NOT re-wrap.
+			s = bs.Current().Block.String()
+		} else {
+			s = lipgloss.Wrap(
+				bs.Current().Block.String(),
+				int(bs.Width(ctx)), //nolint: gosec
+				" ,.;-+|",
+			)
+		}
 
 		mw := NewMarginWriter(ctx, w, bs.Current().Style)
 		defer mw.Close() //nolint:errcheck

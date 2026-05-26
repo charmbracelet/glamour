@@ -2,6 +2,8 @@ package ansi
 
 import (
 	"bytes"
+
+	"github.com/mattn/go-runewidth"
 )
 
 // BlockStack is a stack of block elements, used to calculate the current
@@ -43,6 +45,25 @@ func (s BlockStack) Indent() uint {
 	return i
 }
 
+// IndentVisualWidth returns the visual width consumed by all indent tokens
+// in the stack. Unlike Indent() which returns the indent count, this method
+// accounts for the actual display width of each IndentToken. For example,
+// IndentToken "│ " is 2 columns wide but Indent() would only report 1.
+func (s BlockStack) IndentVisualWidth() uint {
+	var w uint
+	for _, v := range s {
+		if v.Style.Indent == nil {
+			continue
+		}
+		token := " "
+		if v.Style.IndentToken != nil {
+			token = *v.Style.IndentToken
+		}
+		w += uint(runewidth.StringWidth(token)) * (*v.Style.Indent) //nolint:gosec // G115: token widths are small, overflow impossible in practice
+	}
+	return w
+}
+
 // Margin returns the current margin level of all elements in the stack.
 func (s BlockStack) Margin() uint {
 	var i uint
@@ -59,10 +80,12 @@ func (s BlockStack) Margin() uint {
 
 // Width returns the available rendering width.
 func (s BlockStack) Width(ctx RenderContext) uint {
-	if s.Indent()+s.Margin()*2 > uint(ctx.options.WordWrap) { //nolint: gosec
+	indentW := s.IndentVisualWidth()
+	marginW := s.Margin() * 2
+	if indentW+marginW > uint(ctx.options.WordWrap) { //nolint: gosec
 		return 0
 	}
-	return uint(ctx.options.WordWrap) - s.Indent() - s.Margin()*2 //nolint: gosec
+	return uint(ctx.options.WordWrap) - indentW - marginW //nolint: gosec
 }
 
 // Parent returns the current BlockElement's parent.

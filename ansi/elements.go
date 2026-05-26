@@ -82,12 +82,13 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 			Finisher: &ParagraphElement{},
 		}
 
-	// Blockquote
+		// Blockquote
 	case ast.KindBlockquote:
 		e := &BlockElement{
-			Block:  &bytes.Buffer{},
-			Style:  cascadeStyle(ctx.blockStack.Current().Style, ctx.options.Styles.BlockQuote, false),
-			Margin: true,
+			Block:        &bytes.Buffer{},
+			Style:        cascadeStyle(ctx.blockStack.Current().Style, ctx.options.Styles.BlockQuote, false),
+			Margin:       true,
+			SkipWordwrap: true, // paragraph children already word-wrap
 		}
 		return Element{
 			Entering: "\n",
