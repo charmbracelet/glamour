@@ -144,3 +144,33 @@ func TestRendererIssues(t *testing.T) {
 		})
 	}
 }
+
+func TestEscapeReplacer(t *testing.T) {
+	// Any ASCII punctuation character may be backslash-escaped in CommonMark,
+	// and glamour must strip the backslash for all of them. The previous list
+	// was missing several; \~ (issue #503) is the most visible since ~ is used
+	// for strikethrough.
+	cases := map[string]string{
+		`\~`: `~`,
+		`\"`: `"`,
+		`\$`: `$`,
+		`\%`: `%`,
+		`\&`: `&`,
+		`\'`: `'`,
+		`\,`: `,`,
+		`\/`: `/`,
+		`\:`: `:`,
+		`\;`: `;`,
+		`\=`: `=`,
+		`\?`: `?`,
+		`\@`: `@`,
+		`\^`: `^`,
+		`\*`: `*`, // already worked; guards against regression
+		`\\`: `\`,
+	}
+	for in, want := range cases {
+		if got := escapeReplacer.Replace(in); got != want {
+			t.Errorf("escapeReplacer.Replace(%q) = %q, want %q", in, got, want)
+		}
+	}
+}
