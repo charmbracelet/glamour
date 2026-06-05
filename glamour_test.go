@@ -12,6 +12,7 @@ import (
 
 	"charm.land/glamour/v2/ansi"
 	"charm.land/glamour/v2/styles"
+	xansi "github.com/charmbracelet/x/ansi"
 	"github.com/charmbracelet/x/exp/golden"
 )
 
@@ -109,6 +110,42 @@ func TestWithPreservedNewLines(t *testing.T) {
 	}
 
 	golden.RequireEqual(t, []byte(b))
+}
+
+func TestWithTableFitContent(t *testing.T) {
+	const wrap = 120
+	in := "| Name | Age | City |\n" +
+		"|------|-----|------|\n" +
+		"| Kini | 40  | NYC  |\n"
+
+	maxWidth := func(t *testing.T, opts ...TermRendererOption) int {
+		t.Helper()
+		r, err := NewTermRenderer(append([]TermRendererOption{WithWordWrap(wrap)}, opts...)...)
+		if err != nil {
+			t.Fatal(err)
+		}
+		out, err := r.Render(in)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var w int
+		for _, line := range strings.Split(out, "\n") {
+			w = max(w, xansi.StringWidth(strings.TrimRight(line, " ")))
+		}
+		return w
+	}
+
+	// Without the option, the table expands to (nearly) fill the wrap width.
+	full := maxWidth(t)
+	if full < wrap-1 {
+		t.Errorf("expected table to fill the wrap width, got max line width %d (wrap %d)", full, wrap)
+	}
+
+	// With the option, the table only takes the space its content needs.
+	fit := maxWidth(t, WithTableFitContent())
+	if fit >= full {
+		t.Errorf("expected fit-to-content table (%d) to be narrower than the full-width table (%d)", fit, full)
+	}
 }
 
 func TestStyles(t *testing.T) {
