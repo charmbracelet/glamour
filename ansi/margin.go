@@ -32,7 +32,7 @@ func NewMarginWriter(ctx RenderContext, w io.Writer, rules StyleBlock) *MarginWr
 		margin = *rules.Margin
 	}
 
-	pw := NewPaddingWriter(w, int(bs.Width(ctx)), func(_ io.Writer) { //nolint:gosec
+	pw := NewPaddingWriter(w, int(bs.Width(ctx)), func(_ io.Writer) {
 		_, _ = renderText(w, rules.StylePrimitive, " ")
 	})
 
@@ -40,7 +40,7 @@ func NewMarginWriter(ctx RenderContext, w io.Writer, rules StyleBlock) *MarginWr
 	if rules.IndentToken != nil {
 		ic = *rules.IndentToken
 	}
-	iw := NewIndentWriter(pw, int(indentation+margin), func(_ io.Writer) { //nolint:gosec
+	iw := NewIndentWriter(pw, int(indentation+margin), func(_ io.Writer) {
 		_, _ = renderText(w, bs.Parent().Style.StylePrimitive, ic)
 	})
 
