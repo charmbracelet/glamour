@@ -12,7 +12,7 @@ import (
 // TemplateFuncMap contains a few useful template helpers.
 var (
 	TemplateFuncMap = template.FuncMap{
-		"Left": func(values ...interface{}) string {
+		"Left": func(values ...any) string {
 			s := values[0].(string)
 			n := values[1].(int)
 			if n > len(s) {
@@ -21,11 +21,11 @@ var (
 
 			return s[:n]
 		},
-		"Matches": func(values ...interface{}) bool {
+		"Matches": func(values ...any) bool {
 			ok, _ := regexp.MatchString(values[1].(string), values[0].(string))
 			return ok
 		},
-		"Mid": func(values ...interface{}) string {
+		"Mid": func(values ...any) string {
 			s := values[0].(string)
 			l := values[1].(int)
 			if l > len(s) {
@@ -41,7 +41,7 @@ var (
 			}
 			return s[l:]
 		},
-		"Right": func(values ...interface{}) string {
+		"Right": func(values ...any) string {
 			s := values[0].(string)
 			n := len(s) - values[1].(int)
 			if n < 0 {
@@ -50,7 +50,7 @@ var (
 
 			return s[n:]
 		},
-		"Last": func(values ...interface{}) string {
+		"Last": func(values ...any) string {
 			return values[0].([]string)[len(values[0].([]string))-1]
 		},
 		// strings functions
