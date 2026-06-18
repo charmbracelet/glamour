@@ -32,6 +32,9 @@ func (e *EmphasisElement) StyleOverrideRender(w io.Writer, ctx RenderContext, st
 
 func (e *EmphasisElement) doRender(w io.Writer, ctx RenderContext, style StylePrimitive) error {
 	for _, child := range e.Children {
+		if child == nil {
+			continue
+		}
 		if r, ok := child.(StyleOverriderElementRenderer); ok {
 			if err := r.StyleOverrideRender(w, ctx, style); err != nil {
 				return fmt.Errorf("glamour: error rendering with style: %w", err)
