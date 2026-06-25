@@ -38,7 +38,7 @@ func (e *TableElement) printTableLinks(ctx RenderContext) {
 	}
 
 	w := ctx.blockStack.Current().Block
-	termWidth := int(ctx.blockStack.Width(ctx)) //nolint: gosec
+	termWidth := int(ctx.blockStack.Width(ctx))
 
 	renderLinkText := func(link tableLink, position, padding int) string {
 		token := strings.Repeat(" ", padding)
@@ -129,6 +129,9 @@ func (e *TableElement) collectLinksAndImages(ctx RenderContext) error {
 
 		switch n := node.(type) {
 		case *ast.AutoLink:
+			if _, ok := sshURIFromAutolink(n, e.source); ok {
+				return ast.WalkContinue, nil
+			}
 			uri := string(n.URL(e.source))
 			autoLink := tableLink{
 				href:     uri,

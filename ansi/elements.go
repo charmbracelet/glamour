@@ -136,7 +136,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		if node.Parent().(*ast.List).IsOrdered() {
 			e = l
 			if node.Parent().(*ast.List).Start != 1 {
-				e += uint(node.Parent().(*ast.List).Start) - 1 //nolint: gosec
+				e += uint(node.Parent().(*ast.List).Start) - 1
 			}
 		}
 
@@ -169,6 +169,12 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 
 	// Text Elements
 	case ast.KindText:
+		if isSSHURISuffixNode(node, source) {
+			return Element{
+				Renderer: &BaseElement{Token: ""},
+			}
+		}
+
 		n := node.(*ast.Text)
 		s := string(n.Segment.Value(source))
 
@@ -256,6 +262,15 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		n := node.(*ast.AutoLink)
 		u := string(n.URL(source))
 		isFooterLinks := !ctx.options.InlineTableLinks && isInsideTable(node)
+
+		if fullURI, ok := sshURIFromAutolink(n, source); ok {
+			return Element{
+				Renderer: &BaseElement{
+					Token: fullURI,
+					Style: ctx.options.Styles.Text,
+				},
+			}
+		}
 
 		var children []ElementRenderer
 		nn := n.FirstChild()
