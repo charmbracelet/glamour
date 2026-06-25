@@ -323,3 +323,56 @@ func TestWithChromaFormatterCustom(t *testing.T) {
 
 	golden.RequireEqual(t, []byte(b))
 }
+
+func TestListSoftLineBreaks(t *testing.T) {
+	md := "- This shouldn't have\n  a line break\n- This should have\\\n  a line break\n"
+
+	t.Run("default", func(t *testing.T) {
+		r, err := NewTermRenderer(
+			WithStandardStyle(styles.DarkStyle),
+			WithWordWrap(80),
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		out, err := r.Render(md)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		plain := ansiRegex.ReplaceAllString(out, "")
+		if strings.Contains(plain, "have\n  a line break") || strings.Contains(plain, "have\n a line break") {
+			t.Fatalf("expected soft line break in list item to collapse, got:\n%s", plain)
+		}
+		if !strings.Contains(plain, "have a line break") {
+			t.Fatalf("expected collapsed list item text, got:\n%s", plain)
+		}
+		if strings.Contains(plain, "should have a line break") {
+			t.Fatalf("expected hard line break to remain on separate lines, got:\n%s", plain)
+		}
+	})
+
+	t.Run("preserve newlines", func(t *testing.T) {
+		r, err := NewTermRenderer(
+			WithStandardStyle(styles.DarkStyle),
+			WithWordWrap(80),
+			WithPreservedNewLines(),
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		out, err := r.Render("- soft\n  break\n")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		plain := ansiRegex.ReplaceAllString(out, "")
+		if strings.Contains(plain, "soft break") {
+			t.Fatalf("expected soft line break to be preserved, got:\n%s", plain)
+		}
+	})
+}
+
+var ansiRegex = regexp.MustCompile(`\x1b\[[0-9;]*m`)
