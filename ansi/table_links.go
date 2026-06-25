@@ -129,6 +129,9 @@ func (e *TableElement) collectLinksAndImages(ctx RenderContext) error {
 
 		switch n := node.(type) {
 		case *ast.AutoLink:
+			if _, ok := sshURIFromAutolink(n, e.source); ok {
+				return ast.WalkContinue, nil
+			}
 			uri := string(n.URL(e.source))
 			autoLink := tableLink{
 				href:     uri,
