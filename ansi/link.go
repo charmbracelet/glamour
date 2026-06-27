@@ -42,6 +42,9 @@ func (e *LinkElement) Render(w io.Writer, ctx RenderContext) error {
 
 func (e *LinkElement) renderTextPart(w io.Writer, ctx RenderContext) error {
 	for _, child := range e.Children {
+		if child == nil {
+			continue
+		}
 		if r, ok := child.(StyleOverriderElementRenderer); ok { //nolint:nestif
 			var b bytes.Buffer
 			st := ctx.options.Styles.LinkText
