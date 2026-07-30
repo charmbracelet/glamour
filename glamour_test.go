@@ -273,7 +273,7 @@ func ExampleASCIIStyleConfig() {
 	fmt.Println(result)
 
 	// Output:
-	// ..............................................................................
+	// ............................................................................
 	// ...Header.A.............................|.Header.B............................
 	// ..--------------------------------------|-------------------------------------
 	// ...Cell.1...............................|.Cell.2..............................
@@ -322,4 +322,32 @@ func TestWithChromaFormatterCustom(t *testing.T) {
 	}
 
 	golden.RequireEqual(t, []byte(b))
+}
+
+// TestMarginWriterHeapCorruption reproduces a heap corruption in the
+// margin/indent/padding writer chain triggered by WithPreservedNewLines +
+// Document.Margin. The PadFunc and IndentFunc closures in NewMarginWriter
+// capture the constructor's w argument and ignore their io.Writer parameter,
+// causing writes to bypass the WrapWriter chain and land on a possibly reused
+// block-stack buffer.
+func TestMarginWriterHeapCorruption(t *testing.T) {
+	style := styles.DarkStyleConfig
+	margin := uint(2)
+	style.Document.Margin = &margin
+
+	r, err := NewTermRenderer(
+		WithStyles(style),
+		WithWordWrap(78),
+		WithPreservedNewLines(),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	src := "# title\n\npara one\n\npara two\n\n```go\nfmt.Println()\n```\n"
+	for i := range 5000 {
+		if _, err := r.Render(src); err != nil {
+			t.Fatalf("render %d: %v", i, err)
+		}
+	}
 }
