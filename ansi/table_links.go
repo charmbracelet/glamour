@@ -219,10 +219,17 @@ func nodeContent(node ast.Node, source []byte) ([]byte, error) {
 }
 
 func linkDomain(href string) string {
-	if uri, err := url.Parse(href); err == nil {
-		return uri.Hostname()
+	uri, err := url.Parse(href)
+	if err != nil {
+		return "link"
 	}
-	return "link"
+	if uri.Scheme == "mailto" {
+		// mailto: URIs are opaque (no "//host"), so Hostname() always
+		// returns "". Use the parsed opaque part (the address) instead.
+		// See #783.
+		return uri.Opaque
+	}
+	return uri.Hostname()
 }
 
 func linkWithSuffix(tl tableLink, list []tableLink) string {
