@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/yuin/goldmark"
 	emoji "github.com/yuin/goldmark-emoji"
@@ -130,7 +132,12 @@ func WithStylePath(stylePath string) TermRendererOption {
 	return func(tr *TermRenderer) error {
 		styles, err := getDefaultStyle(stylePath)
 		if err != nil {
-			jsonBytes, err := os.ReadFile(stylePath)
+			expandedPath, err := expandTildePath(stylePath)
+			if err != nil {
+				return fmt.Errorf("glamour: error expanding style path: %w", err)
+			}
+
+			jsonBytes, err := os.ReadFile(expandedPath)
 			if err != nil {
 				return fmt.Errorf("glamour: error reading file: %w", err)
 			}
@@ -140,6 +147,27 @@ func WithStylePath(stylePath string) TermRendererOption {
 		tr.ansiOptions.Styles = *styles
 		return nil
 	}
+}
+
+// expandTildePath expands a leading "~" or "~/" in path to the current
+// user's home directory. A shell does this automatically for an unquoted
+// command-line argument, which is why the same style path works with the
+// "-s" flag but not when read verbatim out of a config file. Paths that
+// don't begin with "~" are returned unchanged.
+func expandTildePath(path string) (string, error) {
+	if path != "~" && !strings.HasPrefix(path, "~/") {
+		return path, nil
+	}
+
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("could not determine home directory: %w", err)
+	}
+
+	if path == "~" {
+		return home, nil
+	}
+	return filepath.Join(home, path[2:]), nil
 }
 
 // WithStyles sets a TermRenderer's styles.

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
@@ -168,6 +169,50 @@ func TestCustomStyle(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestWithStylePathExpandsTilde(t *testing.T) {
+	// A shell expands an unquoted "~" argument before the program ever sees
+	// it, which is why the same style path works with "-s" on the command
+	// line but not when read verbatim out of a config file (e.g. glow.yml).
+	// Fake HOME/USERPROFILE so this is portable across OSes without touching
+	// the real home directory.
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
+
+	styleBytes, err := os.ReadFile("testdata/custom.style")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(home, "custom.style"), styleBytes, 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	direct, err := NewTermRenderer(WithStylePath("testdata/custom.style"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	tilde, err := NewTermRenderer(WithStylePath("~/custom.style"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	text, err := os.ReadFile("testdata/example.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want, err := direct.RenderBytes(text)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := tilde.RenderBytes(text)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(want, got) {
+		t.Error("style loaded via a tilde-prefixed path did not match the same style loaded directly")
 	}
 }
 
