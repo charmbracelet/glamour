@@ -36,6 +36,7 @@ type TermRenderer struct {
 	ansiOptions ansi.Options
 	buf         bytes.Buffer
 	renderBuf   bytes.Buffer
+	ansi        *ansi.ANSIRenderer
 }
 
 // Render initializes a new TermRenderer and renders a markdown with a specific
@@ -86,6 +87,7 @@ func NewTermRenderer(options ...TermRendererOption) (*TermRenderer, error) {
 		}
 	}
 	ar := ansi.NewRenderer(tr.ansiOptions)
+	tr.ansi = ar
 	tr.md.SetRenderer(
 		renderer.NewRenderer(
 			renderer.WithNodeRenderers(
@@ -230,6 +232,36 @@ func WithChromaFormatter(formatter string) TermRendererOption {
 	}
 }
 
+// WithImageProtocol sets the graphics protocol used to render images inline.
+// Supported protocols are [ansi.ImageProtocolKitty], [ansi.ImageProtocolSixel],
+// and [ansi.ImageProtocolKittyPlaceholders]. By default, images are rendered
+// as styled text and links only.
+//
+// When [ansi.ImageProtocolKittyPlaceholders] is used, the rendered document
+// contains Unicode placeholders instead of raw graphics sequences, so it can
+// be displayed by cell-based TUI renderers. The image transmission and
+// placement commands must be written to the terminal before displaying the
+// document; retrieve them with [TermRenderer.GraphicsCommands] after
+// rendering.
+func WithImageProtocol(protocol ansi.ImageProtocol) TermRendererOption {
+	return func(tr *TermRenderer) error {
+		tr.ansiOptions.ImageProtocol = protocol
+		return nil
+	}
+}
+
+// WithMaxImageSize limits the size of rendered images to the given number of
+// terminal columns and rows, in addition to the constraints of the
+// surrounding blocks. Zero means no limit. Regardless of this limit, images
+// are never transmitted with more pixels than the terminal can display.
+func WithMaxImageSize(columns, rows int) TermRendererOption {
+	return func(tr *TermRenderer) error {
+		tr.ansiOptions.MaxImageColumns = columns
+		tr.ansiOptions.MaxImageRows = rows
+		return nil
+	}
+}
+
 // WithOptions sets multiple TermRenderer options within a single TermRendererOption.
 func WithOptions(options ...TermRendererOption) TermRendererOption {
 	return func(tr *TermRenderer) error {
@@ -288,6 +320,19 @@ func (tr *TermRenderer) RenderBytes(in []byte) ([]byte, error) {
 	buf.Grow(len(in) * 3)
 	err := tr.md.Convert(in, &buf)
 	return buf.Bytes(), err
+}
+
+// GraphicsCommands returns the out-of-band graphics protocol sequences
+// (image transmission and placement commands) collected during the last
+// render. It is only populated when rendering with
+// [WithImageProtocol] and [ansi.ImageProtocolKittyPlaceholders]; callers
+// must write these sequences to the terminal before displaying the rendered
+// document.
+func (tr *TermRenderer) GraphicsCommands() []string {
+	if tr.ansi == nil {
+		return nil
+	}
+	return tr.ansi.GraphicsCommands()
 }
 
 func getEnvironmentStyle() string {
