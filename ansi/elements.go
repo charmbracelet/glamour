@@ -244,12 +244,13 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 			}
 		}
 
+		skipHref := isFooterLinks || (ctx.options.Styles.Link.Conceal != nil && *ctx.options.Styles.Link.Conceal)
 		return Element{
 			Renderer: &LinkElement{
 				BaseURL:  ctx.options.BaseURL,
 				URL:      string(n.Destination),
 				Children: children,
-				SkipHref: isFooterLinks,
+				SkipHref: skipHref,
 			},
 		}
 	case ast.KindAutoLink:

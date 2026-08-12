@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"charm.land/glamour/v2/ansi"
 	"charm.land/glamour/v2/styles"
 	"github.com/charmbracelet/x/exp/golden"
 )
@@ -322,4 +323,109 @@ func TestWithChromaFormatterCustom(t *testing.T) {
 	}
 
 	golden.RequireEqual(t, []byte(b))
+}
+
+func TestLinkConcealSkipHref(t *testing.T) {
+	input := "[click here](https://example.com)"
+
+	t.Run("conceal true suppresses visible URL", func(t *testing.T) {
+		conceal := true
+		style := ansi.StyleConfig{
+			Link: ansi.StylePrimitive{
+				Conceal: &conceal,
+			},
+		}
+		r, err := NewTermRenderer(
+			WithStyles(style),
+			WithWordWrap(80),
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		out, err := r.Render(input)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// The link text "click here" should be present
+		if !strings.Contains(out, "click here") {
+			t.Errorf("Expected link text 'click here' in output, got: %q", out)
+		}
+
+		// The URL should NOT appear as visible text (strip ANSI/OSC sequences first)
+		stripped := stripOSC8(out)
+		if strings.Contains(stripped, "https://example.com") {
+			t.Errorf("Expected URL to be suppressed with Conceal=true, but found it in output: %q", stripped)
+		}
+	})
+
+	t.Run("conceal false shows visible URL", func(t *testing.T) {
+		conceal := false
+		style := ansi.StyleConfig{
+			Link: ansi.StylePrimitive{
+				Conceal: &conceal,
+			},
+		}
+		r, err := NewTermRenderer(
+			WithStyles(style),
+			WithWordWrap(80),
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		out, err := r.Render(input)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// Both the link text and the URL should be present
+		if !strings.Contains(out, "click here") {
+			t.Errorf("Expected link text 'click here' in output, got: %q", out)
+		}
+
+		stripped := stripOSC8(out)
+		if !strings.Contains(stripped, "https://example.com") {
+			t.Errorf("Expected URL to be visible with Conceal=false, but not found in output: %q", stripped)
+		}
+	})
+
+	t.Run("conceal nil shows visible URL", func(t *testing.T) {
+		style := ansi.StyleConfig{
+			Link: ansi.StylePrimitive{
+				// Conceal not set (nil)
+			},
+		}
+		r, err := NewTermRenderer(
+			WithStyles(style),
+			WithWordWrap(80),
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		out, err := r.Render(input)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// Both the link text and the URL should be present
+		if !strings.Contains(out, "click here") {
+			t.Errorf("Expected link text 'click here' in output, got: %q", out)
+		}
+
+		stripped := stripOSC8(out)
+		if !strings.Contains(stripped, "https://example.com") {
+			t.Errorf("Expected URL to be visible with Conceal=nil, but not found in output: %q", stripped)
+		}
+	})
+}
+
+// stripOSC8 removes OSC 8 hyperlink escape sequences from the string,
+// leaving only the visible text content.
+func stripOSC8(s string) string {
+	// OSC 8 format: \x1b]8;params;uri\x1b\\ or \x1b]8;params;uri\x07
+	re := regexp.MustCompile(`\x1b\]8;[^\x1b\x07]*(?:\x1b\\|\x07)`)
+	return re.ReplaceAllString(s, "")
 }
