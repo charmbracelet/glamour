@@ -1,0 +1,5 @@
+| Name | Age | City |
+|------|-----|------|
+| Kini | 40  | NYC  |
+| Eli  | 30  | LON  |
+| Iris | 20  | PAR  |

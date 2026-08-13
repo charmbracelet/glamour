@@ -64,6 +64,12 @@ func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
 		wrap = *ctx.options.TableWrap
 	}
 	ctx.table.lipgloss = table.New().Width(width).Wrap(wrap)
+	if ctx.options.TableFitContent {
+		// Render the table at its content width, treating the available width as
+		// a maximum. Content that would overflow it wraps or truncates per
+		// WithTableWrap.
+		ctx.table.lipgloss = ctx.table.lipgloss.ContentWidth()
+	}
 
 	if err := e.collectLinksAndImages(ctx); err != nil {
 		return err

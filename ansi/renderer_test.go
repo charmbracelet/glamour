@@ -57,6 +57,8 @@ func TestRenderer(t *testing.T) {
 			case "table_truncate":
 				tableWrap := false
 				options.TableWrap = &tableWrap
+			case "table_fit_content":
+				options.TableFitContent = true
 			case "table_with_inline_links":
 				options.InlineTableLinks = true
 			case "table_with_footer_links", "table_with_footer_links_no_color":
