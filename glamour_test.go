@@ -131,6 +131,20 @@ func TestStyles(t *testing.T) {
 	}
 }
 
+func TestStandardStyleCaseInsensitive(t *testing.T) {
+	for _, name := range []string{"Dark", "DARK", "DRACULA", "Tokyo-Night"} {
+		t.Run(name, func(t *testing.T) {
+			if _, err := NewTermRenderer(WithStandardStyle(name)); err != nil {
+				t.Errorf("expected style %q to resolve case-insensitively, got error: %v", name, err)
+			}
+		})
+	}
+
+	if _, err := NewTermRenderer(WithStandardStyle("does-not-exist")); err == nil {
+		t.Error("expected an error for an unknown style name")
+	}
+}
+
 // TestCustomStyle checks the expected errors with custom styling. We need to
 // support built-in styles and custom style sheets.
 func TestCustomStyle(t *testing.T) {
