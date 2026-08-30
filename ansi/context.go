@@ -5,8 +5,6 @@ import (
 	"html"
 	"io"
 	"strings"
-
-	"github.com/microcosm-cc/bluemonday"
 )
 
 // RenderContext holds the current rendering options and state.
@@ -15,8 +13,6 @@ type RenderContext struct {
 
 	blockStack *BlockStack
 	table      *TableElement
-
-	stripper *bluemonday.Policy
 
 	// pendingImages holds graphics protocol sequences to be written after the
 	// current paragraph block has been fully rendered.
@@ -41,7 +37,6 @@ func NewRenderContext(options Options) RenderContext {
 		options:          options,
 		blockStack:       &BlockStack{},
 		table:            &TableElement{},
-		stripper:         bluemonday.StrictPolicy(),
 		pendingImages:    &[]string{},
 		graphicsCommands: &[]string{},
 	}
@@ -56,7 +51,7 @@ func (ctx RenderContext) imageCachesOf() *imageCaches {
 
 // SanitizeHTML sanitizes HTML content.
 func (ctx RenderContext) SanitizeHTML(s string, trimSpaces bool) string {
-	s = ctx.stripper.Sanitize(s)
+	s = stripTags(s)
 	if trimSpaces {
 		s = strings.TrimSpace(s)
 	}
