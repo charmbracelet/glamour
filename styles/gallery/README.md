@@ -18,6 +18,10 @@ Pronounced _naughty_.
 
 ![Dracula Style](./dracula.png)
 
+## Nord
+
+![Nord Style](./nord.png)
+
 ## Tokyo Night
 
 ![Tokyo Night Style](./tokyo-night.png)
