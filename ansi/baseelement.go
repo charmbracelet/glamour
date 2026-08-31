@@ -78,6 +78,12 @@ func renderText(w io.Writer, rules StylePrimitive, s string) (int, error) { //no
 	if rules.Blink != nil && *rules.Blink {
 		style = style.Blink(true)
 	}
+	if rules.Faint != nil && *rules.Faint {
+		style = style.Faint()
+	}
+	if rules.Conceal != nil && *rules.Conceal {
+		style = style.Conceal(true)
+	}
 
 	n, err := io.WriteString(w, style.Styled(s))
 	if err != nil {
