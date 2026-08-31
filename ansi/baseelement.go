@@ -41,6 +41,13 @@ func renderText(w io.Writer, rules StylePrimitive, s string) (int, error) { //no
 		return 0, nil
 	}
 
+	// Conceal hides the text entirely. It was parsed by [StylePrimitive] but
+	// never applied during rendering, so styles asking to conceal links (or
+	// anything else) were silently ignored. See charmbracelet/glamour#121.
+	if rules.Conceal != nil && *rules.Conceal {
+		return 0, nil
+	}
+
 	// XXX: We're using [ansi.Style] instead of [lipgloss.Style] because
 	// Lip Gloss has a weird bug where it adds spaces when rendering joined
 	// strings. Needs further investigation.
