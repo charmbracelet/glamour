@@ -29,11 +29,20 @@ func (s *BlockStack) Pop() {
 	*s = stack
 }
 
+// SetPrefixWidth records the current list item's rendered prefix width.
+func (s *BlockStack) SetPrefixWidth(width int) {
+	if len(*s) > 0 {
+		(*s)[len(*s)-1].PrefixWidth = width
+	}
+}
+
 // Indent returns the current indentation level of all elements in the stack.
 func (s BlockStack) Indent() uint {
 	var i uint
 
 	for _, v := range s {
+		// Outer indentation consumes width just like style indentation does.
+		i += v.OuterIndent
 		if v.Style.Indent == nil {
 			continue
 		}

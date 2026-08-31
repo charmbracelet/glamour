@@ -37,8 +37,11 @@ func (e *TableElement) printTableLinks(ctx RenderContext) {
 		return
 	}
 
-	w := ctx.blockStack.Current().Block
-	termWidth := int(ctx.blockStack.Width(ctx))
+	ow := ctx.blockStack.Current().Block
+	// Buffer footer links so nested tables can indent every generated line.
+	var footer bytes.Buffer
+	w := io.Writer(&footer)
+	termWidth := max(1, int(ctx.blockStack.Width(ctx))-int(e.OuterIndent))
 
 	renderLinkText := func(link tableLink, position, padding int) string {
 		token := strings.Repeat(" ", padding)
@@ -106,6 +109,18 @@ func (e *TableElement) printTableLinks(ctx RenderContext) {
 		renderString("\n")
 	}
 	renderList(ctx.table.tableImages)
+
+	// The first footer byte is a newline; indent only its following content.
+	if footer.Len() > 0 {
+		lines := strings.Split(footer.String(), "\n")
+		indent := strings.Repeat(" ", int(e.OuterIndent))
+		for i := 1; i < len(lines); i++ {
+			if lines[i] != "" {
+				lines[i] = indent + lines[i]
+			}
+		}
+		_, _ = io.WriteString(ow, strings.Join(lines, "\n"))
+	}
 }
 
 func (e *TableElement) shouldPrintTableLinks(ctx RenderContext) bool {
