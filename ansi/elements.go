@@ -172,7 +172,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		n := node.(*ast.Text)
 		s := string(n.Segment.Value(source))
 
-		if n.HardLineBreak() || (n.SoftLineBreak()) {
+		if n.HardLineBreak() || n.SoftLineBreak() {
 			s += "\n"
 		}
 		return Element{
