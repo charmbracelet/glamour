@@ -23,5 +23,5 @@ func (e *TaskElement) Render(w io.Writer, ctx RenderContext) error {
 		Style:  ctx.options.Styles.Task.StylePrimitive,
 	}
 
-	return el.Render(w, ctx)
+	return renderListItemPrefix(w, ctx, el)
 }
