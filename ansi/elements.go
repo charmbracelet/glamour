@@ -71,8 +71,9 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 	case ast.KindParagraph:
 		if node.Parent() != nil {
 			kind := node.Parent().Kind()
+			// List prose must wrap at the width remaining after its marker.
 			if kind == ast.KindListItem {
-				return Element{}
+				return newListItemParagraphElement(node)
 			}
 		}
 		return Element{
@@ -89,8 +90,12 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 			Style:  cascadeStyle(ctx.blockStack.Current().Style, ctx.options.Styles.BlockQuote, false),
 			Margin: true,
 		}
+		// Place the quote marker beneath the parent item text.
+		if node.Parent() != nil && node.Parent().Kind() == ast.KindListItem {
+			e.OuterIndent = uint(ctx.blockStack.Current().PrefixWidth)
+		}
 		return Element{
-			Entering: "\n",
+			Entering: listItemBlockEntering(node),
 			Renderer: e,
 			Finisher: e,
 		}
@@ -102,21 +107,32 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 			var i uint
 			s.Indent = &i
 		}
+		// The nesting depth determines indentation and newline ownership.
+		nestingLevel := 0
 		n := node.Parent()
 		for n != nil {
 			if n.Kind() == ast.KindList {
-				i := ctx.options.Styles.List.LevelIndent
-				s.Indent = &i
-				break
+				nestingLevel++
 			}
 			n = n.Parent()
 		}
+		if nestingLevel > 0 {
+			// Nested lists use the configured per-level indent as their baseline.
+			i := ctx.options.Styles.List.LevelIndent
+			s.Indent = &i
+		}
 
 		e := &BlockElement{
-			Block:   &bytes.Buffer{},
-			Style:   cascadeStyle(ctx.blockStack.Current().Style, s, false),
-			Margin:  true,
-			Newline: true,
+			Block:  &bytes.Buffer{},
+			Style:  cascadeStyle(ctx.blockStack.Current().Style, s, false),
+			Margin: true,
+			// Deeper lists and terminal tables leave newline ownership to an ancestor.
+			Newline:    nestingLevel < 2 && !listEndsWithTable(node),
+			Prewrapped: true,
+		}
+		if nestingLevel > 0 {
+			// Add only the marker width not already covered by LevelIndent.
+			e.OuterIndent = uint(max(0, ctx.blockStack.Current().PrefixWidth-int(ctx.options.Styles.List.LevelIndent)))
 		}
 		return Element{
 			Entering: "\n",
@@ -141,8 +157,9 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		}
 
 		post := "\n"
-		if (node.LastChild() != nil && node.LastChild().Kind() == ast.KindList) ||
-			node.NextSibling() == nil {
+		// Avoid duplicate separators at list ends and first-level nested closures.
+		if node.NextSibling() == nil ||
+			(node.LastChild() != nil && node.LastChild().Kind() == ast.KindList && listNestingLevel(node.LastChild()) == 1) {
 			post = ""
 		}
 
@@ -338,12 +355,17 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 			line := n.Lines().At(i)
 			s += string(line.Value(source))
 		}
+		e := &CodeBlockElement{
+			Code:     s,
+			Language: string(n.Language(source)),
+		}
+		// Align embedded code after accounting for its configured margin.
+		if node.Parent() != nil && node.Parent().Kind() == ast.KindListItem {
+			e.OuterIndent = listItemBlockIndent(ctx, ctx.options.Styles.CodeBlock.StyleBlock)
+		}
 		return Element{
-			Entering: "\n",
-			Renderer: &CodeBlockElement{
-				Code:     s,
-				Language: string(n.Language(source)),
-			},
+			Entering: listItemBlockEntering(node),
+			Renderer: e,
 		}
 
 	case ast.KindCodeBlock:
@@ -354,11 +376,14 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 			line := n.Lines().At(i)
 			s += string(line.Value(source))
 		}
+		e := &CodeBlockElement{Code: s}
+		// Align embedded code after accounting for its configured margin.
+		if node.Parent() != nil && node.Parent().Kind() == ast.KindListItem {
+			e.OuterIndent = listItemBlockIndent(ctx, ctx.options.Styles.CodeBlock.StyleBlock)
+		}
 		return Element{
-			Entering: "\n",
-			Renderer: &CodeBlockElement{
-				Code: s,
-			},
+			Entering: listItemBlockEntering(node),
+			Renderer: e,
 		}
 
 	case ast.KindCodeSpan:
@@ -378,8 +403,12 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 			table:  table,
 			source: source,
 		}
+		// Tables consume the parent marker width from both position and width.
+		if node.Parent() != nil && node.Parent().Kind() == ast.KindListItem {
+			te.OuterIndent = uint(ctx.blockStack.Current().PrefixWidth)
+		}
 		return Element{
-			Entering: "\n",
+			Entering: listItemBlockEntering(node),
 			Exiting:  "\n",
 			Renderer: te,
 			Finisher: te,
@@ -414,6 +443,17 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 	// HTML Elements
 	case ast.KindHTMLBlock:
 		n := node.(*ast.HTMLBlock)
+		// Direct HTML needs the same marker-aware wrapping as list prose.
+		if node.Parent() != nil && node.Parent().Kind() == ast.KindListItem {
+			e := &ListItemParagraphElement{
+				First: node.PreviousSibling() == nil,
+				Child: &BaseElement{
+					Token: ctx.SanitizeHTML(string(n.Text(source)), true), //nolint: staticcheck
+					Style: ctx.options.Styles.HTMLBlock.StylePrimitive,
+				},
+			}
+			return Element{Renderer: e, Finisher: e}
+		}
 		return Element{
 			Renderer: &BaseElement{
 				Token: ctx.SanitizeHTML(string(n.Text(source)), true), //nolint: staticcheck
@@ -458,11 +498,13 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 			},
 		}
 
-	// Handled by parents
+	// Task checkboxes are handled by their parent list items.
 	case astext.KindTaskCheckBox:
-		// handled by KindListItem
 		return Element{}
 	case ast.KindTextBlock:
+		if node.Parent() != nil && node.Parent().Kind() == ast.KindListItem {
+			return newListItemParagraphElement(node)
+		}
 		return Element{}
 
 	case east.KindEmoji:
@@ -478,4 +520,54 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		fmt.Println("Warning: unhandled element", node.Kind().String())
 		return Element{}
 	}
+}
+
+// newListItemParagraphElement wraps prose relative to its list item prefix.
+func newListItemParagraphElement(node ast.Node) Element {
+	e := &ListItemParagraphElement{First: node.PreviousSibling() == nil}
+	return Element{Renderer: e, Finisher: e}
+}
+
+// listNestingLevel returns the number of ancestor lists around node.
+func listNestingLevel(node ast.Node) int {
+	level := 0
+	for n := node.Parent(); n != nil; n = n.Parent() {
+		if n.Kind() == ast.KindList {
+			level++
+		}
+	}
+	return level
+}
+
+// listEndsWithTable reports whether a list's terminal block is a table, which
+// already provides the trailing newline that closes the list.
+func listEndsWithTable(node ast.Node) bool {
+	for node.Kind() == ast.KindList || node.Kind() == ast.KindListItem {
+		if node.LastChild() == nil {
+			return false
+		}
+		node = node.LastChild()
+	}
+	return node.Kind() == astext.KindTable
+}
+
+// listItemBlockEntering separates an embedded block from preceding item prose.
+func listItemBlockEntering(node ast.Node) string {
+	if node.Parent() != nil && node.Parent().Kind() == ast.KindListItem && node.PreviousSibling() != nil {
+		return "\n\n"
+	}
+	return "\n"
+}
+
+// listItemBlockIndent returns the additional indentation needed after a block's
+// configured layout to align it beneath its parent item text.
+func listItemBlockIndent(ctx RenderContext, style StyleBlock) uint {
+	indent := uint(ctx.blockStack.Current().PrefixWidth)
+	if style.Indent != nil {
+		indent -= min(indent, *style.Indent)
+	}
+	if style.Margin != nil {
+		indent -= min(indent, *style.Margin)
+	}
+	return indent
 }

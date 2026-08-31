@@ -16,6 +16,11 @@ type BlockElement struct {
 	Style   StyleBlock
 	Margin  bool
 	Newline bool
+	// Prewrapped prevents structurally wrapped content from being reflowed.
+	Prewrapped  bool
+	PrefixWidth int
+	// OuterIndent shifts a block without repeating its configured indent token.
+	OuterIndent uint
 }
 
 // Render renders a BlockElement.
@@ -33,19 +38,27 @@ func (e *BlockElement) Finish(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 
 	if e.Margin { //nolint: nestif
-		s := lipgloss.Wrap(
-			bs.Current().Block.String(),
-			int(bs.Width(ctx)),
-			" ,.;-+|",
-		)
+		s := bs.Current().Block.String()
+		// Lists wrap their children while the current item prefix is still known.
+		if !bs.Current().Prewrapped {
+			s = lipgloss.Wrap(s, int(bs.Width(ctx)), " ,.;-+|")
+		}
 
-		mw := NewMarginWriter(ctx, w, bs.Current().Style)
+		ow := w
+		// Apply structural offsets outside the block's configured indent token.
+		if bs.Current().OuterIndent > 0 {
+			iw := NewIndentWriter(w, int(bs.Current().OuterIndent), nil)
+			defer iw.Close() //nolint:errcheck
+			ow = iw
+		}
+
+		mw := NewMarginWriter(ctx, ow, bs.Current().Style)
 		defer mw.Close() //nolint:errcheck
 		if _, err := io.WriteString(mw, s); err != nil {
 			return fmt.Errorf("glamour: error writing to writer: %w", err)
 		}
 
-		if e.Newline {
+		if bs.Current().Newline {
 			if _, err := io.WriteString(mw, "\n"); err != nil {
 				return fmt.Errorf("glamour: error writing to writer: %w", err)
 			}
