@@ -204,6 +204,16 @@ func WithPreservedNewLines() TermRendererOption {
 	}
 }
 
+// WithHyperlinkMode sets how hyperlinks are rendered. Use
+// [ansi.HyperlinkModeInline] when the terminal supports OSC 8 hyperlinks: the
+// link text will be underlined and the URL hidden.
+func WithHyperlinkMode(mode ansi.HyperlinkMode) TermRendererOption {
+	return func(tr *TermRenderer) error {
+		tr.ansiOptions.HyperlinkMode = mode
+		return nil
+	}
+}
+
 // WithEmoji sets a TermRenderer's emoji rendering.
 func WithEmoji() TermRendererOption {
 	return func(tr *TermRenderer) error {
