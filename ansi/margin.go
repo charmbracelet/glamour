@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"strings"
-	"unicode/utf8"
 
 	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/ansi"
@@ -96,39 +95,49 @@ func NewPaddingWriter(w io.Writer, padding int, padFunc PaddingFunc) *PaddingWri
 
 // Write writes to the padding writer.
 func (w *PaddingWriter) Write(p []byte) (int, error) {
-	// Use UTF-8 aware iteration to properly handle multi-byte characters (e.g., CJK)
-	for i := 0; i < len(p); {
-		r, size := utf8.DecodeRune(p[i:])
-		if r == '\n' { //nolint:nestif
-			line := w.cache.String()
-			linew := ansi.StringWidth(line)
-			if w.Padding > 0 && linew < w.Padding {
-				if w.PadFunc != nil {
-					for n := 0; n < w.Padding-linew; n++ {
-						w.PadFunc(w.w)
-					}
-				} else {
-					_, err := io.WriteString(w.w, strings.Repeat(" ", w.Padding-linew))
-					if err != nil {
-						return 0, fmt.Errorf("glamour: error writing padding: %w", err)
-					}
+	// Lines are forwarded whole rather than a rune at a time: only a
+	// newline needs handling, and a newline byte can never appear inside
+	// a multi-byte UTF-8 sequence, so scanning for it is UTF-8 safe
+	// without decoding.
+	total := len(p)
+	for len(p) > 0 {
+		i := bytes.IndexByte(p, '\n')
+		if i < 0 {
+			w.cache.Write(p)
+			if _, err := w.w.Write(p); err != nil {
+				return 0, fmt.Errorf("glamour: error writing bytes: %w", err)
+			}
+			break
+		}
+
+		if i > 0 {
+			w.cache.Write(p[:i])
+			if _, err := w.w.Write(p[:i]); err != nil {
+				return 0, fmt.Errorf("glamour: error writing bytes: %w", err)
+			}
+		}
+
+		linew := ansi.StringWidth(w.cache.String())
+		if w.Padding > 0 && linew < w.Padding {
+			if w.PadFunc != nil {
+				for n := 0; n < w.Padding-linew; n++ {
+					w.PadFunc(w.w)
+				}
+			} else {
+				if _, err := io.WriteString(w.w, strings.Repeat(" ", w.Padding-linew)); err != nil {
+					return 0, fmt.Errorf("glamour: error writing padding: %w", err)
 				}
 			}
-			w.cache.Reset()
-		} else {
-			// Write complete UTF-8 character bytes to cache
-			w.cache.Write(p[i : i+size])
 		}
+		w.cache.Reset()
 
-		// Write complete UTF-8 character bytes to output
-		_, err := w.w.Write(p[i : i+size])
-		if err != nil {
+		if _, err := w.w.Write(p[i : i+1]); err != nil {
 			return 0, fmt.Errorf("glamour: error writing bytes: %w", err)
 		}
-		i += size
+		p = p[i+1:]
 	}
 
-	return len(p), nil
+	return total, nil
 }
 
 // Close closes the [PaddingWriter].
@@ -184,9 +193,12 @@ func (w *IndentWriter) restorePen() {
 
 // Write writes to the indentation writer.
 func (w *IndentWriter) Write(p []byte) (int, error) {
-	// Use UTF-8 aware iteration to properly handle multi-byte characters (e.g., CJK)
-	for i := 0; i < len(p); {
-		r, size := utf8.DecodeRune(p[i:])
+	// Indentation is only ever emitted at the start of a line, so the
+	// rest of the line goes downstream in one Write. A newline byte can
+	// never appear inside a multi-byte UTF-8 sequence, so scanning for
+	// it is UTF-8 safe without decoding.
+	total := len(p)
+	for len(p) > 0 {
 		if !w.skipIndent {
 			w.resetPen()
 			if w.IndentFunc != nil {
@@ -194,8 +206,7 @@ func (w *IndentWriter) Write(p []byte) (int, error) {
 					w.IndentFunc(w.pw)
 				}
 			} else {
-				_, err := io.WriteString(w.pw, strings.Repeat(" ", w.Indent))
-				if err != nil {
+				if _, err := io.WriteString(w.pw, strings.Repeat(" ", w.Indent)); err != nil {
 					return 0, fmt.Errorf("glamour: error writing indentation: %w", err)
 				}
 			}
@@ -204,19 +215,21 @@ func (w *IndentWriter) Write(p []byte) (int, error) {
 			w.restorePen()
 		}
 
-		if r == '\n' {
+		run := p
+		i := bytes.IndexByte(p, '\n')
+		if i < 0 {
+			p = nil
+		} else {
+			run, p = p[:i+1], p[i+1:]
 			w.skipIndent = false
 		}
 
-		// Write complete UTF-8 character bytes to output
-		_, err := w.pw.Write(p[i : i+size])
-		if err != nil {
+		if _, err := w.pw.Write(run); err != nil {
 			return 0, fmt.Errorf("glamour: error writing bytes: %w", err)
 		}
-		i += size
 	}
 
-	return len(p), nil
+	return total, nil
 }
 
 // Close closes the [IndentWriter].
