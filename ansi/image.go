@@ -14,7 +14,9 @@ import (
 	"io"
 	"math"
 	"net/http"
+	"net/url"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -311,7 +313,7 @@ func encodeKittyPlaceholders(url string, config imageConfig, cols, rows int) (gr
 func writeKittyImage(w io.Writer, url string, config imageConfig, cols, rows int, opts *kitty.Options) error {
 	if isFileURL(url) && config.format == "png" && fitsDisplayBox(config.config, cols, rows) {
 		opts.Transmission = kitty.File
-		opts.File = strings.TrimPrefix(url, "file://")
+		opts.File = localImagePath(url)
 		if err := kitty.EncodeGraphics(w, nil, opts); err != nil {
 			return fmt.Errorf("glamour: error encoding kitty image: %w", err)
 		}
@@ -506,7 +508,7 @@ func loadImageConfig(url string) (imageConfig, error) {
 
 func readImageConfig(url string) (imageConfig, error) {
 	if isFileURL(url) {
-		path := strings.TrimPrefix(url, "file://")
+		path := localImagePath(url)
 		f, err := os.Open(path)
 		if err != nil {
 			return imageConfig{}, fmt.Errorf("glamour: error opening image file: %w", err)
@@ -557,7 +559,7 @@ func loadImage(url string) (image.Image, error) {
 		return img, nil
 	}
 
-	path := strings.TrimPrefix(url, "file://")
+	path := localImagePath(url)
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, fmt.Errorf("glamour: error opening image file: %w", err)
@@ -611,6 +613,24 @@ func fetchRemoteImage(url string) ([]byte, error) {
 	remoteImageCache.m[url] = buf
 	remoteImageCache.Unlock()
 	return buf, nil
+}
+
+// localImagePath returns the local file path for the given URL, which can be
+// a plain path or a file:// URL. Windows drive letters are handled, i.e.
+// file:///C:/dir/img.png resolves to C:\dir\img.png on Windows.
+func localImagePath(s string) string {
+	u, err := url.Parse(s)
+	if err != nil || u.Scheme != "file" || u.Path == "" {
+		return strings.TrimPrefix(s, "file://")
+	}
+	p := u.Path
+	// A Windows drive letter is encoded as a leading path segment, e.g.
+	// /C:/dir/img.png.
+	if len(p) >= 3 && p[0] == '/' && p[2] == ':' &&
+		(p[1] >= 'a' && p[1] <= 'z' || p[1] >= 'A' && p[1] <= 'Z') {
+		p = p[1:]
+	}
+	return filepath.FromSlash(p)
 }
 
 // parseHTMLImages extracts <img> tags from HTML and returns an ImageElement
