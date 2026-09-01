@@ -298,6 +298,27 @@ func TestWriteKittyImageTransmission(t *testing.T) {
 	}
 }
 
+func TestLocalImagePath(t *testing.T) {
+	tests := []struct {
+		name string
+		url  string
+		want string
+	}{
+		{"plain path", "/tmp/x/test.png", "/tmp/x/test.png"},
+		{"file url", "file:///tmp/x/test.png", "/tmp/x/test.png"},
+		{"windows drive", "file:///C:/Users/x/test.png", "C:/Users/x/test.png"},
+		{"file url with spaces", "file:///tmp/my%20docs/test.png", "/tmp/my docs/test.png"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := filepath.ToSlash(localImagePath(tc.url)); got != tc.want {
+				t.Errorf("localImagePath(%q) = %q, want %q", tc.url, got, tc.want)
+			}
+		})
+	}
+}
+
 func writePNG(t *testing.T, path string, img image.Image) {
 	t.Helper()
 	f, err := os.Create(path)
