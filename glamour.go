@@ -282,6 +282,10 @@ func (tr *TermRenderer) Render(in string) (string, error) {
 // RenderBytes returns the markdown rendered into a byte slice.
 func (tr *TermRenderer) RenderBytes(in []byte) ([]byte, error) {
 	var buf bytes.Buffer
+	// Styled output runs a few times the size of its markdown source, so
+	// size the buffer up front rather than letting it double its way
+	// there and recopy the document at every step.
+	buf.Grow(len(in) * 3)
 	err := tr.md.Convert(in, &buf)
 	return buf.Bytes(), err
 }

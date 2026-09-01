@@ -14,7 +14,6 @@ import (
 // MarginWriter is a Writer that applies indentation and padding around
 // whatever you write to it.
 type MarginWriter struct {
-	w  io.Writer
 	iw *IndentWriter
 }
 
@@ -47,10 +46,7 @@ func NewMarginWriter(ctx RenderContext, w io.Writer, rules StyleBlock) *MarginWr
 		_, _ = io.WriteString(w, indentCell)
 	})
 
-	return &MarginWriter{
-		w:  lipgloss.NewWrapWriter(w),
-		iw: iw,
-	}
+	return &MarginWriter{iw: iw}
 }
 
 // Write writes to the margin writer and implements [io.Writer].
@@ -64,12 +60,7 @@ func (w *MarginWriter) Write(b []byte) (int, error) {
 
 // Close closes the [MarginWriter].
 func (w *MarginWriter) Close() error {
-	var werr error
-	if c, ok := w.w.(io.WriteCloser); ok {
-		werr = c.Close()
-	}
-
-	return errors.Join(werr, w.iw.Close())
+	return w.iw.Close()
 }
 
 // PaddingFunc is a function that applies padding around whatever you write to it.
