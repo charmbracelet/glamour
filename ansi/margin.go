@@ -32,16 +32,20 @@ func NewMarginWriter(ctx RenderContext, w io.Writer, rules StyleBlock) *MarginWr
 		margin = *rules.Margin
 	}
 
+	// The styled cell is invariant, so build it once here rather than
+	// rederiving the style on every padding column of every line.
+	padCell := styleText(rules.StylePrimitive, " ")
 	pw := NewPaddingWriter(w, int(bs.Width(ctx)), func(_ io.Writer) {
-		_, _ = renderText(w, rules.StylePrimitive, " ")
+		_, _ = io.WriteString(w, padCell)
 	})
 
 	ic := " "
 	if rules.IndentToken != nil {
 		ic = *rules.IndentToken
 	}
+	indentCell := styleText(bs.Parent().Style.StylePrimitive, ic)
 	iw := NewIndentWriter(pw, int(indentation+margin), func(_ io.Writer) {
-		_, _ = renderText(w, bs.Parent().Style.StylePrimitive, ic)
+		_, _ = io.WriteString(w, indentCell)
 	})
 
 	return &MarginWriter{
