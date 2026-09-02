@@ -407,7 +407,7 @@ func isFileURL(url string) bool {
 // same image instead of piling up copies when a document is re-rendered.
 func imageID(url string) int {
 	h := fnv.New32a()
-	_, _ = h.Write([]byte(url))
+	_, _ = io.WriteString(h, url)
 	id := int(h.Sum32() & 0xffffff)
 	if id == 0 {
 		id = 1
