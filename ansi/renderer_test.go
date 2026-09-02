@@ -154,10 +154,49 @@ func TestRendererDoesNotDecodeControlEntitiesAcrossNodes(t *testing.T) {
 	if err := md.Convert([]byte("~~&**#27;**[31mFAKE~~"), &buf); err != nil {
 		t.Fatal(err)
 	}
-	if strings.Contains(buf.String(), "\x1b[31m") {
-		t.Fatalf("rendered source terminal control: %q", buf.String())
+	if got := buf.String(); got != "&#27;[31mFAKE\n" {
+		t.Fatalf("unexpected render: %q", got)
 	}
-	if !strings.Contains(buf.String(), "&#27;[31mFAKE") {
-		t.Fatalf("control reference was not preserved: %q", buf.String())
+}
+
+func TestUnescapeHTMLNumericReferencePolicy(t *testing.T) {
+	tests := []struct {
+		name string
+		in   string
+		want string
+	}{
+		{"decimal escape", "&#27;", "&#27;"},
+		{"hex escape", "&#x1b;", "&#x1b;"},
+		{"uppercase hex escape", "&#X1B;", "&#X1B;"},
+		{"semicolonless decimal escape", "&#27", "&#27"},
+		{"semicolonless hex escape", "&#x1b", "&#x1b"},
+		{"carriage return", "&#13;", "&#13;"},
+		{"delete", "&#127;", "&#127;"},
+		{"C1 control", "&#129;", "&#129;"},
+		{"tab", "&#9;", "\t"},
+		{"newline", "&#10;", "\n"},
+		{"printable", "&#65;", "A"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if got := unescapeHTML(test.in); got != test.want {
+				t.Fatalf("unescapeHTML(%q) = %q, want %q", test.in, got, test.want)
+			}
+		})
+	}
+}
+
+func TestRendererDoesNotDecodeControlEntitiesInHTMLBlock(t *testing.T) {
+	md := goldmark.New()
+	md.SetRenderer(renderer.NewRenderer(
+		renderer.WithNodeRenderers(util.Prioritized(NewRenderer(Options{}), 1000))))
+
+	var buf bytes.Buffer
+	if err := md.Convert([]byte("<div>\n&#27;[31mFAKE\n</div>\n"), &buf); err != nil {
+		t.Fatal(err)
+	}
+	if got := buf.String(); got != "&#27;[31mFAKE" {
+		t.Fatalf("unexpected render: %q", got)
 	}
 }
