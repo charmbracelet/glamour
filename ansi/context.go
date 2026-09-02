@@ -11,8 +11,8 @@ import (
 
 var htmlNumericReference = regexp.MustCompile(`&#(?:[xX][0-9A-Fa-f]+|[0-9]+);?`)
 
-func unescapeHTML(s string) string {
-	s = htmlNumericReference.ReplaceAllStringFunc(s, func(reference string) string {
+func protectHTMLControlReferences(s string) string {
+	return htmlNumericReference.ReplaceAllStringFunc(s, func(reference string) string {
 		if strings.ContainsFunc(html.UnescapeString(reference), func(r rune) bool {
 			return r != '\n' && r != '\t' && unicode.IsControl(r)
 		}) {
@@ -20,7 +20,10 @@ func unescapeHTML(s string) string {
 		}
 		return reference
 	})
-	return html.UnescapeString(s)
+}
+
+func unescapeHTML(s string) string {
+	return html.UnescapeString(protectHTMLControlReferences(s))
 }
 
 // RenderContext holds the current rendering options and state.
@@ -45,6 +48,7 @@ func NewRenderContext(options Options) RenderContext {
 
 // SanitizeHTML sanitizes HTML content.
 func (ctx RenderContext) SanitizeHTML(s string, trimSpaces bool) string {
+	s = protectHTMLControlReferences(s)
 	s = ctx.stripper.Sanitize(s)
 	if trimSpaces {
 		s = strings.TrimSpace(s)
