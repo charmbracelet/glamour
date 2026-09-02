@@ -1,0 +1,17 @@
+{
+    "document": {
+        "background_color": "#ffffff",
+        "color": "#1f2328"
+    },
+    "table": {
+        "row_separator": "-",
+        "column_separator": "|",
+        "center_separator": "+",
+        "odd_row": {
+            "background_color": "#ffffff"
+        },
+        "even_row": {
+            "background_color": "#f6f8fa"
+        }
+    }
+}

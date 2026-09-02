@@ -79,7 +79,7 @@ func (e *TableElement) setStyles(ctx RenderContext) {
 		ctx.table.lipgloss.BaseStyle(baseStyle)
 	}
 
-	ctx.table.lipgloss = ctx.table.lipgloss.StyleFunc(func(_, col int) lipgloss.Style {
+	ctx.table.lipgloss = ctx.table.lipgloss.StyleFunc(func(row, col int) lipgloss.Style {
 		st := lipgloss.NewStyle().Inline(false)
 		// Default Styles
 		st = st.Margin(0, 1)
@@ -99,8 +99,44 @@ func (e *TableElement) setStyles(ctx RenderContext) {
 			// do nothing
 		}
 
+		// Apply alternating row styles to data rows. Header is row -1
+		// (lipgloss table.HeaderRow); data rows are 0-indexed. Visually,
+		// the first data row is "odd" (rowIdx 0), the second is "even"
+		// (rowIdx 1), and so on.
+		if row >= 0 {
+			rowStyle := ctx.options.Styles.Table.OddRow
+			if (row+1)%2 == 0 {
+				rowStyle = ctx.options.Styles.Table.EvenRow
+			}
+			st = applyRowStyle(st, rowStyle)
+		}
+
 		return st
 	})
+}
+
+// applyRowStyle applies a StylePrimitive's color, background, and text
+// attributes to a lipgloss style, preserving any attributes already set.
+func applyRowStyle(st lipgloss.Style, rs StylePrimitive) lipgloss.Style {
+	if rs.BackgroundColor != nil {
+		st = st.Background(lipgloss.Color(*rs.BackgroundColor))
+	}
+	if rs.Color != nil {
+		st = st.Foreground(lipgloss.Color(*rs.Color))
+	}
+	if rs.Bold != nil && *rs.Bold {
+		st = st.Bold(true)
+	}
+	if rs.Italic != nil && *rs.Italic {
+		st = st.Italic(true)
+	}
+	if rs.Faint != nil && *rs.Faint {
+		st = st.Faint(true)
+	}
+	if rs.Underline != nil && *rs.Underline {
+		st = st.Underline(true)
+	}
+	return st
 }
 
 func (e *TableElement) setBorders(ctx RenderContext) {
