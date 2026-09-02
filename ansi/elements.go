@@ -37,6 +37,21 @@ type Element struct {
 	Finisher ElementFinisher
 }
 
+// isFirstChild reports whether node is the first rendered child of its parent.
+// A link reference definition (e.g. "[id]: https://example.com") leaves an empty
+// text block behind in the AST; that node produces no output, so it must not
+// count as a preceding sibling. Otherwise it would make the first heading or
+// paragraph render a spurious leading blank line.
+// See https://github.com/charmbracelet/glamour/issues/304.
+func isFirstChild(node ast.Node) bool {
+	for prev := node.PreviousSibling(); prev != nil; prev = prev.PreviousSibling() {
+		if prev.Kind() != ast.KindTextBlock || prev.ChildCount() > 0 {
+			return false
+		}
+	}
+	return true
+}
+
 // NewElement returns the appropriate render Element for a given node.
 func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 	ctx := tr.context
@@ -59,7 +74,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		n := node.(*ast.Heading)
 		he := &HeadingElement{
 			Level: n.Level,
-			First: node.PreviousSibling() == nil,
+			First: isFirstChild(node),
 		}
 		return Element{
 			Exiting:  "",
@@ -77,7 +92,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		}
 		return Element{
 			Renderer: &ParagraphElement{
-				First: node.PreviousSibling() == nil,
+				First: isFirstChild(node),
 			},
 			Finisher: &ParagraphElement{},
 		}
