@@ -39,7 +39,6 @@ func (e *ParagraphElement) Finish(w io.Writer, ctx RenderContext) error {
 	rules := bs.Current().Style
 
 	mw := NewMarginWriter(ctx, w, rules)
-	defer mw.Close() //nolint:errcheck
 	if len(strings.TrimSpace(bs.Current().Block.String())) > 0 {
 		blk := bs.Current().Block.String()
 		if !ctx.options.PreserveNewLines {
@@ -53,11 +52,22 @@ func (e *ParagraphElement) Finish(w io.Writer, ctx RenderContext) error {
 		}
 		_, _ = io.WriteString(mw, "\n")
 	}
+	if err := mw.Close(); err != nil {
+		return fmt.Errorf("glamour: error closing margin writer: %w", err)
+	}
 
 	_, _ = renderText(w, bs.Current().Style.StylePrimitive, rules.Suffix)
 	_, _ = renderText(w, bs.Parent().Style.StylePrimitive, rules.BlockSuffix)
 
 	bs.Current().Block.Reset()
 	bs.Pop()
+
+	// Flush pending image sequences into the parent block so they are
+	// rendered in order with the surrounding text.
+	if bs.Len() > 0 {
+		if err := ctx.flushPendingImages(bs.Current().Block); err != nil {
+			return err
+		}
+	}
 	return nil
 }
