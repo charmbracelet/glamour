@@ -54,6 +54,9 @@ func (e *LinkElement) renderTextPart(w io.Writer, ctx RenderContext, inline bool
 	}
 
 	for _, child := range e.Children {
+		if child == nil {
+			continue
+		}
 		if r, ok := child.(StyleOverriderElementRenderer); ok { //nolint:nestif
 			var b bytes.Buffer
 			if err := r.StyleOverrideRender(&b, ctx, style); err != nil {
