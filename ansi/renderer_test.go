@@ -144,3 +144,20 @@ func TestRendererIssues(t *testing.T) {
 		})
 	}
 }
+
+func TestRendererDoesNotDecodeControlEntitiesAcrossNodes(t *testing.T) {
+	md := goldmark.New(goldmark.WithExtensions(extension.GFM))
+	md.SetRenderer(renderer.NewRenderer(
+		renderer.WithNodeRenderers(util.Prioritized(NewRenderer(Options{}), 1000))))
+
+	var buf bytes.Buffer
+	if err := md.Convert([]byte("~~&**#27;**[31mFAKE~~"), &buf); err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(buf.String(), "\x1b[31m") {
+		t.Fatalf("rendered source terminal control: %q", buf.String())
+	}
+	if !strings.Contains(buf.String(), "&#27;[31mFAKE") {
+		t.Fatalf("control reference was not preserved: %q", buf.String())
+	}
+}
