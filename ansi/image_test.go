@@ -229,7 +229,8 @@ func TestImageDisplaySize(t *testing.T) {
 		},
 	}
 
-	for _, tc := range tests {
+	for i := range tests {
+		tc := &tests[i]
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := NewRenderContext(tc.opts)
 			cols, rows := imageDisplaySize(tc.width, tc.height, ctx)
