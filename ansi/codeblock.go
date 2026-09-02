@@ -24,8 +24,9 @@ var mutex = sync.Mutex{}
 
 // A CodeBlockElement is used to render code blocks.
 type CodeBlockElement struct {
-	Code     string
-	Language string
+	Code        string
+	Language    string
+	OuterIndent uint
 }
 
 func chromaStyle(style StylePrimitive) string {
@@ -125,7 +126,8 @@ func (e *CodeBlockElement) Render(w io.Writer, ctx RenderContext) error {
 		mutex.Unlock()
 	}
 
-	iw := NewIndentWriter(w, int(indentation+margin), func(_ io.Writer) {
+	// Include the parent list marker offset before the code style's own layout.
+	iw := NewIndentWriter(w, int(e.OuterIndent+indentation+margin), func(_ io.Writer) {
 		_, _ = renderText(w, bs.Current().Style.StylePrimitive, " ")
 	})
 	defer iw.Close() //nolint:errcheck
