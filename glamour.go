@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/yuin/goldmark"
 	emoji "github.com/yuin/goldmark-emoji"
@@ -300,7 +301,7 @@ func getEnvironmentStyle() string {
 }
 
 func getDefaultStyle(style string) (*ansi.StyleConfig, error) {
-	styles, ok := styles.DefaultStyles[style]
+	styles, ok := styles.DefaultStyles[strings.ToLower(style)]
 	if !ok {
 		return nil, fmt.Errorf("%s: style not found", style)
 	}

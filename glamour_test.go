@@ -370,3 +370,73 @@ func TestWithChromaFormatterCustom(t *testing.T) {
 
 	golden.RequireEqual(t, []byte(b))
 }
+
+func TestCaseInsensitiveStyleName(t *testing.T) {
+	// Test that style names are case-insensitive (issue #323)
+	cases := []struct {
+		name  string
+		style string
+	}{
+		{"lowercase", "dark"},
+		{"uppercase", "DARK"},
+		{"mixed case", "Dark"},
+		{"title case", "Dracula"},
+		{"kebab lowercase", "tokyo-night"},
+		{"kebab uppercase", "TOKYO-NIGHT"},
+		{"kebab mixed", "Tokyo-Night"},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			r, err := NewTermRenderer(
+				WithStandardStyle(tc.style),
+			)
+			if err != nil {
+				t.Fatalf("WithStandardStyle(%q) returned error: %v", tc.style, err)
+			}
+
+			in, err := os.ReadFile(markdown)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			_, err = r.Render(string(in))
+			if err != nil {
+				t.Fatalf("Render with style %q returned error: %v", tc.style, err)
+			}
+		})
+	}
+}
+
+func TestCaseInsensitiveStylePath(t *testing.T) {
+	// Test that WithStylePath also handles case-insensitive style names
+	cases := []struct {
+		name     string
+		styleArg string
+	}{
+		{"lowercase", "dark"},
+		{"uppercase", "DARK"},
+		{"mixed case", "Light"},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			r, err := NewTermRenderer(
+				WithStylePath(tc.styleArg),
+			)
+			if err != nil {
+				t.Fatalf("WithStylePath(%q) returned error: %v", tc.styleArg, err)
+			}
+
+			in, err := os.ReadFile(markdown)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			_, err = r.Render(string(in))
+			if err != nil {
+				t.Fatalf("Render with style %q returned error: %v", tc.styleArg, err)
+			}
+		})
+	}
+}
