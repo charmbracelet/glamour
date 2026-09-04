@@ -39,7 +39,7 @@ func main() {
 
 	// While we're at it, let's jot down the detected color profile in the
 	// markdown output while we're at it.
-	fmt.Fprintf(&buf, "\n\nBy the way, this was rendererd as _%s._\n", w.Profile)
+	fmt.Fprintf(&buf, "\n\nBy the way, this was rendered as _%s._\n", w.Profile)
 
 	// Okay, now let's render some markdown.
 	r, err := glamour.NewTermRenderer(glamour.WithEnvironmentConfig())
