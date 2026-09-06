@@ -13,6 +13,19 @@ import (
 	"github.com/yuin/goldmark/util"
 )
 
+// HyperlinkMode controls how hyperlinks are rendered.
+type HyperlinkMode int
+
+const (
+	// HyperlinkModeAuto renders link text followed by the URL in parentheses,
+	// with an OSC 8 hyperlink sequence applied to the URL.
+	HyperlinkModeAuto HyperlinkMode = iota
+	// HyperlinkModeInline renders only the link text, underlined, with an
+	// OSC 8 hyperlink sequence applied to it. The URL is hidden.
+	// Use this when the terminal is known to support OSC 8 hyperlinks.
+	HyperlinkModeInline
+)
+
 // Options is used to configure an ANSIRenderer.
 type Options struct {
 	BaseURL          string
@@ -22,6 +35,7 @@ type Options struct {
 	PreserveNewLines bool
 	Styles           StyleConfig
 	ChromaFormatter  string
+	HyperlinkMode    HyperlinkMode
 }
 
 // ANSIRenderer renders markdown content as ANSI escaped sequences.

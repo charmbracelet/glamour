@@ -27,12 +27,14 @@ func (e *LinkElement) Render(w io.Writer, ctx RenderContext) error {
 	// Make OSC 8 hyperlink token.
 	e.hyperlink, e.resetHyperlink, e.validURL = makeHyperlink(e.URL)
 
-	if !e.SkipText {
-		if err := e.renderTextPart(w, ctx); err != nil {
-			return err
-		}
+	// When inline hyperlinks are enabled and the URL is valid, render only
+	// the link text (underlined, hyperlinked) and hide the URL.
+	inline := ctx.options.HyperlinkMode == HyperlinkModeInline && e.validURL && !e.SkipText
+
+	if err := e.renderTextPart(w, ctx, inline); err != nil {
+		return err
 	}
-	if !e.SkipHref {
+	if !inline && !e.SkipHref {
 		if err := e.renderHrefPart(w, ctx); err != nil {
 			return err
 		}
@@ -40,12 +42,21 @@ func (e *LinkElement) Render(w io.Writer, ctx RenderContext) error {
 	return nil
 }
 
-func (e *LinkElement) renderTextPart(w io.Writer, ctx RenderContext) error {
+func (e *LinkElement) renderTextPart(w io.Writer, ctx RenderContext, inline bool) error {
+	style := ctx.options.Styles.LinkText
+	if inline {
+		underline := true
+		style.Underline = &underline
+	}
+
+	if e.SkipText {
+		return nil
+	}
+
 	for _, child := range e.Children {
 		if r, ok := child.(StyleOverriderElementRenderer); ok { //nolint:nestif
 			var b bytes.Buffer
-			st := ctx.options.Styles.LinkText
-			if err := r.StyleOverrideRender(&b, ctx, st); err != nil {
+			if err := r.StyleOverrideRender(&b, ctx, style); err != nil {
 				return fmt.Errorf("glamour: error rendering with style: %w", err)
 			}
 
@@ -61,7 +72,7 @@ func (e *LinkElement) renderTextPart(w io.Writer, ctx RenderContext) error {
 			token := e.hyperlink + b.String() + e.resetHyperlink
 			el := &BaseElement{
 				Token: token,
-				Style: ctx.options.Styles.LinkText,
+				Style: style,
 			}
 			if err := el.Render(w, ctx); err != nil {
 				return fmt.Errorf("glamour: error rendering: %w", err)

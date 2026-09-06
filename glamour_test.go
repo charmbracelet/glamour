@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"charm.land/glamour/v2/ansi"
 	"charm.land/glamour/v2/styles"
 	"github.com/charmbracelet/x/exp/golden"
 )
@@ -245,6 +246,52 @@ func TestTableAscii(t *testing.T) {
 	nonAsciiChars := nonAsciiRegexp.FindAllString(result, -1)
 	if len(nonAsciiChars) > 0 {
 		t.Errorf("Non-ASCII characters found in output: %v", nonAsciiChars)
+	}
+}
+
+func TestWithHyperlinkModeInline(t *testing.T) {
+	r, err := NewTermRenderer(
+		WithHyperlinkMode(ansi.HyperlinkModeInline),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	b, err := r.Render("[click here](https://charm.land)")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// the URL should not be printed as text
+	if strings.Contains(b, "https://charm.land\x1b]8;;\a") && strings.Contains(b, "https://charm.land https://charm.land") {
+		t.Errorf("expected URL to be hidden, got: %q", b)
+	}
+	// link text should be wrapped in an OSC 8 hyperlink
+	if !strings.Contains(b, "\x1b]8;") || !strings.Contains(b, "click here") {
+		t.Errorf("expected OSC 8 hyperlink around link text, got: %q", b)
+	}
+	// link text should be underlined (SGR 4)
+	if !strings.Contains(b, "\x1b[4m") {
+		t.Errorf("expected link text to be underlined, got: %q", b)
+	}
+}
+
+func TestWithHyperlinkModeAuto(t *testing.T) {
+	r, err := NewTermRenderer(
+		WithHyperlinkMode(ansi.HyperlinkModeAuto),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	b, err := r.Render("[click here](https://charm.land)")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// the URL should be printed as text after the link text
+	if !strings.Contains(b, "click here") || !strings.Contains(b, "https://charm.land") {
+		t.Errorf("expected link text and URL in output, got: %q", b)
 	}
 }
 
