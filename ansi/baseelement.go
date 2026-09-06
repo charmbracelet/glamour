@@ -19,6 +19,8 @@ type BaseElement struct {
 	Prefix string
 	Suffix string
 	Style  StylePrimitive
+	// Literal preserves backslashes in raw content instead of decoding Markdown escapes.
+	Literal bool
 }
 
 func formatToken(format string, token string) (string, error) {
@@ -130,7 +132,10 @@ func (e *BaseElement) doRender(w io.Writer, st1, st2 StylePrimitive) error {
 			return err
 		}
 	}
-	_, _ = renderText(w, st2, escapeReplacer.Replace(s))
+	if !e.Literal {
+		s = escapeReplacer.Replace(s)
+	}
+	_, _ = renderText(w, st2, s)
 	return nil
 }
 

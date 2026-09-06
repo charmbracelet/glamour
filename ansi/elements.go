@@ -416,16 +416,18 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		n := node.(*ast.HTMLBlock)
 		return Element{
 			Renderer: &BaseElement{
-				Token: ctx.SanitizeHTML(string(n.Text(source)), true), //nolint: staticcheck
-				Style: ctx.options.Styles.HTMLBlock.StylePrimitive,
+				Token:   ctx.SanitizeHTML(string(n.Text(source)), true), //nolint: staticcheck
+				Style:   ctx.options.Styles.HTMLBlock.StylePrimitive,
+				Literal: true,
 			},
 		}
 	case ast.KindRawHTML:
 		n := node.(*ast.RawHTML)
 		return Element{
 			Renderer: &BaseElement{
-				Token: ctx.SanitizeHTML(string(n.Text(source)), true), //nolint: staticcheck
-				Style: ctx.options.Styles.HTMLSpan.StylePrimitive,
+				Token:   ctx.SanitizeHTML(string(n.Text(source)), true), //nolint: staticcheck
+				Style:   ctx.options.Styles.HTMLSpan.StylePrimitive,
+				Literal: true,
 			},
 		}
 

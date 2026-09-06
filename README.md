@@ -18,6 +18,10 @@ documents & templates on [ANSI](https://en.wikipedia.org/wiki/ANSI_escape_code)
 compatible terminals. You can create your own stylesheet or simply use one of
 the stylish defaults.
 
+Code blocks preserve literal backslashes with or without syntax highlighting,
+including the `ascii` style. Text retained from HTML also keeps its backslashes;
+ordinary Markdown text continues to interpret backslash escapes.
+
 ## Usage
 
 ```go

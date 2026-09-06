@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"charm.land/glamour/v2/styles"
+	"github.com/charmbracelet/x/ansi"
 	"github.com/charmbracelet/x/exp/golden"
 )
 
@@ -322,4 +323,45 @@ func TestWithChromaFormatterCustom(t *testing.T) {
 	}
 
 	golden.RequireEqual(t, []byte(b))
+}
+
+func TestLiteralMarkdownContentPreservesBackslashes(t *testing.T) {
+	literal := `price: 3\.14; match: foo\+bar; [a\*b]; \\server`
+	cases := map[string]string{
+		"fenced":      "```text\n" + literal + "\n```\n",
+		"indented":    "    " + literal + "\n",
+		"inline code": "`" + literal + "`\n",
+		"HTML block":  "<div>\n" + literal + "\n</div>\n",
+	}
+	for name, input := range cases {
+		for _, style := range []string{"ascii", "dark"} {
+			t.Run(name+"/"+style, func(t *testing.T) {
+				r, err := NewTermRenderer(WithStandardStyle(style), WithWordWrap(200))
+				if err != nil {
+					t.Fatal(err)
+				}
+				output, err := r.Render(input)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if !strings.Contains(ansi.Strip(output), literal) {
+					t.Fatalf("raw content changed: want %q in %q", literal, output)
+				}
+			})
+		}
+	}
+}
+
+func TestProseStillUnescapesBackslashes(t *testing.T) {
+	r, err := NewTermRenderer(WithStyles(styles.ASCIIStyleConfig))
+	if err != nil {
+		t.Fatal(err)
+	}
+	output, err := r.Render(`a\*b and c\+d`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(output, "a*b and c+d") {
+		t.Fatalf("prose did not unescape: %q", output)
+	}
 }
