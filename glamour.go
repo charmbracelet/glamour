@@ -187,6 +187,18 @@ func WithTableWrap(tableWrap bool) TermRendererOption {
 	}
 }
 
+// WithTableFitContent makes tables only as wide as their content needs,
+// instead of expanding to fill the available word wrap width. Tables are still
+// constrained to the word wrap width: content that doesn't fit will wrap or
+// truncate according to WithTableWrap. This is useful for keeping tables
+// compact on very wide terminals.
+func WithTableFitContent() TermRendererOption {
+	return func(tr *TermRenderer) error {
+		tr.ansiOptions.TableFitContent = true
+		return nil
+	}
+}
+
 // WithInlineTableLinks forces tables to render links inline. By default,links
 // are rendered as a list of links at the bottom of the table.
 func WithInlineTableLinks(inlineTableLinks bool) TermRendererOption {

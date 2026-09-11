@@ -51,6 +51,22 @@ out, err := r.Render(in)
 fmt.Print(out)
 ```
 
+### Fitting Tables to Their Content
+
+By default tables expand to fill the word wrap width. On wide terminals this can
+make small tables look stretched. Use `WithTableFitContent` to make tables only
+as wide as their content needs, while still wrapping or truncating anything that
+would exceed the word wrap width:
+
+```go
+r, _ := glamour.NewTermRenderer(
+    // cap tables (and everything else) at the terminal width...
+    glamour.WithWordWrap(terminalWidth),
+    // ...but let tables shrink to fit their content.
+    glamour.WithTableFitContent(),
+)
+```
+
 ### Color Downsampling
 
 Since the renderer is designed to be "pure" and always produce the same output
