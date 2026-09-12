@@ -136,7 +136,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		if node.Parent().(*ast.List).IsOrdered() {
 			e = l
 			if node.Parent().(*ast.List).Start != 1 {
-				e += uint(node.Parent().(*ast.List).Start) - 1 //nolint: gosec
+				e += uint(node.Parent().(*ast.List).Start) - 1
 			}
 		}
 
@@ -172,7 +172,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		n := node.(*ast.Text)
 		s := string(n.Segment.Value(source))
 
-		if n.HardLineBreak() || (n.SoftLineBreak()) {
+		if n.HardLineBreak() || n.SoftLineBreak() {
 			s += "\n"
 		}
 		return Element{
@@ -415,7 +415,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 	case ast.KindHTMLBlock:
 		n := node.(*ast.HTMLBlock)
 		return Element{
-			Renderer: &BaseElement{
+			Renderer: &literalElement{
 				Token: ctx.SanitizeHTML(string(n.Text(source)), true), //nolint: staticcheck
 				Style: ctx.options.Styles.HTMLBlock.StylePrimitive,
 			},
@@ -423,7 +423,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 	case ast.KindRawHTML:
 		n := node.(*ast.RawHTML)
 		return Element{
-			Renderer: &BaseElement{
+			Renderer: &literalElement{
 				Token: ctx.SanitizeHTML(string(n.Text(source)), true), //nolint: staticcheck
 				Style: ctx.options.Styles.HTMLSpan.StylePrimitive,
 			},

@@ -41,6 +41,22 @@ func renderText(w io.Writer, rules StylePrimitive, s string) (int, error) { //no
 		return 0, nil
 	}
 
+	n, err := io.WriteString(w, styleText(rules, s))
+	if err != nil {
+		return n, fmt.Errorf("glamour: error writing to writer: %w", err)
+	}
+	return n, nil
+}
+
+// styleText applies rules to s and returns the styled string. Split out
+// of renderText so callers that write the same styled text repeatedly
+// (padding and indent runs, which emit one cell at a time) can build it
+// once instead of rederiving the style on every cell.
+func styleText(rules StylePrimitive, s string) string {
+	if len(s) == 0 {
+		return ""
+	}
+
 	// XXX: We're using [ansi.Style] instead of [lipgloss.Style] because
 	// Lip Gloss has a weird bug where it adds spaces when rendering joined
 	// strings. Needs further investigation.
@@ -79,32 +95,35 @@ func renderText(w io.Writer, rules StylePrimitive, s string) (int, error) { //no
 		style = style.Blink(true)
 	}
 
-	n, err := io.WriteString(w, style.Styled(s))
-	if err != nil {
-		return n, fmt.Errorf("glamour: error writing to writer: %w", err)
-	}
-
-	return n, nil
+	return style.Styled(s)
 }
 
 // StyleOverrideRender renders a BaseElement with an overridden style.
 func (e *BaseElement) StyleOverrideRender(w io.Writer, ctx RenderContext, style StylePrimitive) error {
+	return e.styleOverrideRender(w, ctx, style, false)
+}
+
+func (e *BaseElement) styleOverrideRender(w io.Writer, ctx RenderContext, style StylePrimitive, literal bool) error {
 	bs := ctx.blockStack
 	st1 := cascadeStylePrimitives(bs.Current().Style.StylePrimitive, style)
 	st2 := cascadeStylePrimitives(bs.With(e.Style), style)
 
-	return e.doRender(w, st1, st2)
+	return e.doRender(w, st1, st2, literal)
 }
 
 // Render renders a BaseElement.
 func (e *BaseElement) Render(w io.Writer, ctx RenderContext) error {
+	return e.render(w, ctx, false)
+}
+
+func (e *BaseElement) render(w io.Writer, ctx RenderContext, literal bool) error {
 	bs := ctx.blockStack
 	st1 := bs.Current().Style.StylePrimitive
 	st2 := bs.With(e.Style)
-	return e.doRender(w, st1, st2)
+	return e.doRender(w, st1, st2, literal)
 }
 
-func (e *BaseElement) doRender(w io.Writer, st1, st2 StylePrimitive) error {
+func (e *BaseElement) doRender(w io.Writer, st1, st2 StylePrimitive, literal bool) error {
 	_, _ = renderText(w, st1, e.Prefix)
 	defer func() {
 		_, _ = renderText(w, st1, e.Suffix)
@@ -130,7 +149,10 @@ func (e *BaseElement) doRender(w io.Writer, st1, st2 StylePrimitive) error {
 			return err
 		}
 	}
-	_, _ = renderText(w, st2, escapeReplacer.Replace(s))
+	if !literal {
+		s = escapeReplacer.Replace(s)
+	}
+	_, _ = renderText(w, st2, s)
 	return nil
 }
 
