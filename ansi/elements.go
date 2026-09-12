@@ -415,7 +415,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 	case ast.KindHTMLBlock:
 		n := node.(*ast.HTMLBlock)
 		return Element{
-			Renderer: &BaseElement{
+			Renderer: &literalElement{
 				Token: ctx.SanitizeHTML(string(n.Text(source)), true), //nolint: staticcheck
 				Style: ctx.options.Styles.HTMLBlock.StylePrimitive,
 			},
@@ -423,7 +423,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 	case ast.KindRawHTML:
 		n := node.(*ast.RawHTML)
 		return Element{
-			Renderer: &BaseElement{
+			Renderer: &literalElement{
 				Token: ctx.SanitizeHTML(string(n.Text(source)), true), //nolint: staticcheck
 				Style: ctx.options.Styles.HTMLSpan.StylePrimitive,
 			},

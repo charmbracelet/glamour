@@ -142,7 +142,7 @@ func (e *CodeBlockElement) Render(w io.Writer, ctx RenderContext) error {
 	}
 
 	// fallback rendering
-	el := &BaseElement{
+	el := &literalElement{
 		Token: e.Code,
 		Style: rules.StylePrimitive,
 	}

@@ -100,22 +100,30 @@ func styleText(rules StylePrimitive, s string) string {
 
 // StyleOverrideRender renders a BaseElement with an overridden style.
 func (e *BaseElement) StyleOverrideRender(w io.Writer, ctx RenderContext, style StylePrimitive) error {
+	return e.styleOverrideRender(w, ctx, style, false)
+}
+
+func (e *BaseElement) styleOverrideRender(w io.Writer, ctx RenderContext, style StylePrimitive, literal bool) error {
 	bs := ctx.blockStack
 	st1 := cascadeStylePrimitives(bs.Current().Style.StylePrimitive, style)
 	st2 := cascadeStylePrimitives(bs.With(e.Style), style)
 
-	return e.doRender(w, st1, st2)
+	return e.doRender(w, st1, st2, literal)
 }
 
 // Render renders a BaseElement.
 func (e *BaseElement) Render(w io.Writer, ctx RenderContext) error {
+	return e.render(w, ctx, false)
+}
+
+func (e *BaseElement) render(w io.Writer, ctx RenderContext, literal bool) error {
 	bs := ctx.blockStack
 	st1 := bs.Current().Style.StylePrimitive
 	st2 := bs.With(e.Style)
-	return e.doRender(w, st1, st2)
+	return e.doRender(w, st1, st2, literal)
 }
 
-func (e *BaseElement) doRender(w io.Writer, st1, st2 StylePrimitive) error {
+func (e *BaseElement) doRender(w io.Writer, st1, st2 StylePrimitive, literal bool) error {
 	_, _ = renderText(w, st1, e.Prefix)
 	defer func() {
 		_, _ = renderText(w, st1, e.Suffix)
@@ -141,7 +149,10 @@ func (e *BaseElement) doRender(w io.Writer, st1, st2 StylePrimitive) error {
 			return err
 		}
 	}
-	_, _ = renderText(w, st2, escapeReplacer.Replace(s))
+	if !literal {
+		s = escapeReplacer.Replace(s)
+	}
+	_, _ = renderText(w, st2, s)
 	return nil
 }
 
