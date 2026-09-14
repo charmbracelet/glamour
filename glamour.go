@@ -262,6 +262,29 @@ func WithMaxImageSize(columns, rows int) TermRendererOption {
 	}
 }
 
+// WithMaxImagePixels limits the number of pixels of images that are decoded
+// and displayed. Images exceeding the limit are skipped, since decoding them
+// can exhaust memory. The limit is checked against the image header before
+// any decoding. Zero applies glamour's default limit; a negative value
+// disables the limit.
+func WithMaxImagePixels(pixels int) TermRendererOption {
+	return func(tr *TermRenderer) error {
+		tr.ansiOptions.MaxImagePixels = pixels
+		return nil
+	}
+}
+
+// WithRemoteImages enables loading images referenced by http(s) URLs.
+// Remote images are disabled by default: fetching them reveals the reader's
+// IP address to the image's host and uses bandwidth, much like a tracking
+// pixel would.
+func WithRemoteImages() TermRendererOption {
+	return func(tr *TermRenderer) error {
+		tr.ansiOptions.LoadRemoteImages = true
+		return nil
+	}
+}
+
 // WithOptions sets multiple TermRenderer options within a single TermRendererOption.
 func WithOptions(options ...TermRendererOption) TermRendererOption {
 	return func(tr *TermRenderer) error {
