@@ -5,13 +5,21 @@ import (
 	"math/rand"
 
 	"bytes"
+	"encoding/base64"
+	"encoding/binary"
 	"encoding/json"
 	"image"
+	"image/gif"
 	"image/png"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"testing"
 
 	"github.com/charmbracelet/x/ansi/kitty"
@@ -256,19 +264,25 @@ func TestDownscaleImage(t *testing.T) {
 }
 
 func TestWriteKittyImageTransmission(t *testing.T) {
+	// File transmission depends on the terminal being on the same machine,
+	// which the environment the tests run in must not influence.
+	t.Setenv("SSH_TTY", "")
+	t.Setenv("SSH_CONNECTION", "")
+	ctx := NewRenderContext(Options{})
+
 	// A PNG that doesn't need resizing must be transmitted by path, without
 	// being decoded or re-encoded.
 	path := filepath.Join(t.TempDir(), "small.png")
 	small := image.NewRGBA(image.Rect(0, 0, 100, 50))
 	writePNG(t, path, small)
-	config, err := loadImageConfig(path)
+	config, err := loadImageConfig(ctx, path)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	var buf bytes.Buffer
 	opts := &kitty.Options{Action: kitty.Transmit, Format: kitty.PNG, Transmission: kitty.Direct, ID: 1, Quite: 2}
-	if err := writeKittyImage(&buf, path, config, 10, 5, opts); err != nil {
+	if err := writeKittyImage(ctx, &buf, path, config, 10, 5, opts); err != nil {
 		t.Fatal(err)
 	}
 	seq := buf.String()
@@ -280,14 +294,14 @@ func TestWriteKittyImageTransmission(t *testing.T) {
 	// directly, in chunks.
 	path2 := filepath.Join(t.TempDir(), "large.png")
 	writePNG(t, path2, noiseImage(512, 512))
-	config2, err := loadImageConfig(path2)
+	config2, err := loadImageConfig(ctx, path2)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	buf.Reset()
 	opts2 := &kitty.Options{Action: kitty.Transmit, Format: kitty.PNG, Transmission: kitty.Direct, ID: 2, Quite: 2}
-	if err := writeKittyImage(&buf, path2, config2, 10, 5, opts2); err != nil {
+	if err := writeKittyImage(ctx, &buf, path2, config2, 10, 5, opts2); err != nil {
 		t.Fatal(err)
 	}
 	seq2 := buf.String()
@@ -296,6 +310,35 @@ func TestWriteKittyImageTransmission(t *testing.T) {
 	}
 	if !strings.Contains(seq2, "m=1;") || !strings.Contains(seq2, "m=0;") {
 		t.Errorf("expected chunked transmission, got: %q", seq2[:min(80, len(seq2))])
+	}
+}
+
+func TestWriteKittyImageTransmissionOverSSH(t *testing.T) {
+	// Over SSH the terminal cannot read local file paths, so images must
+	// be transmitted inline instead, even when a file would be cheaper.
+	t.Setenv("SSH_TTY", "/dev/pts/0")
+	ctx := NewRenderContext(Options{})
+
+	path := filepath.Join(t.TempDir(), "small.png")
+	writePNG(t, path, image.NewRGBA(image.Rect(0, 0, 100, 50)))
+	config, err := loadImageConfig(ctx, path)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var buf bytes.Buffer
+	opts := &kitty.Options{Action: kitty.Transmit, Format: kitty.PNG, Transmission: kitty.Direct, ID: 1, Quite: 2}
+	if err := writeKittyImage(ctx, &buf, path, config, 10, 5, opts); err != nil {
+		t.Fatal(err)
+	}
+	seq := buf.String()
+	if strings.Contains(seq, "t=f") {
+		t.Errorf("expected inline transmission over SSH, got: %q", seq[:min(80, len(seq))])
+	}
+	if !strings.Contains(seq, ";iVBORw") {
+		// Direct transmission sends the image inline, so the sequence must
+		// carry the PNG data itself rather than a file path.
+		t.Errorf("expected inline image data over SSH, got: %q", seq[:min(80, len(seq))])
 	}
 }
 
@@ -317,6 +360,303 @@ func TestLocalImagePath(t *testing.T) {
 				t.Errorf("localImagePath(%q) = %q, want %q", tc.url, got, tc.want)
 			}
 		})
+	}
+}
+
+// renderImage renders in as markdown with the given options and returns the
+// rendered document and its renderer.
+func renderImage(t *testing.T, options Options, in string) (string, *ANSIRenderer) {
+	t.Helper()
+
+	b, err := os.ReadFile("../styles/dark.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal(b, &options.Styles); err != nil {
+		t.Fatal(err)
+	}
+
+	md := goldmark.New(
+		goldmark.WithExtensions(
+			extension.GFM,
+			extension.DefinitionList,
+		),
+		goldmark.WithParserOptions(
+			parser.WithAutoHeadingID(),
+		),
+	)
+
+	ar := NewRenderer(options)
+	md.SetRenderer(
+		renderer.NewRenderer(
+			renderer.WithNodeRenderers(util.Prioritized(ar, 1000))))
+
+	var buf bytes.Buffer
+	if err := md.Convert([]byte(in), &buf); err != nil {
+		t.Fatal(err)
+	}
+	return buf.String(), ar
+}
+
+func TestCheckImageSize(t *testing.T) {
+	tests := []struct {
+		name      string
+		width     int
+		height    int
+		maxPixels int
+		wantOK    bool
+	}{
+		{name: "small image", width: 100, height: 50, wantOK: true},
+		{name: "at default limit", width: 10000, height: 10000, wantOK: true},
+		{name: "over default limit", width: 10001, height: 10000, wantOK: false},
+		{name: "custom limit", width: 100, height: 100, maxPixels: 9999, wantOK: false},
+		{name: "custom limit met", width: 100, height: 100, maxPixels: 10000, wantOK: true},
+		{name: "no limit", width: 100000, height: 100000, maxPixels: -1, wantOK: true},
+		{name: "invalid dimensions", width: 0, height: 100, wantOK: false},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			err := checkImageSize(image.Config{Width: tc.width, Height: tc.height}, tc.maxPixels)
+			if tc.wantOK && err != nil {
+				t.Errorf("expected image to be accepted, got error: %v", err)
+			}
+			if !tc.wantOK && err == nil {
+				t.Error("expected image to be rejected")
+			}
+		})
+	}
+}
+
+// TestImageTooLargeIsSkipped ensures that images whose header declares huge
+// dimensions are never decoded. Without the size check, decoding a GIF like
+// this allocates a full canvas of the declared size, exhausting memory.
+func TestImageTooLargeIsSkipped(t *testing.T) {
+	// A GIF whose logical screen declares a 30000x30000 canvas, i.e. 900
+	// megapixels, but that contains only a single 1x1 pixel frame. Reading
+	// its header reports the huge dimensions without any data to match.
+	var b bytes.Buffer
+	if err := gif.Encode(&b, image.NewRGBA(image.Rect(0, 0, 1, 1)), nil); err != nil {
+		t.Fatal(err)
+	}
+	data := b.Bytes()
+	binary.LittleEndian.PutUint16(data[6:8], 30000)
+	binary.LittleEndian.PutUint16(data[8:10], 30000)
+	path := filepath.Join(t.TempDir(), "huge.gif")
+	if err := os.WriteFile(path, data, 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	out, _ := renderImage(t, Options{ImageProtocol: ImageProtocolKitty}, "![]("+path+")")
+	if strings.Contains(out, "\x1b_G") {
+		t.Errorf("expected oversized image to be skipped, got: %q", out)
+	}
+}
+
+func TestClassifyImageURL(t *testing.T) {
+	tests := []struct {
+		name    string
+		url     string
+		want    imageSourceKind
+		wantErr bool
+	}{
+		{name: "plain path", url: "/tmp/x/img.png", want: imageSourceLocal},
+		{name: "file url", url: "file:///tmp/x/img.png", want: imageSourceLocal},
+		{name: "windows drive", url: "C:/Users/x/img.png", want: imageSourceLocal},
+		{name: "unc path", url: "//server/share/img.png", want: imageSourceLocal},
+		{name: "http", url: "http://example.com/img.png", want: imageSourceRemote},
+		{name: "https", url: "https://example.com/img.png", want: imageSourceRemote},
+		{name: "data", url: "data:image/png;base64,AAAA", want: imageSourceData},
+		{name: "ftp", url: "ftp://example.com/img.png", wantErr: true},
+		{name: "mailto", url: "mailto:x@example.com", wantErr: true},
+		{name: "javascript", url: "javascript:alert(1)", wantErr: true},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := classifyImageURL(tc.url)
+			if tc.wantErr {
+				if err == nil {
+					t.Errorf("expected error, got kind %v", got)
+				}
+				return
+			}
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+			if got != tc.want {
+				t.Errorf("classifyImageURL(%q) = %v, want %v", tc.url, got, tc.want)
+			}
+		})
+	}
+}
+
+func TestDecodeDataURL(t *testing.T) {
+	png := []byte{0x89, 'P', 'N', 'G', '\r', '\n', 0x1a, '\n'}
+
+	tests := []struct {
+		name    string
+		url     string
+		want    []byte
+		wantErr bool
+	}{
+		{
+			name: "base64",
+			url:  "data:image/png;base64," + base64.StdEncoding.EncodeToString(png),
+			want: png,
+		},
+		{
+			name: "percent encoded",
+			url:  "data:image/png," + url.QueryEscape(string(png)),
+			want: png,
+		},
+		{name: "no payload", url: "data:image/png", wantErr: true},
+		{name: "empty payload", url: "data:image/png,", wantErr: true},
+		{name: "invalid base64", url: "data:image/png;base64,****", wantErr: true},
+		{name: "not a data url", url: "http://example.com/img.png", wantErr: true},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := decodeDataURL(tc.url)
+			if tc.wantErr {
+				if err == nil {
+					t.Errorf("expected error, got %v", got)
+				}
+				return
+			}
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+			if !bytes.Equal(got, tc.want) {
+				t.Errorf("decodeDataURL(%q) = %v, want %v", tc.url, got, tc.want)
+			}
+		})
+	}
+}
+
+// TestDataURLImages ensures inline data: images render, since they involve
+// no network access.
+func TestDataURLImages(t *testing.T) {
+	var buf bytes.Buffer
+	if err := png.Encode(&buf, image.NewRGBA(image.Rect(0, 0, 4, 4))); err != nil {
+		t.Fatal(err)
+	}
+	dataURL := "data:image/png;base64," + base64.StdEncoding.EncodeToString(buf.Bytes())
+
+	out, _ := renderImage(t, Options{ImageProtocol: ImageProtocolKitty}, "![]("+dataURL+")")
+	if !strings.Contains(out, "\x1b_G") {
+		t.Errorf("expected data URL image to render, got: %q", out)
+	}
+}
+
+func TestRemoteImages(t *testing.T) {
+	png, err := os.ReadFile(filepath.Join("testdata", "TestImageProtocol", "test.png"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var requests atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		requests.Add(1)
+		w.Header().Set("Content-Type", "image/png")
+		_, _ = w.Write(png)
+	}))
+	defer srv.Close()
+
+	// Remote images are disabled by default: no request is ever made.
+	md := "![](img.png)"
+	out, _ := renderImage(t,
+		Options{ImageProtocol: ImageProtocolKitty, BaseURL: srv.URL + "/"}, md)
+	if requests.Load() != 0 {
+		t.Errorf("expected no requests with remote images disabled, got %d", requests.Load())
+	}
+	if strings.Contains(out, "\x1b_G") {
+		t.Errorf("expected remote image to be skipped, got: %q", out)
+	}
+
+	// When enabled, remote images are fetched and rendered.
+	out, _ = renderImage(t,
+		Options{ImageProtocol: ImageProtocolKitty, LoadRemoteImages: true, BaseURL: srv.URL + "/"}, md)
+	if requests.Load() == 0 {
+		t.Error("expected a request with remote images enabled")
+	}
+	if !strings.Contains(out, "\x1b_G") {
+		t.Errorf("expected remote image to render, got: %q", out)
+	}
+}
+
+func TestRemoteImageSizeLimit(t *testing.T) {
+	t.Run("declared content length", func(t *testing.T) {
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			// Announce more bytes than the limit allows; the download must
+			// be rejected without reading the body.
+			w.Header().Set("Content-Length", strconv.Itoa(maxRemoteImageBytes+1))
+			_, _ = w.Write([]byte("x"))
+		}))
+		defer srv.Close()
+
+		out, _ := renderImage(t,
+			Options{ImageProtocol: ImageProtocolKitty, LoadRemoteImages: true, BaseURL: srv.URL + "/"}, "![](img.png)")
+		if strings.Contains(out, "\x1b_G") {
+			t.Errorf("expected oversized remote image to be skipped, got: %q", out)
+		}
+	})
+
+	t.Run("streamed body", func(t *testing.T) {
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			// Stream more bytes than the limit allows without declaring the
+			// size; the download must be cut off at the limit.
+			_, _ = io.Copy(w, bytes.NewReader(make([]byte, maxRemoteImageBytes+1024)))
+		}))
+		defer srv.Close()
+
+		out, _ := renderImage(t,
+			Options{ImageProtocol: ImageProtocolKitty, LoadRemoteImages: true, BaseURL: srv.URL + "/"}, "![](img.png)")
+		if strings.Contains(out, "\x1b_G") {
+			t.Errorf("expected oversized remote image to be skipped, got: %q", out)
+		}
+	})
+}
+
+func TestPerRendererImageCaches(t *testing.T) {
+	imgPath, err := filepath.Abs(filepath.Join("testdata", "TestImageProtocol", "test.png"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	md := "![](" + imgPath + ")"
+	options := Options{ImageProtocol: ImageProtocolKitty}
+
+	out1, r1 := renderImage(t, options, md)
+	out2, r2 := renderImage(t, options, md)
+
+	// Every renderer gets its own caches, so switching documents releases
+	// the cached images along with the old renderer.
+	if r1.context.options.caches == r2.context.options.caches {
+		t.Error("expected renderers to have separate image caches")
+	}
+	if out1 != out2 {
+		t.Errorf("expected identical output, got %q and %q", out1, out2)
+	}
+
+	// A nil cache must be safe to use, so hand-made render contexts don't
+	// crash: all methods simply skip the cache.
+	var caches *imageCaches
+	caches.setImage("x", nil)
+	if img, ok := caches.image("x"); ok {
+		t.Errorf("expected no cached image, got %v", img)
+	}
+	caches.setConfig("x", imageConfig{})
+	if _, ok := caches.config("x"); ok {
+		t.Error("expected no cached config")
+	}
+	caches.setRemoteData("x", nil)
+	if _, ok := caches.remoteData("x"); ok {
+		t.Error("expected no cached data")
+	}
+	caches.setSequence(sequenceCacheKey{}, graphicsSequences{})
+	if _, ok := caches.sequence(sequenceCacheKey{}); ok {
+		t.Error("expected no cached sequence")
 	}
 }
 

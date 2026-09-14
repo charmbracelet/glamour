@@ -63,6 +63,24 @@ type Options struct {
 	// blocks. Zero means no limit.
 	MaxImageColumns int
 	MaxImageRows    int
+
+	// MaxImagePixels limits the number of pixels of images that are decoded
+	// and displayed. Images exceeding the limit are skipped, since decoding
+	// them can exhaust memory. The limit is checked against the image header
+	// before any pixel decoding. Zero applies [DefaultMaxImagePixels]; a
+	// negative value means no limit.
+	MaxImagePixels int
+
+	// LoadRemoteImages enables loading images referenced by http(s) URLs.
+	// It is disabled by default: fetching remote images reveals the
+	// reader's IP address to the image's host and uses bandwidth, much
+	// like a tracking pixel would.
+	LoadRemoteImages bool
+
+	// caches holds the renderer's image caches. It is set by
+	// NewRenderContext; a nil value means images are loaded without
+	// caching.
+	caches *imageCaches
 }
 
 // ANSIRenderer renders markdown content as ANSI escaped sequences.

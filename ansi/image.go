@@ -3,6 +3,7 @@ package ansi
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"fmt"
 	"hash/fnv"
 	"image"
@@ -38,6 +39,12 @@ const (
 	// kept low because fetching happens synchronously while rendering.
 	httpClientTimeout = 10 * time.Second
 
+	// maxRemoteImageBytes is the maximum size of a remote image download.
+	// Larger downloads are rejected, so a huge image cannot exhaust memory
+	// or block rendering for minutes, and neither can a server that lies
+	// about its content type.
+	maxRemoteImageBytes = 32 << 20 // 32 MiB
+
 	// kittyCellPixelWidth and kittyCellPixelHeight are the assumed physical
 	// pixel dimensions of a terminal cell. Images are transmitted at up to
 	// kittyHiDPIScale times the size of their on-screen box so they stay
@@ -47,6 +54,11 @@ const (
 	kittyCellPixelHeight = 20
 	kittyHiDPIScale      = 2
 )
+
+// DefaultMaxImagePixels is the default value of [Options.MaxImagePixels]:
+// the maximum number of pixels of images that are decoded and displayed.
+// Decoding larger images can exhaust memory, so they are skipped instead.
+const DefaultMaxImagePixels = 100_000_000 // 100 megapixels
 
 var httpClient = &http.Client{
 	Timeout: httpClientTimeout,
@@ -59,28 +71,109 @@ type imageConfig struct {
 	format string
 }
 
-// imageCache is an in-memory cache of decoded images keyed by URL. It avoids
-// re-fetching and re-decoding remote images on every render, which is
-// important for interactive applications (e.g. a TUI pager) that re-render
-// the same document repeatedly.
-var imageCache = struct {
+// imageCaches holds a renderer's image caches: image headers, decoded
+// images, downloaded remote images, and encoded graphics sequences, all
+// keyed by URL. They avoid re-fetching, re-decoding, and re-encoding images
+// on every render, which is important for interactive applications (e.g. a
+// TUI pager) that re-render the same document repeatedly.
+//
+// Each renderer has its own caches, so applications that create a new
+// renderer per document release the cached images when the renderer is
+// garbage collected. All methods are safe to call on a nil *imageCaches;
+// such calls simply skip the cache.
+type imageCaches struct {
 	sync.Mutex
-	m map[string]image.Image
-}{m: make(map[string]image.Image)}
+	configs   map[string]imageConfig
+	images    map[string]image.Image
+	data      map[string][]byte
+	sequences map[sequenceCacheKey]graphicsSequences
+}
 
-// imageConfigCache is an in-memory cache of image headers keyed by URL, so
-// sizing an image doesn't require reading it repeatedly.
-var imageConfigCache = struct {
-	sync.Mutex
-	m map[string]imageConfig
-}{m: make(map[string]imageConfig)}
+// newImageCaches returns an empty set of image caches.
+func newImageCaches() *imageCaches {
+	return &imageCaches{
+		configs:   make(map[string]imageConfig),
+		images:    make(map[string]image.Image),
+		data:      make(map[string][]byte),
+		sequences: make(map[sequenceCacheKey]graphicsSequences),
+	}
+}
 
-// remoteImageCache is an in-memory cache of the raw bytes of remote images,
-// so configuring and decoding an image shares a single fetch.
-var remoteImageCache = struct {
-	sync.Mutex
-	m map[string][]byte
-}{m: make(map[string][]byte)}
+func (c *imageCaches) config(url string) (imageConfig, bool) {
+	if c == nil {
+		return imageConfig{}, false
+	}
+	c.Lock()
+	defer c.Unlock()
+	config, ok := c.configs[url]
+	return config, ok
+}
+
+func (c *imageCaches) setConfig(url string, config imageConfig) {
+	if c == nil {
+		return
+	}
+	c.Lock()
+	defer c.Unlock()
+	c.configs[url] = config
+}
+
+func (c *imageCaches) image(url string) (image.Image, bool) {
+	if c == nil {
+		return nil, false
+	}
+	c.Lock()
+	defer c.Unlock()
+	img, ok := c.images[url]
+	return img, ok
+}
+
+func (c *imageCaches) setImage(url string, img image.Image) {
+	if c == nil {
+		return
+	}
+	c.Lock()
+	defer c.Unlock()
+	c.images[url] = img
+}
+
+func (c *imageCaches) remoteData(url string) ([]byte, bool) {
+	if c == nil {
+		return nil, false
+	}
+	c.Lock()
+	defer c.Unlock()
+	data, ok := c.data[url]
+	return data, ok
+}
+
+func (c *imageCaches) setRemoteData(url string, data []byte) {
+	if c == nil {
+		return
+	}
+	c.Lock()
+	defer c.Unlock()
+	c.data[url] = data
+}
+
+func (c *imageCaches) sequence(key sequenceCacheKey) (graphicsSequences, bool) {
+	if c == nil {
+		return graphicsSequences{}, false
+	}
+	c.Lock()
+	defer c.Unlock()
+	seqs, ok := c.sequences[key]
+	return seqs, ok
+}
+
+func (c *imageCaches) setSequence(key sequenceCacheKey, seqs graphicsSequences) {
+	if c == nil {
+		return
+	}
+	c.Lock()
+	defer c.Unlock()
+	c.sequences[key] = seqs
+}
 
 // sequenceCacheKey uniquely identifies an encoded graphics sequence.
 type sequenceCacheKey struct {
@@ -101,15 +194,6 @@ type graphicsSequences struct {
 	// via [ANSIRenderer.GraphicsCommands].
 	commands []string
 }
-
-// sequenceCache is an in-memory cache of encoded graphics protocol sequences.
-// Encoding an image (especially PNG-encoding for Kitty) is expensive, so
-// caching the resulting sequences avoids re-encoding on every render in
-// interactive applications that re-render the same document repeatedly.
-var sequenceCache = struct {
-	sync.Mutex
-	m map[sequenceCacheKey]graphicsSequences
-}{m: make(map[sequenceCacheKey]graphicsSequences)}
 
 // htmlImgRegex matches <img> tags and captures the src attribute.
 var htmlImgRegex = regexp.MustCompile(`<img[^>]+src=["']([^"']+)["'][^>]*>`)
@@ -183,30 +267,50 @@ func (e *ImageElement) Render(w io.Writer, ctx RenderContext) error {
 // sequences. Encoded sequences are cached so repeated renders of the same
 // image don't re-encode it.
 func (e *ImageElement) graphicsSequence(ctx RenderContext, url string) (graphicsSequences, error) {
-	config, err := loadImageConfig(url)
+	config, err := loadImageConfig(ctx, url)
 	if err != nil {
 		return graphicsSequences{}, fmt.Errorf("glamour: error loading image: %w", err)
+	}
+
+	if err := checkImageSize(config.config, ctx.options.MaxImagePixels); err != nil {
+		return graphicsSequences{}, err
 	}
 
 	cols, rows := imageDisplaySize(config.config.Width, config.config.Height, ctx)
 	key := sequenceCacheKey{url: url, protocol: ctx.options.ImageProtocol, cols: cols, rows: rows}
 
-	sequenceCache.Lock()
-	if seqs, ok := sequenceCache.m[key]; ok {
-		sequenceCache.Unlock()
+	if seqs, ok := ctx.imageCachesOf().sequence(key); ok {
 		return seqs, nil
 	}
-	sequenceCache.Unlock()
 
 	seqs, err := e.encodeGraphics(ctx, url, config, cols, rows)
 	if err != nil {
 		return graphicsSequences{}, err
 	}
 
-	sequenceCache.Lock()
-	sequenceCache.m[key] = seqs
-	sequenceCache.Unlock()
+	ctx.imageCachesOf().setSequence(key, seqs)
 	return seqs, nil
+}
+
+// checkImageSize reports whether an image with the given header dimensions
+// may be decoded, under the given pixel limit. Zero applies
+// [DefaultMaxImagePixels], a negative value means no limit. Checking the
+// header dimensions before decoding keeps oversized images from exhausting
+// memory, no matter how small they are on disk.
+func checkImageSize(config image.Config, maxPixels int) error {
+	if config.Width <= 0 || config.Height <= 0 {
+		return fmt.Errorf("glamour: invalid image dimensions %dx%d", config.Width, config.Height)
+	}
+	if maxPixels < 0 {
+		return nil
+	}
+	if maxPixels == 0 {
+		maxPixels = DefaultMaxImagePixels
+	}
+	if w, h := int64(config.Width), int64(config.Height); w*h > int64(maxPixels) {
+		return fmt.Errorf("glamour: image is too large: %dx%d pixels, limit is %d", config.Width, config.Height, maxPixels)
+	}
+	return nil
 }
 
 // encodeGraphics encodes the image at url into graphics protocol sequences
@@ -226,14 +330,14 @@ func (e *ImageElement) encodeGraphics(ctx RenderContext, url string, config imag
 			Quite:           2,
 		}
 		var buf bytes.Buffer
-		if err := writeKittyImage(&buf, url, config, cols, rows, &opts); err != nil {
+		if err := writeKittyImage(ctx, &buf, url, config, cols, rows, &opts); err != nil {
 			return graphicsSequences{}, err
 		}
 		return graphicsSequences{inline: reserveRows(buf.String(), rows)}, nil
 	case ImageProtocolSixel:
 		// Sixel draws at pixel resolution, so scale the image down to the
 		// target cell dimensions to match the reserved space.
-		img, err := loadImage(url)
+		img, err := loadImage(ctx, url)
 		if err != nil {
 			return graphicsSequences{}, fmt.Errorf("glamour: error loading image: %w", err)
 		}
@@ -246,7 +350,7 @@ func (e *ImageElement) encodeGraphics(ctx RenderContext, url string, config imag
 		seq := "\x1bPq" + sb.String() + "\x1b\\"
 		return graphicsSequences{inline: reserveRows(seq, rows)}, nil
 	case ImageProtocolKittyPlaceholders:
-		return encodeKittyPlaceholders(url, config, cols, rows)
+		return encodeKittyPlaceholders(ctx, url, config, cols, rows)
 	case ImageProtocolNone:
 		return graphicsSequences{}, nil
 	default:
@@ -261,7 +365,7 @@ func (e *ImageElement) encodeGraphics(ctx RenderContext, url string, config imag
 // TUI applications to display images that move with the text while scrolling
 // without re-transmitting the image data.
 // See https://sw.kovidgoyal.net/kitty/graphics-protocol/#unicode-placeholders
-func encodeKittyPlaceholders(url string, config imageConfig, cols, rows int) (graphicsSequences, error) {
+func encodeKittyPlaceholders(ctx RenderContext, url string, config imageConfig, cols, rows int) (graphicsSequences, error) {
 	id := imageID(url)
 
 	// Transmit the image without displaying it.
@@ -273,7 +377,7 @@ func encodeKittyPlaceholders(url string, config imageConfig, cols, rows int) (gr
 		Quite:        2,
 	}
 	var transmit bytes.Buffer
-	if err := writeKittyImage(&transmit, url, config, cols, rows, &opts); err != nil {
+	if err := writeKittyImage(ctx, &transmit, url, config, cols, rows, &opts); err != nil {
 		return graphicsSequences{}, err
 	}
 
@@ -309,9 +413,11 @@ func encodeKittyPlaceholders(url string, config imageConfig, cols, rows int) (gr
 // resizing are transmitted by path so the terminal reads them directly,
 // without any decoding or encoding on this side, and everything else is
 // decoded, downscaled to at most twice the size of the on-screen box, and
-// re-encoded as PNG.
-func writeKittyImage(w io.Writer, url string, config imageConfig, cols, rows int, opts *kitty.Options) error {
-	if isFileURL(url) && config.format == "png" && fitsDisplayBox(config.config, cols, rows) {
+// re-encoded as PNG. Paths are only transmitted when the terminal can
+// read them, i.e. outside of SSH sessions; over SSH the image data is
+// transmitted inline instead.
+func writeKittyImage(ctx RenderContext, w io.Writer, url string, config imageConfig, cols, rows int, opts *kitty.Options) error {
+	if isLocalImage(url) && config.format == "png" && fitsDisplayBox(config.config, cols, rows) && !inSSHSession() {
 		opts.Transmission = kitty.File
 		opts.File = localImagePath(url)
 		if err := kitty.EncodeGraphics(w, nil, opts); err != nil {
@@ -320,7 +426,7 @@ func writeKittyImage(w io.Writer, url string, config imageConfig, cols, rows int
 		return nil
 	}
 
-	img, err := loadImage(url)
+	img, err := loadImage(ctx, url)
 	if err != nil {
 		return fmt.Errorf("glamour: error loading image: %w", err)
 	}
@@ -395,10 +501,51 @@ func reserveRows(seq string, rows int) string {
 	return sb.String()
 }
 
-// isFileURL reports whether url points to a local file rather than a remote
-// resource.
-func isFileURL(url string) bool {
-	return !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://")
+// imageSourceKind classifies image URLs by where the image data comes from.
+type imageSourceKind int
+
+const (
+	imageSourceLocal imageSourceKind = iota
+	imageSourceRemote
+	imageSourceData
+)
+
+// classifyImageURL reports where the image at the given URL comes from.
+// Anything that isn't a local path, an http(s) URL, or a data: URI is an
+// error: URLs like ftp://host/img.png would otherwise be treated as local
+// file names. Single-letter schemes are Windows drive letters, like
+// C:/dir/img.png, and count as local paths.
+func classifyImageURL(s string) (imageSourceKind, error) {
+	u, err := url.Parse(s)
+	if err != nil {
+		return 0, fmt.Errorf("glamour: error parsing image URL: %w", err)
+	}
+	switch u.Scheme {
+	case "", "file":
+		return imageSourceLocal, nil
+	case "http", "https":
+		return imageSourceRemote, nil
+	case "data":
+		return imageSourceData, nil
+	}
+	if len(u.Scheme) == 1 && (u.Scheme[0] >= 'a' && u.Scheme[0] <= 'z' || u.Scheme[0] >= 'A' && u.Scheme[0] <= 'Z') {
+		return imageSourceLocal, nil
+	}
+	return 0, fmt.Errorf("glamour: unsupported image URL scheme %q", u.Scheme)
+}
+
+// isLocalImage reports whether url points to a local file rather than a
+// remote resource or inline data.
+func isLocalImage(url string) bool {
+	kind, err := classifyImageURL(url)
+	return err == nil && kind == imageSourceLocal
+}
+
+// inSSHSession reports whether this process runs inside an SSH session, i.e.
+// whether the terminal runs on another machine. The terminal cannot read
+// local file paths there, so images must be transmitted inline.
+func inSSHSession() bool {
+	return os.Getenv("SSH_TTY") != "" || os.Getenv("SSH_CONNECTION") != ""
 }
 
 // imageID returns a stable, positive identifier for an image URL, fitting in
@@ -487,27 +634,29 @@ func downscaleImage(img image.Image, maxW, maxH int) image.Image {
 
 // loadImageConfig reads an image's dimensions and format from its header,
 // without decoding its pixels. Results are cached per URL.
-func loadImageConfig(url string) (imageConfig, error) {
-	imageConfigCache.Lock()
-	if config, ok := imageConfigCache.m[url]; ok {
-		imageConfigCache.Unlock()
+func loadImageConfig(ctx RenderContext, url string) (imageConfig, error) {
+	if config, ok := ctx.imageCachesOf().config(url); ok {
 		return config, nil
 	}
-	imageConfigCache.Unlock()
 
-	config, err := readImageConfig(url)
+	config, err := readImageConfig(ctx, url)
 	if err != nil {
 		return imageConfig{}, err
 	}
 
-	imageConfigCache.Lock()
-	imageConfigCache.m[url] = config
-	imageConfigCache.Unlock()
+	ctx.imageCachesOf().setConfig(url, config)
 	return config, nil
 }
 
-func readImageConfig(url string) (imageConfig, error) {
-	if isFileURL(url) {
+func readImageConfig(ctx RenderContext, url string) (imageConfig, error) {
+	kind, err := classifyImageURL(url)
+	if err != nil {
+		return imageConfig{}, err
+	}
+
+	var buf []byte
+	switch kind {
+	case imageSourceLocal:
 		path := localImagePath(url)
 		f, err := os.Open(path)
 		if err != nil {
@@ -519,12 +668,21 @@ func readImageConfig(url string) (imageConfig, error) {
 			return imageConfig{}, fmt.Errorf("glamour: error decoding image config: %w", err)
 		}
 		return imageConfig{config: cfg, format: format}, nil
+	case imageSourceData:
+		buf, err = imageData(ctx, url)
+		if err != nil {
+			return imageConfig{}, err
+		}
+	default:
+		if !ctx.options.LoadRemoteImages {
+			return imageConfig{}, fmt.Errorf("glamour: remote images are disabled")
+		}
+		buf, err = fetchRemoteImage(ctx, url)
+		if err != nil {
+			return imageConfig{}, err
+		}
 	}
 
-	buf, err := fetchRemoteImage(url)
-	if err != nil {
-		return imageConfig{}, err
-	}
 	cfg, format, err := image.DecodeConfig(bytes.NewReader(buf))
 	if err != nil {
 		return imageConfig{}, fmt.Errorf("glamour: error decoding image config: %w", err)
@@ -532,57 +690,114 @@ func readImageConfig(url string) (imageConfig, error) {
 	return imageConfig{config: cfg, format: format}, nil
 }
 
-// loadImage loads and decodes an image from a local file path or remote URL.
-// Decoded images are cached in memory so repeated renders don't re-fetch and
-// re-decode them.
-func loadImage(url string) (image.Image, error) {
-	if !isFileURL(url) {
-		imageCache.Lock()
-		if img, ok := imageCache.m[url]; ok {
-			imageCache.Unlock()
+// loadImage loads and decodes an image from a local file, a data: URI, or a
+// remote URL. Decoded images are cached in memory so repeated renders don't
+// re-fetch and re-decode them.
+func loadImage(ctx RenderContext, url string) (image.Image, error) {
+	kind, err := classifyImageURL(url)
+	if err != nil {
+		return nil, err
+	}
+
+	if kind != imageSourceLocal {
+		if img, ok := ctx.imageCachesOf().image(url); ok {
 			return img, nil
 		}
-		imageCache.Unlock()
+	}
 
-		buf, err := fetchRemoteImage(url)
+	var buf []byte
+	switch kind {
+	case imageSourceLocal:
+		path := localImagePath(url)
+		f, err := os.Open(path)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("glamour: error opening image file: %w", err)
 		}
-		img, _, err := image.Decode(bytes.NewReader(buf))
+		defer f.Close() //nolint:errcheck
+
+		img, _, err := image.Decode(f)
 		if err != nil {
 			return nil, fmt.Errorf("glamour: error decoding image: %w", err)
 		}
-
-		imageCache.Lock()
-		imageCache.m[url] = img
-		imageCache.Unlock()
 		return img, nil
+	case imageSourceData:
+		buf, err = imageData(ctx, url)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		if !ctx.options.LoadRemoteImages {
+			return nil, fmt.Errorf("glamour: remote images are disabled")
+		}
+		buf, err = fetchRemoteImage(ctx, url)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	path := localImagePath(url)
-	f, err := os.Open(path)
-	if err != nil {
-		return nil, fmt.Errorf("glamour: error opening image file: %w", err)
-	}
-	defer f.Close() //nolint:errcheck
-
-	img, _, err := image.Decode(f)
+	img, _, err := image.Decode(bytes.NewReader(buf))
 	if err != nil {
 		return nil, fmt.Errorf("glamour: error decoding image: %w", err)
+	}
+
+	if kind != imageSourceLocal {
+		ctx.imageCachesOf().setImage(url, img)
 	}
 	return img, nil
 }
 
-// fetchRemoteImage fetches the bytes of a remote image, checking for
-// unsupported content types. Responses are cached in memory so repeated
-// renders don't re-fetch them.
-func fetchRemoteImage(url string) ([]byte, error) {
-	remoteImageCache.Lock()
-	if buf, ok := remoteImageCache.m[url]; ok {
-		remoteImageCache.Unlock()
+// imageData returns the bytes of the image embedded in the given data: URI,
+// e.g. data:image/png;base64,<base64 data>. Both base64 and percent-encoded
+// payloads are supported; the decoded bytes are cached per URL.
+func imageData(ctx RenderContext, url string) ([]byte, error) {
+	if data, ok := ctx.imageCachesOf().remoteData(url); ok {
+		return data, nil
+	}
+
+	data, err := decodeDataURL(url)
+	if err != nil {
+		return nil, err
+	}
+
+	ctx.imageCachesOf().setRemoteData(url, data)
+	return data, nil
+}
+
+// decodeDataURL decodes the payload of a data: URI. Both base64 payloads,
+// e.g. data:image/png;base64,<base64 data>, and percent-encoded ones are
+// supported; anything else is an error.
+func decodeDataURL(s string) ([]byte, error) {
+	const prefix = "data:"
+	if !strings.HasPrefix(s, prefix) {
+		return nil, fmt.Errorf("glamour: not a data URL: %q", s)
+	}
+	mediaType, payload, found := strings.Cut(s[len(prefix):], ",")
+	if !found || payload == "" {
+		return nil, fmt.Errorf("glamour: data URL without payload")
+	}
+
+	for _, param := range strings.Split(mediaType, ";") {
+		if strings.EqualFold(strings.TrimSpace(param), "base64") {
+			data, err := base64.StdEncoding.DecodeString(payload)
+			if err != nil {
+				return nil, fmt.Errorf("glamour: error decoding base64 data URL: %w", err)
+			}
+			return data, nil
+		}
+	}
+
+	data, err := url.PathUnescape(payload)
+	if err != nil {
+		return nil, fmt.Errorf("glamour: error decoding data URL: %w", err)
+	}
+	return []byte(data), nil
+} // fetchRemoteImage fetches the bytes of a remote image, checking for
+// unsupported content types and rejecting oversized downloads. Responses
+// are cached in memory so repeated renders don't re-fetch them.
+func fetchRemoteImage(ctx RenderContext, url string) ([]byte, error) {
+	if buf, ok := ctx.imageCachesOf().remoteData(url); ok {
 		return buf, nil
 	}
-	remoteImageCache.Unlock()
 
 	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, nil)
 	if err != nil {
@@ -596,11 +811,19 @@ func fetchRemoteImage(url string) ([]byte, error) {
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("glamour: unexpected status code %d fetching image", resp.StatusCode)
 	}
+	if resp.ContentLength > maxRemoteImageBytes {
+		return nil, fmt.Errorf("glamour: remote image is too large (%d bytes, limit is %d)", resp.ContentLength, maxRemoteImageBytes)
+	}
 
 	// Read the body into a buffer so we can inspect the content type.
-	buf, err := io.ReadAll(resp.Body)
+	// The limit keeps a huge image, or a server that never stops
+	// sending, from exhausting memory.
+	buf, err := io.ReadAll(io.LimitReader(resp.Body, maxRemoteImageBytes+1))
 	if err != nil {
 		return nil, fmt.Errorf("glamour: error reading image body: %w", err)
+	}
+	if len(buf) > maxRemoteImageBytes {
+		return nil, fmt.Errorf("glamour: remote image exceeds %d bytes", maxRemoteImageBytes)
 	}
 
 	// Check for SVG which Go's image.Decode cannot handle.
@@ -609,9 +832,7 @@ func fetchRemoteImage(url string) ([]byte, error) {
 		return nil, fmt.Errorf("glamour: SVG images are not supported")
 	}
 
-	remoteImageCache.Lock()
-	remoteImageCache.m[url] = buf
-	remoteImageCache.Unlock()
+	ctx.imageCachesOf().setRemoteData(url, buf)
 	return buf, nil
 }
 
