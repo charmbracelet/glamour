@@ -592,7 +592,7 @@ func TestRemoteImageSizeLimit(t *testing.T) {
 			// Announce more bytes than the limit allows; the download must
 			// be rejected without reading the body.
 			w.Header().Set("Content-Length", strconv.Itoa(maxRemoteImageBytes+1))
-			_, _ = w.Write([]byte("x"))
+			_, _ = io.WriteString(w, "x")
 		}))
 		defer srv.Close()
 
