@@ -673,7 +673,7 @@ func readImageConfig(ctx RenderContext, url string) (imageConfig, error) {
 		if err != nil {
 			return imageConfig{}, err
 		}
-	default:
+	case imageSourceRemote:
 		if !ctx.options.LoadRemoteImages {
 			return imageConfig{}, fmt.Errorf("glamour: remote images are disabled")
 		}
@@ -725,7 +725,7 @@ func loadImage(ctx RenderContext, url string) (image.Image, error) {
 		if err != nil {
 			return nil, err
 		}
-	default:
+	case imageSourceRemote:
 		if !ctx.options.LoadRemoteImages {
 			return nil, fmt.Errorf("glamour: remote images are disabled")
 		}
@@ -791,7 +791,9 @@ func decodeDataURL(s string) ([]byte, error) {
 		return nil, fmt.Errorf("glamour: error decoding data URL: %w", err)
 	}
 	return []byte(data), nil
-} // fetchRemoteImage fetches the bytes of a remote image, checking for
+}
+
+// fetchRemoteImage fetches the bytes of a remote image, checking for
 // unsupported content types and rejecting oversized downloads. Responses
 // are cached in memory so repeated renders don't re-fetch them.
 func fetchRemoteImage(ctx RenderContext, url string) ([]byte, error) {
