@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"net/url"
-	"strings"
 
 	east "github.com/yuin/goldmark-emoji/ast"
 	"github.com/yuin/goldmark/ast"
@@ -217,7 +216,6 @@ func resolveRelativeURL(baseURL string, rel string) string {
 	if u.IsAbs() {
 		return rel
 	}
-	u.Path = strings.TrimPrefix(u.Path, "/")
 
 	base, err := url.Parse(baseURL)
 	if err != nil {

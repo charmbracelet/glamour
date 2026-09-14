@@ -149,14 +149,52 @@ func TestRendererIssues(t *testing.T) {
 }
 
 func TestResolveRelativeURL(t *testing.T) {
-	for _, tc := range []struct{ base, rel, want string }{
-		{"", "cmd/gold/", "cmd/gold/"},
-		{"", "./assets/image.png", "./assets/image.png"},
-		{"https://charm.land", "/libs", "https://charm.land/libs"},
-		{"https://charm.land", "https://example.com", "https://example.com"},
-	} {
-		if got := resolveRelativeURL(tc.base, tc.rel); got != tc.want {
-			t.Errorf("resolveRelativeURL(%q, %q) = %q, want %q", tc.base, tc.rel, got, tc.want)
-		}
+	tests := []struct {
+		name    string
+		baseURL string
+		rel     string
+		want    string
+	}{
+		{"relative path", "file:///tmp/docs/", "img.png", "file:///tmp/docs/img.png"},
+		{"dot relative path", "file:///tmp/docs/", "./img.png", "file:///tmp/docs/img.png"},
+		{"parent path", "file:///tmp/docs/", "../img.png", "file:///tmp/img.png"},
+		{"absolute path", "file:///tmp/docs/", "/img.png", "file:///img.png"},
+		{
+			"absolute path against windows base",
+			"file:///C:/Users/x/docs/",
+			"/img.png",
+			"file:///img.png",
+		},
+		{"http base", "https://example.com/docs/", "img.png", "https://example.com/docs/img.png"},
+		{
+			"http base absolute path",
+			"https://example.com/docs/",
+			"/img.png",
+			"https://example.com/img.png",
+		},
+		{
+			"full url is unchanged",
+			"file:///tmp/docs/",
+			"https://example.com/img.png",
+			"https://example.com/img.png",
+		},
+		{"query and fragment", "file:///tmp/docs/", "img.png?x#y", "file:///tmp/docs/img.png?x#y"},
+		{
+			"scheme relative",
+			"file:///tmp/docs/",
+			"//example.com/img.png",
+			"file://example.com/img.png",
+		},
+		{"unparsable relative url", "file:///tmp/docs/", "://bad", "://bad"},
+		{"empty base url", "", "img.png", "img.png"},
+		{"empty base url dot relative", "", "./assets/image.png", "./assets/image.png"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := resolveRelativeURL(tc.baseURL, tc.rel); got != tc.want {
+				t.Errorf("resolveRelativeURL(%q, %q) = %q, want %q", tc.baseURL, tc.rel, got, tc.want)
+			}
+		})
 	}
 }
