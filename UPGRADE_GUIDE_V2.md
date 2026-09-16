@@ -50,7 +50,7 @@ r, _ := glamour.NewTermRenderer(glamour.WithStylePath("light"))
 // For dark backgrounds (default)
 r, _ := glamour.NewTermRenderer(glamour.WithStylePath("dark"))
 
-// Other built-in styles: "pink", "dracula", "tokyo-night", "ascii"
+// Other built-in styles: "pink", "dracula", "nord", "tokyo-night", "ascii"
 r, _ := glamour.NewTermRenderer(glamour.WithStylePath("dracula"))
 ```
 
