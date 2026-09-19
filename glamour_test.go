@@ -370,3 +370,48 @@ func TestWithChromaFormatterCustom(t *testing.T) {
 
 	golden.RequireEqual(t, []byte(b))
 }
+
+func TestHyperlinkAnchorIDs(t *testing.T) {
+	const target = "https://example.com"
+	opening := regexp.MustCompile(`\x1b\]8;id=([^;]+);https://example\.com\x07`)
+	for _, tc := range []struct {
+		name     string
+		markdown string
+		mode     ansi.HyperlinkMode
+		anchors  int
+	}{
+		{"links", "[First](" + target + ")\n\n[Second](" + target + ")", ansi.HyperlinkModeAuto, 2},
+		{"inline links", "[First](" + target + ") [Second](" + target + ")", ansi.HyperlinkModeInline, 2},
+		{"styled link", "[First **bold** last](" + target + ")", ansi.HyperlinkModeInline, 1},
+		{"wrapped link", "[First second third fourth fifth sixth](" + target + ")", ansi.HyperlinkModeInline, 1},
+		{"autolinks", "<" + target + "> <" + target + ">", ansi.HyperlinkModeAuto, 2},
+		{"images", "![First](" + target + ") ![Second](" + target + ")", ansi.HyperlinkModeAuto, 2},
+		{"mixed", "[Link](" + target + ") ![Image](" + target + ")", ansi.HyperlinkModeAuto, 2},
+		{"table footer", "| A | B |\n| - | - |\n| [First](" + target + ") | [Second](" + target + ") |", ansi.HyperlinkModeAuto, 4},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			r, err := NewTermRenderer(WithWordWrap(24), WithHyperlinkMode(tc.mode))
+			if err != nil {
+				t.Fatal(err)
+			}
+			out, err := r.Render(tc.markdown)
+			if err != nil {
+				t.Fatal(err)
+			}
+			ids := make(map[string]struct{})
+			for _, match := range opening.FindAllStringSubmatch(out, -1) {
+				ids[match[1]] = struct{}{}
+			}
+			if len(ids) != tc.anchors {
+				t.Errorf("got %d anchor IDs, want %d in %q", len(ids), tc.anchors, out)
+			}
+			again, err := r.Render(tc.markdown)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if again != out {
+				t.Error("rendering the same document changed its output")
+			}
+		})
+	}
+}
