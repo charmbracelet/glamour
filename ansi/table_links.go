@@ -60,7 +60,7 @@ func (e *TableElement) printTableLinks(ctx RenderContext) {
 	}
 
 	renderLinkHref := func(link tableLink, linkText string) {
-		hyperlink, resetHyperlink, _ := makeHyperlink(link.href)
+		hyperlink, resetHyperlink, _ := ctx.makeHyperlink(link.href)
 
 		style := ctx.options.Styles.Link
 		if link.linkType == linkTypeImage {
