@@ -91,7 +91,7 @@ There are a few options for using a custom style:
 1. Set the `GLAMOUR_STYLE` environment variable to your desired default style or a file location for a style and call `glamour.RenderWithEnvironmentConfig(inputText)`
 1. Set the `GLAMOUR_STYLE` environment variable and pass `glamour.WithEnvironmentConfig()` to your custom renderer
 
-## Glamourous Projects
+## Glamorous Projects
 
 Check out these projects, which use `glamour`:
 
