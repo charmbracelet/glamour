@@ -1,0 +1,16 @@
+{
+    "code_block": {
+        "color": "200"
+    },
+    "code": {
+        "color": "200"
+    },
+    "image": {
+        "color": "123",
+        "block_prefix": "[Image: ",
+        "block_suffix": "]"
+    },
+    "image_text": {
+        "color": "8"
+    }
+}
