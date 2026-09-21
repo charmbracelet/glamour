@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"hash/fnv"
 	"image"
@@ -63,6 +64,17 @@ const DefaultMaxImagePixels = 100_000_000 // 100 megapixels
 var httpClient = &http.Client{
 	Timeout: httpClientTimeout,
 }
+
+// errRemoteImagesDisabled is wrapped into the error returned when an image
+// is not loaded because loading remote images is disabled (see
+// [Options.LoadRemoteImages]). Callers can match it with errors.Is, e.g. to
+// render a hint of their own.
+var errRemoteImagesDisabled = errors.New("remote images are disabled")
+
+// defaultRemoteImageNotLoadedNote is appended after the URL of a remote
+// image that was not loaded because loading remote images is disabled. It
+// starts with a space because it directly follows the URL.
+const defaultRemoteImageNotLoadedNote = " (not loaded: remote image loading is disabled)"
 
 // imageConfig holds an image's dimensions and encoded format, as read from
 // its header without decoding the pixels.
@@ -248,8 +260,26 @@ func (e *ImageElement) Render(w io.Writer, ctx RenderContext) error {
 	if ctx.options.ImageProtocol != ImageProtocolNone {
 		seqs, err := e.graphicsSequence(ctx, url)
 		if err != nil {
-			// Silently skip images that fail to load or encode. The
-			// alt text and link are already rendered above.
+			// The alt text and URL are already rendered above. When a
+			// remote image wasn't loaded because loading remote images is
+			// disabled, tell the reader, so a missing image isn't mistaken
+			// for an image that failed to load. Other errors are skipped
+			// silently, and the link remains.
+			if errors.Is(err, errRemoteImagesDisabled) {
+				note := defaultRemoteImageNotLoadedNote
+				if ctx.options.RemoteImageNotLoadedNote != nil {
+					note = *ctx.options.RemoteImageNotLoadedNote
+				}
+				if note != "" {
+					el := &BaseElement{
+						Token: note,
+						Style: ctx.options.Styles.Image,
+					}
+					if noteErr := el.Render(w, ctx); noteErr != nil {
+						return noteErr
+					}
+				}
+			}
 			return nil //nolint:nilerr
 		}
 		if seqs.inline != "" {
@@ -675,7 +705,7 @@ func readImageConfig(ctx RenderContext, url string) (imageConfig, error) {
 		}
 	case imageSourceRemote:
 		if !ctx.options.LoadRemoteImages {
-			return imageConfig{}, fmt.Errorf("glamour: remote images are disabled")
+			return imageConfig{}, fmt.Errorf("glamour: %w", errRemoteImagesDisabled)
 		}
 		buf, err = fetchRemoteImage(ctx, url)
 		if err != nil {
@@ -727,7 +757,7 @@ func loadImage(ctx RenderContext, url string) (image.Image, error) {
 		}
 	case imageSourceRemote:
 		if !ctx.options.LoadRemoteImages {
-			return nil, fmt.Errorf("glamour: remote images are disabled")
+			return nil, fmt.Errorf("glamour: %w", errRemoteImagesDisabled)
 		}
 		buf, err = fetchRemoteImage(ctx, url)
 		if err != nil {

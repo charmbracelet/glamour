@@ -77,6 +77,13 @@ type Options struct {
 	// like a tracking pixel would.
 	LoadRemoteImages bool
 
+	// RemoteImageNotLoadedNote is appended right after the URL of a remote
+	// image that was not loaded because LoadRemoteImages is disabled. A nil
+	// value renders a generic note; an empty string renders none, which is
+	// useful for applications that load the images in a second pass and
+	// don't want to claim they were not loaded in between.
+	RemoteImageNotLoadedNote *string
+
 	// caches holds the renderer's image caches. It is set by
 	// NewRenderContext; a nil value means images are loaded without
 	// caching.

@@ -285,6 +285,19 @@ func WithRemoteImages() TermRendererOption {
 	}
 }
 
+// WithRemoteImageNotLoadedNote sets the note appended right after the URL of
+// a remote image that wasn't loaded because remote image loading is disabled
+// (see [WithRemoteImages]). By default the note says that the image was not
+// loaded and that remote image loading is disabled; applications can point at
+// their own setting instead. Pass an empty string to render no note, e.g. when
+// the text is rendered first and the remote images are fetched right after.
+func WithRemoteImageNotLoadedNote(note string) TermRendererOption {
+	return func(tr *TermRenderer) error {
+		tr.ansiOptions.RemoteImageNotLoadedNote = &note
+		return nil
+	}
+}
+
 // WithOptions sets multiple TermRenderer options within a single TermRendererOption.
 func WithOptions(options ...TermRendererOption) TermRendererOption {
 	return func(tr *TermRenderer) error {
