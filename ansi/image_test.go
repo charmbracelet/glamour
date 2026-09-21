@@ -274,6 +274,57 @@ func TestDownscaleImage(t *testing.T) {
 	}
 }
 
+// TestScaleToCells checks that scaling to a cell box uses the physical pixel
+// size of a cell, so a sixel fills the space it reserves. A 40x10 cell box
+// is 400x200 pixels.
+func TestScaleToCells(t *testing.T) {
+	img := image.NewRGBA(image.Rect(0, 0, 800, 400))
+
+	scaled := scaleToCells(img, 40, 10)
+	if b := scaled.Bounds(); b.Dx() != 400 || b.Dy() != 200 {
+		t.Errorf("expected a 40x10 cell box to scale to 400x200 pixels, got %dx%d", b.Dx(), b.Dy())
+	}
+
+	// The aspect ratio must be preserved.
+	img = image.NewRGBA(image.Rect(0, 0, 400, 800))
+	b := scaleToCells(img, 40, 10).Bounds()
+	if b.Dx() != 100 || b.Dy() != 200 {
+		t.Errorf("expected a 400x800 image to scale to 100x200 pixels, got %dx%d", b.Dx(), b.Dy())
+	}
+
+	// Images that already fit their box are not upscaled.
+	small := image.NewRGBA(image.Rect(0, 0, 5, 5))
+	if got := scaleToCells(small, 40, 10); got != small {
+		t.Error("expected image to be returned unchanged")
+	}
+}
+
+// TestSixelImageSize checks that a sixel is encoded at the pixel size of the
+// cell box it reserves: a cell is roughly 10x20 pixels, so encoding the
+// image at cols x rows pixels would make it a fraction of the reserved size.
+func TestSixelImageSize(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "big.png")
+	writePNG(t, path, image.NewRGBA(image.Rect(0, 0, 1600, 800)))
+
+	ctx := NewRenderContext(Options{ImageProtocol: ImageProtocolSixel, WordWrap: 80})
+	config, err := loadImageConfig(ctx, path)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	el := &ImageElement{URL: path}
+	cols, rows := imageDisplaySize(config.config.Width, config.config.Height, ctx)
+	seqs, err := el.encodeGraphics(ctx, path, config, cols, rows)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	want := `"1;1;` + strconv.Itoa(cols*cellPixelWidth) + ";" + strconv.Itoa(rows*cellPixelHeight)
+	if !strings.Contains(seqs.inline, want) {
+		t.Errorf("expected a sixel raster of %s pixels, got: %.120q", want, seqs.inline)
+	}
+}
+
 func TestWriteKittyImageTransmission(t *testing.T) {
 	// File transmission depends on the terminal being on the same machine,
 	// which the environment the tests run in must not influence.
