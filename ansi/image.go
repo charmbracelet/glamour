@@ -228,23 +228,8 @@ func (e *ImageElement) Render(w io.Writer, ctx RenderContext) error {
 	// its URL would only be redundant. The sequence is written after the
 	// paragraph has been rendered (see flushPendingImages), so this doesn't
 	// affect the order of the text rendered below.
-	imageDisplayed := false
-	var imageErr error
 	url := resolveRelativeURL(e.BaseURL, e.URL)
-	if !e.TextOnly && len(e.URL) > 0 && ctx.options.ImageProtocol != ImageProtocolNone {
-		seqs, err := e.graphicsSequence(ctx, url)
-		if err != nil {
-			imageErr = err
-		} else {
-			imageDisplayed = true
-			if seqs.inline != "" {
-				*ctx.pendingImages = append(*ctx.pendingImages, seqs.inline)
-			}
-			if len(seqs.commands) > 0 {
-				*ctx.graphicsCommands = append(*ctx.graphicsCommands, seqs.commands...)
-			}
-		}
-	}
+	imageDisplayed, imageErr := e.displayImage(ctx, url)
 
 	style := ctx.options.Styles.ImageText
 	if e.TextOnly || imageDisplayed {
@@ -283,23 +268,54 @@ func (e *ImageElement) Render(w io.Writer, ctx RenderContext) error {
 	// A remote image that wasn't loaded because loading remote images is
 	// disabled gets a note saying so, so it isn't mistaken for a broken one.
 	// Other failures are skipped silently, and the link remains.
-	if errors.Is(imageErr, errRemoteImagesDisabled) {
-		note := defaultRemoteImageNotLoadedNote
-		if ctx.options.RemoteImageNotLoadedNote != nil {
-			note = *ctx.options.RemoteImageNotLoadedNote
+	if note := ctx.remoteImageNotLoadedNote(imageErr); note != "" {
+		el := &BaseElement{
+			Token: note,
+			Style: ctx.options.Styles.Image,
 		}
-		if note != "" {
-			el := &BaseElement{
-				Token: note,
-				Style: ctx.options.Styles.Image,
-			}
-			if noteErr := el.Render(w, ctx); noteErr != nil {
-				return noteErr
-			}
+		if err := el.Render(w, ctx); err != nil {
+			return err
 		}
 	}
 
 	return nil
+}
+
+// displayImage queues the graphics protocol sequences that display the image
+// at url, if this element references an image and the configured protocol
+// can render it. It reports whether the image is displayed, along with the
+// error that kept it from being displayed.
+func (e *ImageElement) displayImage(ctx RenderContext, url string) (bool, error) {
+	if e.TextOnly || len(e.URL) == 0 || ctx.options.ImageProtocol == ImageProtocolNone {
+		return false, nil
+	}
+
+	seqs, err := e.graphicsSequence(ctx, url)
+	if err != nil {
+		return false, err
+	}
+
+	if seqs.inline != "" {
+		*ctx.pendingImages = append(*ctx.pendingImages, seqs.inline)
+	}
+	if len(seqs.commands) > 0 {
+		*ctx.graphicsCommands = append(*ctx.graphicsCommands, seqs.commands...)
+	}
+	return true, nil
+}
+
+// remoteImageNotLoadedNote returns the note to render after the URL of a
+// remote image that was not loaded because loading remote images is disabled
+// (see [Options.RemoteImageNotLoadedNote]), or an empty string when there is
+// no such note to render.
+func (ctx RenderContext) remoteImageNotLoadedNote(err error) string {
+	if !errors.Is(err, errRemoteImagesDisabled) {
+		return ""
+	}
+	if ctx.options.RemoteImageNotLoadedNote != nil {
+		return *ctx.options.RemoteImageNotLoadedNote
+	}
+	return defaultRemoteImageNotLoadedNote
 }
 
 // graphicsSequence loads the image and returns the encoded graphics protocol
