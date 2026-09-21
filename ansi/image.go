@@ -46,14 +46,15 @@ const (
 	// about its content type.
 	maxRemoteImageBytes = 32 << 20 // 32 MiB
 
-	// kittyCellPixelWidth and kittyCellPixelHeight are the assumed physical
-	// pixel dimensions of a terminal cell. Images are transmitted at up to
-	// kittyHiDPIScale times the size of their on-screen box so they stay
-	// sharp on hi-dpi screens, but never with more pixels than the terminal
-	// can actually display.
-	kittyCellPixelWidth  = 10
-	kittyCellPixelHeight = 20
-	kittyHiDPIScale      = 2
+	// cellPixelWidth and cellPixelHeight are the assumed physical pixel
+	// dimensions of a terminal cell, used to convert terminal cells to
+	// pixels. Images are displayed at up to 1:1 in sixel, and transmitted
+	// at up to hiDPIScale times the size of their on-screen box for kitty,
+	// so they stay sharp on hi-dpi screens, but never with more pixels than
+	// the terminal can actually display.
+	cellPixelWidth  = 10
+	cellPixelHeight = 20
+	hiDPIScale      = 2
 )
 
 // DefaultMaxImagePixels is the default value of [Options.MaxImagePixels]:
@@ -497,8 +498,8 @@ func writeKittyImage(ctx RenderContext, w io.Writer, url string, config imageCon
 // maxSourcePixels returns the maximum number of source pixels an image
 // displayed in cols x rows cells can use without visible loss of quality.
 func maxSourcePixels(cols, rows int) (int, int) {
-	return max(cols, 0) * kittyCellPixelWidth * kittyHiDPIScale,
-		max(rows, 0) * kittyCellPixelHeight * kittyHiDPIScale
+	return max(cols, 0) * cellPixelWidth * hiDPIScale,
+		max(rows, 0) * cellPixelHeight * hiDPIScale
 }
 
 // fitsDisplayBox reports whether an image of the given dimensions can be
@@ -649,15 +650,18 @@ func imageDisplaySize(width, height int, ctx RenderContext) (int, int) {
 	return width, rows
 }
 
-// scaleToCells scales img to approximately cols x rows terminal cells using
-// nearest-neighbor sampling. Terminal cells are assumed to be twice as tall
-// as they are wide (see approxTerminalCellAspect), so one column maps to one
-// pixel and one row maps to two pixels.
+// scaleToCells scales img down to the pixel size of a cols x rows terminal
+// cell box using nearest-neighbor sampling, preserving the aspect ratio. A
+// cell is cellPixelWidth pixels wide and cellPixelHeight pixels tall, so
+// e.g. an image filling 40x10 cells must be 400x200 pixels: sixel draws at
+// pixel resolution, and an image scaled to its box in cells alone would
+// come out a fraction of the reserved size. Images that already fit are
+// returned unchanged.
 func scaleToCells(img image.Image, cols, rows int) image.Image {
 	if cols <= 0 || rows <= 0 {
 		return img
 	}
-	return downscaleImage(img, cols, rows*2)
+	return downscaleImage(img, cols*cellPixelWidth, rows*cellPixelHeight)
 }
 
 // downscaleImage scales img down to at most maxW x maxH pixels using
