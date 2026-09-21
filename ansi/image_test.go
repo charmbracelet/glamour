@@ -586,6 +586,64 @@ func TestRemoteImages(t *testing.T) {
 	}
 }
 
+func TestRemoteImageNotLoadedNote(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		t.Error("no request must be made while remote images are disabled")
+		w.Header().Set("Content-Type", "image/png")
+	}))
+	defer srv.Close()
+
+	url := srv.URL + "/img.png"
+	md := "![alt text](" + url + ")"
+	options := Options{ImageProtocol: ImageProtocolKitty, BaseURL: srv.URL + "/"}
+
+	// By default the URL is followed by a note saying the image wasn't
+	// loaded, so a skipped remote image isn't mistaken for a broken one.
+	out, _ := renderImage(t, options, md)
+	if !strings.Contains(out, url) {
+		t.Errorf("expected the image URL to render, got: %q", out)
+	}
+	u, n := strings.Index(out, url), strings.Index(out, "not loaded: remote image loading is disabled")
+	if n < 0 {
+		t.Errorf("expected the default not-loaded note, got: %q", out)
+	} else if n < u {
+		t.Errorf("expected the note after the URL, got: %q", out)
+	}
+	if strings.Contains(out, "\x1b_G") {
+		t.Errorf("expected no image data, got: %q", out)
+	}
+
+	// A custom note replaces the default one, so applications can point at
+	// their own setting.
+	note := " (not loaded: set loadRemoteImages to true)"
+	out, _ = renderImage(t, Options{
+		ImageProtocol:            ImageProtocolKitty,
+		BaseURL:                  srv.URL + "/",
+		RemoteImageNotLoadedNote: &note,
+	}, md)
+	if !strings.Contains(out, note) {
+		t.Errorf("expected the custom note, got: %q", out)
+	}
+	if strings.Contains(out, "remote image loading is disabled") {
+		t.Errorf("expected the default note to be replaced, got: %q", out)
+	}
+
+	// An empty note suppresses the note, for renderers that load the
+	// images in a second pass.
+	empty := ""
+	out, _ = renderImage(t, Options{
+		ImageProtocol:            ImageProtocolKitty,
+		BaseURL:                  srv.URL + "/",
+		RemoteImageNotLoadedNote: &empty,
+	}, md)
+	if strings.Contains(out, "not loaded") {
+		t.Errorf("expected no note, got: %q", out)
+	}
+	if !strings.Contains(out, url) {
+		t.Errorf("expected the image URL to render, got: %q", out)
+	}
+}
+
 func TestRemoteImageSizeLimit(t *testing.T) {
 	t.Run("declared content length", func(t *testing.T) {
 		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
