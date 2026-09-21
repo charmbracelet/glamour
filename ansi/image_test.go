@@ -17,6 +17,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync/atomic"
@@ -31,6 +32,16 @@ import (
 )
 
 const kittyPlaceholder = '\U0010EEEE'
+
+// escapeSequencePattern matches ANSI SGR, OSC 8 hyperlink, and graphics
+// protocol sequences.
+var escapeSequencePattern = regexp.MustCompile(`\x1b\]8;[^\x07\x9c]*(\x07|\x9c)|\x1b\[[0-9;:]*[a-zA-Z]|\x1b_G[^\x1b]*\x1b\\|\x1bP[^\x1b]*\x1b\\`)
+
+// visibleText returns the text a terminal would display for the given
+// rendered output, i.e. with all escape sequences removed.
+func visibleText(s string) string {
+	return escapeSequencePattern.ReplaceAllString(s, "")
+}
 
 func TestImageProtocol(t *testing.T) {
 	tests := []struct {
@@ -583,6 +594,42 @@ func TestRemoteImages(t *testing.T) {
 	}
 	if !strings.Contains(out, "\x1b_G") {
 		t.Errorf("expected remote image to render, got: %q", out)
+	}
+}
+
+// TestImageURLHiddenWhenDisplayed checks that an image that is displayed is
+// rendered without its URL, which would only be redundant next to it, and
+// that the URL is kept when the image isn't displayed.
+func TestImageURLHiddenWhenDisplayed(t *testing.T) {
+	imgPath, err := filepath.Abs(filepath.Join("testdata", "TestImageProtocol", "test.png"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	md := "![alt text](" + imgPath + ")"
+
+	// Displayed: the image replaces the URL, in both the protocol that draws
+	// the image itself and the one that anchors it to the text grid.
+	for _, protocol := range []ImageProtocol{ImageProtocolKitty, ImageProtocolKittyPlaceholders} {
+		out, _ := renderImage(t, Options{ImageProtocol: protocol}, md)
+		displayMarkers := 0
+		switch protocol {
+		case ImageProtocolKitty:
+			displayMarkers = strings.Count(out, "\x1b_G")
+		case ImageProtocolKittyPlaceholders:
+			displayMarkers = strings.Count(out, string(kittyPlaceholder))
+		}
+		if displayMarkers == 0 {
+			t.Errorf("protocol %v: expected the image to be displayed, got: %q", protocol, out)
+		}
+		if got := visibleText(out); strings.Contains(got, imgPath) {
+			t.Errorf("protocol %v: expected no URL next to the displayed image, got: %q", protocol, got)
+		}
+	}
+
+	// Not displayed: the URL is how the reader gets to the image.
+	out, _ := renderImage(t, Options{ImageProtocol: ImageProtocolNone}, md)
+	if got := visibleText(out); !strings.Contains(got, imgPath) {
+		t.Errorf("expected the image URL, got: %q", got)
 	}
 }
 

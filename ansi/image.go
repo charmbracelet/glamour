@@ -224,8 +224,31 @@ func (e *ImageElement) Render(w io.Writer, ctx RenderContext) error {
 	// Make OSC 8 hyperlink token.
 	hyperlink, resetHyperlink, _ := makeHyperlink(e.URL)
 
+	// Queue the image's graphics sequence first: when the image displays,
+	// its URL would only be redundant. The sequence is written after the
+	// paragraph has been rendered (see flushPendingImages), so this doesn't
+	// affect the order of the text rendered below.
+	imageDisplayed := false
+	var imageErr error
+	url := resolveRelativeURL(e.BaseURL, e.URL)
+	if !e.TextOnly && len(e.URL) > 0 && ctx.options.ImageProtocol != ImageProtocolNone {
+		seqs, err := e.graphicsSequence(ctx, url)
+		if err != nil {
+			imageErr = err
+		} else {
+			imageDisplayed = true
+			if seqs.inline != "" {
+				*ctx.pendingImages = append(*ctx.pendingImages, seqs.inline)
+			}
+			if len(seqs.commands) > 0 {
+				*ctx.graphicsCommands = append(*ctx.graphicsCommands, seqs.commands...)
+			}
+		}
+	}
+
 	style := ctx.options.Styles.ImageText
-	if e.TextOnly {
+	if e.TextOnly || imageDisplayed {
+		// No URL follows the text, so don't render its arrow.
 		style.Format = strings.TrimSuffix(style.Format, " →")
 	}
 
@@ -241,11 +264,11 @@ func (e *ImageElement) Render(w io.Writer, ctx RenderContext) error {
 		}
 	}
 
-	if e.TextOnly || len(e.URL) == 0 {
+	if e.TextOnly || len(e.URL) == 0 || imageDisplayed {
 		return nil
 	}
 
-	url := resolveRelativeURL(e.BaseURL, e.URL)
+	// The image doesn't display, so its URL is the reader's only access to it.
 	token := hyperlink + url + resetHyperlink
 	el := &BaseElement{
 		Token:  token,
@@ -257,36 +280,22 @@ func (e *ImageElement) Render(w io.Writer, ctx RenderContext) error {
 		return err
 	}
 
-	if ctx.options.ImageProtocol != ImageProtocolNone {
-		seqs, err := e.graphicsSequence(ctx, url)
-		if err != nil {
-			// The alt text and URL are already rendered above. When a
-			// remote image wasn't loaded because loading remote images is
-			// disabled, tell the reader, so a missing image isn't mistaken
-			// for an image that failed to load. Other errors are skipped
-			// silently, and the link remains.
-			if errors.Is(err, errRemoteImagesDisabled) {
-				note := defaultRemoteImageNotLoadedNote
-				if ctx.options.RemoteImageNotLoadedNote != nil {
-					note = *ctx.options.RemoteImageNotLoadedNote
-				}
-				if note != "" {
-					el := &BaseElement{
-						Token: note,
-						Style: ctx.options.Styles.Image,
-					}
-					if noteErr := el.Render(w, ctx); noteErr != nil {
-						return noteErr
-					}
-				}
+	// A remote image that wasn't loaded because loading remote images is
+	// disabled gets a note saying so, so it isn't mistaken for a broken one.
+	// Other failures are skipped silently, and the link remains.
+	if errors.Is(imageErr, errRemoteImagesDisabled) {
+		note := defaultRemoteImageNotLoadedNote
+		if ctx.options.RemoteImageNotLoadedNote != nil {
+			note = *ctx.options.RemoteImageNotLoadedNote
+		}
+		if note != "" {
+			el := &BaseElement{
+				Token: note,
+				Style: ctx.options.Styles.Image,
 			}
-			return nil //nolint:nilerr
-		}
-		if seqs.inline != "" {
-			*ctx.pendingImages = append(*ctx.pendingImages, seqs.inline)
-		}
-		if len(seqs.commands) > 0 {
-			*ctx.graphicsCommands = append(*ctx.graphicsCommands, seqs.commands...)
+			if noteErr := el.Render(w, ctx); noteErr != nil {
+				return noteErr
+			}
 		}
 	}
 
