@@ -1,6 +1,7 @@
 package ansi
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/base64"
@@ -218,6 +219,12 @@ type ImageElement struct {
 	URL      string
 	Child    ElementRenderer
 	TextOnly bool
+
+	// Inline writes the image's graphics sequences where the image appears
+	// in the document instead of queueing them for after the block. Used for
+	// images parsed from HTML blocks, which aren't wrapped, so their
+	// sequences can be written in place without breaking the text flow.
+	Inline bool
 }
 
 // Render renders an ImageElement.
@@ -230,7 +237,7 @@ func (e *ImageElement) Render(w io.Writer, ctx RenderContext) error {
 	// paragraph has been rendered (see flushPendingImages), so this doesn't
 	// affect the order of the text rendered below.
 	url := resolveRelativeURL(e.BaseURL, e.URL)
-	imageDisplayed, imageErr := e.displayImage(ctx, url)
+	imageDisplayed, imageErr := e.displayImage(ctx, w, url)
 
 	style := ctx.options.Styles.ImageText
 	if e.TextOnly || imageDisplayed {
@@ -285,19 +292,37 @@ func (e *ImageElement) Render(w io.Writer, ctx RenderContext) error {
 // displayImage queues the graphics protocol sequences that display the image
 // at url, if this element references an image and the configured protocol
 // can render it. It reports whether the image is displayed, along with the
-// error that kept it from being displayed.
-func (e *ImageElement) displayImage(ctx RenderContext, url string) (bool, error) {
+// error that kept it from being displayed. w is the writer of the block the
+// image is rendered into.
+func (e *ImageElement) displayImage(ctx RenderContext, w io.Writer, url string) (bool, error) {
 	if e.TextOnly || len(e.URL) == 0 || ctx.options.ImageProtocol == ImageProtocolNone {
 		return false, nil
 	}
 
-	seqs, err := e.graphicsSequence(ctx, url)
+	seqs, inline, err := e.graphicsSequence(ctx, url)
 	if err != nil {
 		return false, err
 	}
 
 	if seqs.inline != "" {
-		*ctx.pendingImages = append(*ctx.pendingImages, seqs.inline)
+		switch {
+		case e.Inline:
+			// Images in HTML blocks are written where they appear in the
+			// document: HTML blocks aren't wrapped, so even multi-row
+			// sequences can be written in place.
+			if _, err := io.WriteString(w, seqs.inline); err != nil {
+				return false, fmt.Errorf("glamour: error writing image: %w", err)
+			}
+		case inline:
+			// Single-cell-row images, e.g. badges, are anchored to the text
+			// they appear in, so images next to each other end up on one
+			// line, the way they do in a browser.
+			if _, err := io.WriteString(w, seqs.inline); err != nil {
+				return false, fmt.Errorf("glamour: error writing image: %w", err)
+			}
+		default:
+			*ctx.pendingImages = append(*ctx.pendingImages, seqs.inline)
+		}
 	}
 	if len(seqs.commands) > 0 {
 		*ctx.graphicsCommands = append(*ctx.graphicsCommands, seqs.commands...)
@@ -322,30 +347,46 @@ func (ctx RenderContext) remoteImageNotLoadedNote(err error) string {
 // graphicsSequence loads the image and returns the encoded graphics protocol
 // sequences. Encoded sequences are cached so repeated renders of the same
 // image don't re-encode it.
-func (e *ImageElement) graphicsSequence(ctx RenderContext, url string) (graphicsSequences, error) {
+func (e *ImageElement) graphicsSequence(ctx RenderContext, url string) (graphicsSequences, bool, error) {
 	config, err := loadImageConfig(ctx, url)
 	if err != nil {
-		return graphicsSequences{}, fmt.Errorf("glamour: error loading image: %w", err)
+		return graphicsSequences{}, false, fmt.Errorf("glamour: error loading image: %w", err)
 	}
 
-	if err := checkImageSize(config.config, ctx.options.MaxImagePixels); err != nil {
-		return graphicsSequences{}, err
+	// SVGs are vectors whose intrinsic size only determines the aspect
+	// ratio, so the pixel limit doesn't apply to them: the rasterized image
+	// is sized to the display box, not to the declared dimensions.
+	if config.format != svgFormat {
+		if err := checkImageSize(config.config, ctx.options.MaxImagePixels); err != nil {
+			return graphicsSequences{}, false, err
+		}
 	}
 
-	cols, rows := imageDisplaySize(config.config.Width, config.config.Height, ctx)
+	// An SVG's declared size is a CSS pixel size chosen for display, so it
+	// is drawn at exactly that size. Raster images use pixels as cells,
+	// constrained by the block width.
+	var cols, rows int
+	if config.format == svgFormat {
+		cols, rows = svgDisplaySize(config.config.Width, config.config.Height, ctx)
+	} else {
+		cols, rows = imageDisplaySize(config.config.Width, config.config.Height, ctx)
+	}
+	// Images displayed via unicode placeholders take part in the text flow
+	// when they are one cell row tall.
+	inline := ctx.options.ImageProtocol == ImageProtocolKittyPlaceholders && rows == 1
 	key := sequenceCacheKey{url: url, protocol: ctx.options.ImageProtocol, cols: cols, rows: rows}
 
 	if seqs, ok := ctx.imageCachesOf().sequence(key); ok {
-		return seqs, nil
+		return seqs, inline, nil
 	}
 
 	seqs, err := e.encodeGraphics(ctx, url, config, cols, rows)
 	if err != nil {
-		return graphicsSequences{}, err
+		return graphicsSequences{}, false, err
 	}
 
 	ctx.imageCachesOf().setSequence(key, seqs)
-	return seqs, nil
+	return seqs, inline, nil
 }
 
 // checkImageSize reports whether an image with the given header dimensions
@@ -391,9 +432,10 @@ func (e *ImageElement) encodeGraphics(ctx RenderContext, url string, config imag
 		}
 		return graphicsSequences{inline: reserveRows(buf.String(), rows)}, nil
 	case ImageProtocolSixel:
-		// Sixel draws at pixel resolution, so scale the image down to the
-		// target cell dimensions to match the reserved space.
-		img, err := loadImage(ctx, url)
+		// Sixel draws at pixel resolution, so the image is loaded at the
+		// target cell dimensions (SVGs are rasterized at that size) and
+		// scaled down to match the reserved space.
+		img, err := loadImage(ctx, url, cols*cellPixelWidth, rows*cellPixelHeight)
 		if err != nil {
 			return graphicsSequences{}, fmt.Errorf("glamour: error loading image: %w", err)
 		}
@@ -457,8 +499,16 @@ func encodeKittyPlaceholders(ctx RenderContext, url string, config imageConfig, 
 		Quite:            2,
 	}
 
+	// Single-row images are anchored to the text flow, so they are placed
+	// where they appear; taller ones take up whole lines of their own, before
+	// and after the text that follows them.
+	inline := placeholderGrid(id, cols, rows)
+	if rows > 1 {
+		inline = "\n" + inline + "\n"
+	}
+
 	return graphicsSequences{
-		inline:   "\n" + placeholderGrid(id, cols, rows),
+		inline:   inline,
 		commands: []string{transmit.String(), ansi.KittyGraphics(nil, place.Options()...)},
 	}, nil
 }
@@ -482,11 +532,13 @@ func writeKittyImage(ctx RenderContext, w io.Writer, url string, config imageCon
 		return nil
 	}
 
-	img, err := loadImage(ctx, url)
+	maxW, maxH := maxSourcePixels(cols, rows)
+	// SVGs are rasterized at the display size; raster images are decoded at
+	// their own size and scaled down here.
+	img, err := loadImage(ctx, url, maxW, maxH)
 	if err != nil {
 		return fmt.Errorf("glamour: error loading image: %w", err)
 	}
-	maxW, maxH := maxSourcePixels(cols, rows)
 	img = downscaleImage(img, maxW, maxH)
 	opts.Chunk = true
 	if err := kitty.EncodeGraphics(w, img, opts); err != nil {
@@ -713,7 +765,6 @@ func readImageConfig(ctx RenderContext, url string) (imageConfig, error) {
 		return imageConfig{}, err
 	}
 
-	var buf []byte
 	switch kind {
 	case imageSourceLocal:
 		path := localImagePath(url)
@@ -722,11 +773,20 @@ func readImageConfig(ctx RenderContext, url string) (imageConfig, error) {
 			return imageConfig{}, fmt.Errorf("glamour: error opening image file: %w", err)
 		}
 		defer f.Close() //nolint:errcheck
-		cfg, format, err := image.DecodeConfig(f)
+
+		br := bufio.NewReader(f)
+		if isSVG(url, sniffHead(br)) {
+			return readSVGConfig(br)
+		}
+		cfg, format, err := image.DecodeConfig(br)
 		if err != nil {
 			return imageConfig{}, fmt.Errorf("glamour: error decoding image config: %w", err)
 		}
 		return imageConfig{config: cfg, format: format}, nil
+	}
+
+	var buf []byte
+	switch kind {
 	case imageSourceData:
 		buf, err = imageData(ctx, url)
 		if err != nil {
@@ -742,6 +802,9 @@ func readImageConfig(ctx RenderContext, url string) (imageConfig, error) {
 		}
 	}
 
+	if isSVG(url, buf) {
+		return readSVGConfig(bytes.NewReader(buf))
+	}
 	cfg, format, err := image.DecodeConfig(bytes.NewReader(buf))
 	if err != nil {
 		return imageConfig{}, fmt.Errorf("glamour: error decoding image config: %w", err)
@@ -749,10 +812,21 @@ func readImageConfig(ctx RenderContext, url string) (imageConfig, error) {
 	return imageConfig{config: cfg, format: format}, nil
 }
 
+// isSVG reports whether the image at url, with the given data, is an SVG
+// document. SVG isn't a raster image format, so it is parsed and rasterized
+// separately (see svg.go); both the URL and the image's own bytes are
+// checked, as SVGs are stored and served under a variety of names and
+// content types.
+func isSVG(url string, data []byte) bool {
+	return isSVGURL(url) || isSVGData(data)
+}
+
 // loadImage loads and decodes an image from a local file, a data: URI, or a
-// remote URL. Decoded images are cached in memory so repeated renders don't
-// re-fetch and re-decode them.
-func loadImage(ctx RenderContext, url string) (image.Image, error) {
+// remote URL. SVGs are rasterized to fit the maxW x maxH pixel box, keeping
+// their aspect ratio; for raster images the limits are ignored, as they are
+// scaled to the display size later on. Decoded images are cached in memory
+// so repeated renders don't re-fetch and re-decode them.
+func loadImage(ctx RenderContext, url string, maxW, maxH int) (image.Image, error) {
 	kind, err := classifyImageURL(url)
 	if err != nil {
 		return nil, err
@@ -774,7 +848,11 @@ func loadImage(ctx RenderContext, url string) (image.Image, error) {
 		}
 		defer f.Close() //nolint:errcheck
 
-		img, _, err := image.Decode(f)
+		br := bufio.NewReader(f)
+		if isSVG(url, sniffHead(br)) {
+			return rasterizeSVGReader(br, maxW, maxH)
+		}
+		img, _, err := image.Decode(br)
 		if err != nil {
 			return nil, fmt.Errorf("glamour: error decoding image: %w", err)
 		}
@@ -794,6 +872,9 @@ func loadImage(ctx RenderContext, url string) (image.Image, error) {
 		}
 	}
 
+	if isSVG(url, buf) {
+		return rasterizeSVGReader(bytes.NewReader(buf), maxW, maxH)
+	}
 	img, _, err := image.Decode(bytes.NewReader(buf))
 	if err != nil {
 		return nil, fmt.Errorf("glamour: error decoding image: %w", err)
@@ -887,12 +968,6 @@ func fetchRemoteImage(ctx RenderContext, url string) ([]byte, error) {
 		return nil, fmt.Errorf("glamour: remote image exceeds %d bytes", maxRemoteImageBytes)
 	}
 
-	// Check for SVG which Go's image.Decode cannot handle.
-	contentType := resp.Header.Get("Content-Type")
-	if strings.Contains(contentType, "image/svg") || bytes.HasPrefix(bytes.TrimSpace(buf), []byte("<svg")) {
-		return nil, fmt.Errorf("glamour: SVG images are not supported")
-	}
-
 	ctx.imageCachesOf().setRemoteData(url, buf)
 	return buf, nil
 }
@@ -928,11 +1003,17 @@ func parseHTMLImages(ctx RenderContext, html string) ElementRenderer {
 		if len(m) < 2 {
 			continue
 		}
+		if len(elements) > 0 {
+			// Browsers render images that are on separate lines of the
+			// markup next to each other, with a space between them.
+			elements = append(elements, spaceElement{})
+		}
 		src := m[1]
 		elements = append(elements, &ImageElement{
 			Text:    "",
 			BaseURL: ctx.options.BaseURL,
 			URL:     src,
+			Inline:  true,
 		})
 	}
 
@@ -946,6 +1027,18 @@ func parseHTMLImages(ctx RenderContext, html string) ElementRenderer {
 // A CompoundElement renders multiple elements sequentially.
 type CompoundElement struct {
 	Elements []ElementRenderer
+}
+
+// spaceElement renders a single space.
+type spaceElement struct{}
+
+// Render writes a space.
+func (spaceElement) Render(w io.Writer, _ RenderContext) error {
+	_, err := io.WriteString(w, " ")
+	if err != nil {
+		return fmt.Errorf("glamour: error writing space: %w", err)
+	}
+	return nil
 }
 
 // Render renders all child elements.
