@@ -840,3 +840,134 @@ func noiseImage(w, h int) image.Image {
 	}
 	return img
 }
+
+// testSVG is a small SVG document used in the SVG tests.
+const testSVG = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="40" height="20">
+	<rect width="40" height="20" fill="red"/>
+	<circle cx="20" cy="10" r="8" fill="blue"/>
+</svg>
+`
+
+// TestSVGImages checks that SVG images are rasterized and rendered via the
+// graphics protocols.
+func TestSVGImages(t *testing.T) {
+	svgPath, err := filepath.Abs(filepath.Join("testdata", "TestImageProtocol", "test.svg"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	md := "![](" + svgPath + ")"
+
+	// The document gets the placeholder grid; the transmission and virtual
+	// placement commands carry the rasterized image.
+	out, ar := renderImage(t, Options{WordWrap: 80, ImageProtocol: ImageProtocolKittyPlaceholders}, md)
+	if !strings.ContainsRune(out, kittyPlaceholder) {
+		t.Errorf("expected unicode placeholders in document, got: %q", out)
+	}
+	cmds := ar.GraphicsCommands()
+	if len(cmds) != 2 {
+		t.Fatalf("expected transmit and place commands, got %d: %q", len(cmds), cmds)
+	}
+	// The rasterized image is transmitted as PNG (format 100).
+	if !strings.Contains(cmds[0], "f=100") {
+		t.Errorf("expected a PNG transmission, got: %q", cmds[0])
+	}
+
+	// Sixel: the document carries the sixel sequence inline.
+	out, _ = renderImage(t, Options{WordWrap: 80, ImageProtocol: ImageProtocolSixel}, md)
+	if !strings.Contains(out, "\x1bP") {
+		t.Errorf("expected a sixel sequence, got: %q", out)
+	}
+}
+
+// TestRemoteSVGImages checks that remote SVG images are fetched, rasterized
+// and rendered, whatever their content type.
+func TestRemoteSVGImages(t *testing.T) {
+	// Deliberately serve the SVG as text/plain: the content type is
+	// unreliable, so the document is sniffed instead.
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "text/plain")
+		_, _ = w.Write([]byte(testSVG))
+	}))
+	defer srv.Close()
+
+	out, _ := renderImage(t,
+		Options{ImageProtocol: ImageProtocolKitty, LoadRemoteImages: true, BaseURL: srv.URL + "/"},
+		"![](img.svg)")
+	if !strings.Contains(out, "\x1b_G") {
+		t.Errorf("expected remote SVG image to render, got: %q", out)
+	}
+}
+
+// TestSVGDataURLImages checks that SVG images embedded as data URIs are
+// rendered.
+func TestSVGDataURLImages(t *testing.T) {
+	dataURL := "data:image/svg+xml;base64," + base64.StdEncoding.EncodeToString([]byte(testSVG))
+
+	out, _ := renderImage(t, Options{ImageProtocol: ImageProtocolKitty}, "![]("+dataURL+")")
+	if !strings.Contains(out, "\x1b_G") {
+		t.Errorf("expected data URL SVG image to render, got: %q", out)
+	}
+}
+
+// TestSVGWithoutSize checks that an SVG without an intrinsic size is not
+// rendered as an image: its URL stays in the output instead.
+func TestSVGWithoutSize(t *testing.T) {
+	svgPath := filepath.Join(t.TempDir(), "test.svg")
+	if err := os.WriteFile(svgPath, []byte(`<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	out, _ := renderImage(t, Options{ImageProtocol: ImageProtocolKitty}, "![]("+svgPath+")")
+	if strings.Contains(out, "\x1b_G") {
+		t.Errorf("expected no graphics for a sizeless SVG, got: %q", out)
+	}
+	if !strings.Contains(visibleText(out), svgPath) {
+		t.Errorf("expected the SVG URL to be rendered, got: %q", visibleText(out))
+	}
+}
+
+// TestInvalidSVG checks that an unparsable SVG is not rendered as an image:
+// its URL stays in the output instead.
+func TestInvalidSVG(t *testing.T) {
+	svgPath := filepath.Join(t.TempDir(), "test.svg")
+	if err := os.WriteFile(svgPath, []byte(`<svg xmlns="http://www.w3.org/2000/svg" width="40" height="20"><rect`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	out, _ := renderImage(t, Options{ImageProtocol: ImageProtocolKitty}, "![]("+svgPath+")")
+	if strings.Contains(out, "\x1b_G") {
+		t.Errorf("expected no graphics for an invalid SVG, got: %q", out)
+	}
+	if !strings.Contains(visibleText(out), svgPath) {
+		t.Errorf("expected the SVG URL to be rendered, got: %q", visibleText(out))
+	}
+}
+
+// TestIsSVGData checks the SVG content sniffer.
+func TestIsSVGData(t *testing.T) {
+	tests := []struct {
+		name string
+		data string
+		want bool
+	}{
+		{"plain svg", `<svg xmlns="http://www.w3.org/2000/svg"></svg>`, true},
+		{"xml declaration", `<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg"></svg>`, true},
+		{"bom", "\xef\xbb\xbf" + `<svg xmlns="http://www.w3.org/2000/svg"></svg>`, true},
+		{"doctype", `<!DOCTYPE svg><svg xmlns="http://www.w3.org/2000/svg"></svg>`, true},
+		{"comment", `<!-- a note --><svg xmlns="http://www.w3.org/2000/svg"></svg>`, true},
+		{"whitespace", "\n  \t" + `<svg xmlns="http://www.w3.org/2000/svg"></svg>`, true},
+		{"png", "\x89PNG\r\n\x1a\n", false},
+		{"jpeg", "\xff\xd8\xff", false},
+		{"html", `<!DOCTYPE html><html><body></body></html>`, false},
+		{"text", "hello", false},
+		{"empty", "", false},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := isSVGData([]byte(tc.data)); got != tc.want {
+				t.Errorf("isSVGData(%q) = %v, want %v", tc.data, got, tc.want)
+			}
+		})
+	}
+}
