@@ -2,6 +2,7 @@ package ansi
 
 import (
 	"image/color"
+	"math"
 	"os"
 	"path/filepath"
 	"strings"
@@ -112,10 +113,10 @@ func TestSVGBadgeRendering(t *testing.T) {
 		if r.text == "v3.0.0" {
 			want = 70.5
 		}
-		if r.x != want {
+		if math.Abs(r.x-want) > 0.01 {
 			t.Errorf("expected %q to be positioned at x=%v, got x=%v", r.text, want, r.x)
 		}
-		if r.y != 14 && r.y != 15 {
+		if math.Abs(r.y-14) > 0.01 && math.Abs(r.y-15) > 0.01 {
 			t.Errorf("expected a baseline around y=14, got y=%v", r.y)
 		}
 		if r.fill.A == 0xff && (r.fill.R != 0xff || r.fill.G != 0xff || r.fill.B != 0xff) {
@@ -175,10 +176,10 @@ func TestSVGTextRuns(t *testing.T) {
 		t.Errorf("expected the text to be trimmed, got %q", first.text)
 	}
 	// translate(5,5) then scale(2): the point is scaled first, then moved.
-	if first.x != 25 || first.y != 45 {
+	if math.Abs(first.x-25) > 0.01 || math.Abs(first.y-45) > 0.01 {
 		t.Errorf("expected the transform to be applied, got x=%v y=%v", first.x, first.y)
 	}
-	if first.size != 40 {
+	if math.Abs(first.size-40) > 0.01 {
 		t.Errorf("expected the font size to be scaled to 40, got %v", first.size)
 	}
 	if first.anchor != "end" {
@@ -206,7 +207,7 @@ func TestSVGTextRuns(t *testing.T) {
 	if !third.bold {
 		t.Error("expected the run to be bold")
 	}
-	if third.size != 8 {
+	if math.Abs(third.size-8) > 0.01 {
 		t.Errorf("expected the font size from the style attribute, got %v", third.size)
 	}
 	if third.fill != (color.RGBA{R: 0xff, A: 0xff}) {
@@ -477,7 +478,7 @@ func TestInlineBadges(t *testing.T) {
 		if err := os.WriteFile(path, []byte(testBadgeSVG), 0o644); err != nil {
 			t.Fatal(err)
 		}
-		return name
+		return path
 	}
 	one, two := badge("one.svg"), badge("two.svg")
 
@@ -489,7 +490,6 @@ func TestInlineBadges(t *testing.T) {
 	out, ar := renderImage(t, Options{
 		WordWrap:      80,
 		ImageProtocol: ImageProtocolKittyPlaceholders,
-		BaseURL:       "file://" + filepath.ToSlash(dir) + "/",
 	}, md)
 
 	// Both badges are placed in the same line of text, with a space between
@@ -536,19 +536,22 @@ func TestImageOrderInHTMLBlocks(t *testing.T) {
 		}
 	}
 
+	// Use absolute paths: base URLs with a drive letter don't survive the
+	// URL resolution on Windows.
+	banner, badge, demo := filepath.Join(dir, "banner.svg"), filepath.Join(dir, "badge.svg"), filepath.Join(dir, "demo.svg")
+
 	doc := "# Title\n\n" +
 		"<p align=\"center\">\n" +
-		"    <img src=\"banner.svg\" alt=\"Banner\">\n" +
-		"    <a href=\"https://example.com\"><img src=\"badge.svg\" alt=\"Release\"></a>\n" +
+		"    <img src=\"" + banner + "\" alt=\"Banner\">\n" +
+		"    <a href=\"https://example.com\"><img src=\"" + badge + "\" alt=\"Release\"></a>\n" +
 		"</p>\n\n" +
 		"<p align=\"center\">\n" +
-		"    <img src=\"demo.svg\" alt=\"Demo\">\n" +
+		"    <img src=\"" + demo + "\" alt=\"Demo\">\n" +
 		"</p>\n\n" +
 		"## What is it?\n"
 
 	out, _ := renderImage(t, Options{
 		WordWrap: 100, ImageProtocol: ImageProtocolKittyPlaceholders,
-		BaseURL: "file://" + filepath.ToSlash(dir) + "/",
 	}, doc)
 
 	// Collect the grid lines, in order: the banner's three rows of 20 cells,
