@@ -1,17 +1,16 @@
 package ansi
 
 import (
-	"image/color"
-	"math/rand"
-
 	"bytes"
 	"encoding/base64"
 	"encoding/binary"
 	"encoding/json"
 	"image"
+	"image/color"
 	"image/gif"
 	"image/png"
 	"io"
+	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -887,7 +886,7 @@ func TestRemoteSVGImages(t *testing.T) {
 	// unreliable, so the document is sniffed instead.
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "text/plain")
-		_, _ = w.Write([]byte(testSVG))
+		_, _ = io.WriteString(w, testSVG)
 	}))
 	defer srv.Close()
 
