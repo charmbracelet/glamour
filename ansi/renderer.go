@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"net/url"
-	"strings"
 
 	east "github.com/yuin/goldmark-emoji/ast"
 	"github.com/yuin/goldmark/ast"
@@ -26,6 +25,27 @@ const (
 	HyperlinkModeInline
 )
 
+// ImageProtocol is the graphics protocol used to render images inline.
+type ImageProtocol int
+
+const (
+	// ImageProtocolNone renders images as styled text and links only.
+	ImageProtocolNone ImageProtocol = iota
+	// ImageProtocolKitty renders images using the Kitty graphics protocol.
+	ImageProtocolKitty
+	// ImageProtocolSixel renders images using the Sixel graphics format.
+	ImageProtocolSixel
+	// ImageProtocolKittyPlaceholders renders images using the Kitty
+	// graphics protocol with Unicode placeholders. The image is transmitted
+	// out-of-band (see [ANSIRenderer.GraphicsCommands]) and displayed via
+	// Unicode placeholder characters that anchor the image to the text
+	// grid. This is meant for full-screen TUI applications whose
+	// cell-based renderers would drop raw graphics escape sequences, and
+	// makes images move naturally with the text when scrolling, without
+	// re-transmitting the image data.
+	ImageProtocolKittyPlaceholders
+)
+
 // Options is used to configure an ANSIRenderer.
 type Options struct {
 	BaseURL          string
@@ -36,6 +56,38 @@ type Options struct {
 	Styles           StyleConfig
 	ChromaFormatter  string
 	HyperlinkMode    HyperlinkMode
+	ImageProtocol    ImageProtocol
+
+	// MaxImageColumns and MaxImageRows limit the number of terminal cells an
+	// image may occupy, in addition to the constraints of the surrounding
+	// blocks. Zero means no limit.
+	MaxImageColumns int
+	MaxImageRows    int
+
+	// MaxImagePixels limits the number of pixels of images that are decoded
+	// and displayed. Images exceeding the limit are skipped, since decoding
+	// them can exhaust memory. The limit is checked against the image header
+	// before any pixel decoding. Zero applies [DefaultMaxImagePixels]; a
+	// negative value means no limit.
+	MaxImagePixels int
+
+	// LoadRemoteImages enables loading images referenced by http(s) URLs.
+	// It is disabled by default: fetching remote images reveals the
+	// reader's IP address to the image's host and uses bandwidth, much
+	// like a tracking pixel would.
+	LoadRemoteImages bool
+
+	// RemoteImageNotLoadedNote is appended right after the URL of a remote
+	// image that was not loaded because LoadRemoteImages is disabled. A nil
+	// value renders a generic note; an empty string renders none, which is
+	// useful for applications that load the images in a second pass and
+	// don't want to claim they were not loaded in between.
+	RemoteImageNotLoadedNote *string
+
+	// caches holds the renderer's image caches. It is set by
+	// NewRenderContext; a nil value means images are loaded without
+	// caching.
+	caches *imageCaches
 }
 
 // ANSIRenderer renders markdown content as ANSI escaped sequences.
@@ -48,6 +100,15 @@ func NewRenderer(options Options) *ANSIRenderer {
 	return &ANSIRenderer{
 		context: NewRenderContext(options),
 	}
+}
+
+// GraphicsCommands returns the out-of-band graphics protocol sequences
+// (image transmission and placement commands) collected during the last
+// render. Callers using [ImageProtocolKittyPlaceholders] must write these
+// sequences to the terminal before displaying the rendered document, since
+// the document itself only contains Unicode placeholders referencing them.
+func (r *ANSIRenderer) GraphicsCommands() []string {
+	return *r.context.graphicsCommands
 }
 
 // RegisterFuncs implements NodeRenderer.RegisterFuncs.
@@ -144,6 +205,13 @@ func (r *ANSIRenderer) renderNode(w util.BufWriter, source []byte, node ast.Node
 			}
 		}
 
+		// flush any remaining image sequences at the end of the document
+		if node.Type() == ast.TypeDocument {
+			if err := r.context.flushPendingImages(w); err != nil {
+				return ast.WalkStop, err
+			}
+		}
+
 		_, _ = io.WriteString(bs.Current().Block, e.Exiting)
 	}
 
@@ -170,7 +238,6 @@ func resolveRelativeURL(baseURL string, rel string) string {
 	if u.IsAbs() {
 		return rel
 	}
-	u.Path = strings.TrimPrefix(u.Path, "/")
 
 	base, err := url.Parse(baseURL)
 	if err != nil {
