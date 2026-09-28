@@ -36,6 +36,7 @@ type Options struct {
 	Styles           StyleConfig
 	ChromaFormatter  string
 	HyperlinkMode    HyperlinkMode
+	BidiReordering   bool
 }
 
 // ANSIRenderer renders markdown content as ANSI escaped sequences.

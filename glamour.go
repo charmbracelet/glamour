@@ -214,6 +214,17 @@ func WithHyperlinkMode(mode ansi.HyperlinkMode) TermRendererOption {
 	}
 }
 
+// WithBidiReordering reorders right-to-left text, such as Arabic and Hebrew,
+// into the order it's displayed in, for terminals that don't implement the
+// Unicode Bidirectional Algorithm themselves. Leave it off for terminals that
+// do, or the text will be reversed twice.
+func WithBidiReordering(enabled bool) TermRendererOption {
+	return func(tr *TermRenderer) error {
+		tr.ansiOptions.BidiReordering = enabled
+		return nil
+	}
+}
+
 // WithEmoji sets a TermRenderer's emoji rendering.
 func WithEmoji() TermRendererOption {
 	return func(tr *TermRenderer) error {
