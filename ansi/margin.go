@@ -41,7 +41,11 @@ func NewMarginWriter(ctx RenderContext, w io.Writer, rules StyleBlock) *MarginWr
 	if rules.IndentToken != nil {
 		ic = *rules.IndentToken
 	}
-	indentCell := styleText(bs.Parent().Style.StylePrimitive, ic)
+	indentStyle := bs.Parent().Style.StylePrimitive
+	if rules.IndentTokenStyle != nil {
+		indentStyle = cascadeStylePrimitive(indentStyle, *rules.IndentTokenStyle, false)
+	}
+	indentCell := styleText(indentStyle, ic)
 	iw := NewIndentWriter(pw, int(indentation+margin), func(_ io.Writer) {
 		_, _ = io.WriteString(w, indentCell)
 	})

@@ -138,6 +138,13 @@ var (
 			ColumnSeparator: stringPtr("|"),
 			RowSeparator:    stringPtr("-"),
 		},
+		Alerts: ansi.StyleAlerts{
+			Note:      plainAlertStyle(),
+			Tip:       plainAlertStyle(),
+			Important: plainAlertStyle(),
+			Warning:   plainAlertStyle(),
+			Caution:   plainAlertStyle(),
+		},
 		DefinitionDescription: ansi.StylePrimitive{
 			BlockPrefix: "\n* ",
 		},
@@ -348,6 +355,13 @@ var (
 				StylePrimitive: ansi.StylePrimitive{},
 			},
 		},
+		Alerts: ansi.StyleAlerts{
+			Note:      alertStyle("ℹ ", "39"),
+			Tip:       alertStyle("★ ", "41"),
+			Important: alertStyle("⚑ ", "141"),
+			Warning:   alertStyle("⚠ ", "214"),
+			Caution:   alertStyle("✖ ", "196"),
+		},
 		DefinitionDescription: ansi.StylePrimitive{
 			BlockPrefix: defaultArrowBlockPrefix,
 		},
@@ -557,6 +571,13 @@ var (
 				StylePrimitive: ansi.StylePrimitive{},
 			},
 		},
+		Alerts: ansi.StyleAlerts{
+			Note:      alertStyle("ℹ ", "27"),
+			Tip:       alertStyle("★ ", "28"),
+			Important: alertStyle("⚑ ", "99"),
+			Warning:   alertStyle("⚠ ", "130"),
+			Caution:   alertStyle("✖ ", "160"),
+		},
 		DefinitionDescription: ansi.StylePrimitive{
 			BlockPrefix: defaultArrowBlockPrefix,
 		},
@@ -659,7 +680,14 @@ var (
 				Suffix:          "\u00a0", // Use non-breaking space to prevent hard breaks
 			},
 		},
-		Table:          ansi.StyleTable{},
+		Table: ansi.StyleTable{},
+		Alerts: ansi.StyleAlerts{
+			Note:      alertStyle("ℹ ", "99"),
+			Tip:       alertStyle("★ ", "84"),
+			Important: alertStyle("⚑ ", "212"),
+			Warning:   alertStyle("⚠ ", "214"),
+			Caution:   alertStyle("✖ ", "196"),
+		},
 		DefinitionList: ansi.StyleBlock{},
 		DefinitionTerm: ansi.StylePrimitive{},
 		DefinitionDescription: ansi.StylePrimitive{
@@ -689,3 +717,39 @@ var (
 func boolPtr(b bool) *bool       { return &b }
 func stringPtr(s string) *string { return &s }
 func uintPtr(u uint) *uint       { return &u }
+
+// alertStyle returns the style of a GitHub alert: a bold title line with the
+// given icon and color, rendered like a blockquote with a matching indent
+// token.
+func alertStyle(icon, color string) ansi.StyleAlert {
+	return ansi.StyleAlert{
+		StyleBlock: ansi.StyleBlock{
+			StylePrimitive: ansi.StylePrimitive{
+				// Alerts don't inherit italic blockquotes, e.g. dracula's.
+				Italic: boolPtr(false),
+			},
+			Indent:           uintPtr(1),
+			IndentToken:      stringPtr("│ "),
+			IndentTokenStyle: &ansi.StylePrimitive{Color: stringPtr(color)},
+		},
+		Title: ansi.StylePrimitive{
+			Prefix: icon,
+			Color:  stringPtr(color),
+			Bold:   boolPtr(true),
+		},
+	}
+}
+
+// plainAlertStyle returns the style of a GitHub alert using ASCII characters
+// only, for terminals without color or unicode support.
+func plainAlertStyle() ansi.StyleAlert {
+	return ansi.StyleAlert{
+		StyleBlock: ansi.StyleBlock{
+			StylePrimitive: ansi.StylePrimitive{
+				Italic: boolPtr(false),
+			},
+			Indent:      uintPtr(1),
+			IndentToken: stringPtr("| "),
+		},
+	}
+}

@@ -12,6 +12,7 @@ import (
 
 	"charm.land/glamour/v2/ansi"
 	"charm.land/glamour/v2/styles"
+	xansi "github.com/charmbracelet/x/ansi"
 	"github.com/charmbracelet/x/exp/golden"
 )
 
@@ -369,4 +370,93 @@ func TestWithChromaFormatterCustom(t *testing.T) {
 	}
 
 	golden.RequireEqual(t, []byte(b))
+}
+
+const alertsMarkdown = `> [!NOTE]
+> Useful information that users should know.
+
+> [!TIP]
+> Helpful advice.
+
+> [!IMPORTANT]
+> Key information.
+
+> [!WARNING]
+> Urgent info.
+
+> [!CAUTION]
+> Risky business.
+
+> [!NOTE] not an alert
+> The marker has to be alone on its line.
+`
+
+func TestWithAlerts(t *testing.T) {
+	r, err := NewTermRenderer(
+		WithStandardStyle(styles.DarkStyle),
+		WithWordWrap(60),
+		WithAlerts(),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	b, err := r.Render(alertsMarkdown)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	golden.RequireEqual(t, []byte(b))
+}
+
+// TestWithoutAlerts checks that alerts are opt-in: without the option the
+// marker is left alone.
+func TestWithoutAlerts(t *testing.T) {
+	r, err := NewTermRenderer(
+		WithStandardStyle(styles.DarkStyle),
+		WithWordWrap(60),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	b, err := r.Render(alertsMarkdown)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Each text node is styled on its own, so strip the escape sequences
+	// before looking for the marker.
+	if plain := xansi.Strip(b); !strings.Contains(plain, "[!NOTE]") {
+		t.Errorf("expected the marker to be left alone, got %q", plain)
+	}
+}
+
+// TestAlertsASCII checks that the ascii and notty styles stay ASCII-only, even
+// when rendering alerts.
+func TestAlertsASCII(t *testing.T) {
+	asciiStyles := []ansi.StyleConfig{
+		styles.ASCIIStyleConfig,
+		styles.NoTTYStyleConfig,
+	}
+	for i := range asciiStyles {
+		r, err := NewTermRenderer(
+			WithStyles(asciiStyles[i]),
+			WithWordWrap(80),
+			WithAlerts(),
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		b, err := r.Render(alertsMarkdown)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		nonAsciiRegexp := regexp.MustCompile(`[^\x00-\x7f]+`)
+		if found := nonAsciiRegexp.FindAllString(b, -1); len(found) > 0 {
+			t.Errorf("Non-ASCII characters found in output: %v", found)
+		}
+	}
 }

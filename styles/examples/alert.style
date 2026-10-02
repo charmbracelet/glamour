@@ -1,0 +1,64 @@
+{
+    "alerts": {
+        "note": {
+            "indent": 1,
+            "indent_token": "│ ",
+            "indent_token_style": {
+                "color": "39"
+            },
+            "title": {
+                "prefix": "ℹ ",
+                "color": "39",
+                "bold": true
+            }
+        },
+        "tip": {
+            "indent": 1,
+            "indent_token": "│ ",
+            "indent_token_style": {
+                "color": "41"
+            },
+            "title": {
+                "prefix": "★ ",
+                "color": "41",
+                "bold": true
+            }
+        },
+        "important": {
+            "indent": 1,
+            "indent_token": "│ ",
+            "indent_token_style": {
+                "color": "141"
+            },
+            "title": {
+                "prefix": "⚑ ",
+                "color": "141",
+                "bold": true
+            }
+        },
+        "warning": {
+            "indent": 1,
+            "indent_token": "│ ",
+            "indent_token_style": {
+                "color": "214"
+            },
+            "title": {
+                "prefix": "⚠ ",
+                "color": "214",
+                "bold": true
+            }
+        },
+        "caution": {
+            "indent": 1,
+            "indent_token": "│ ",
+            "indent_token_style": {
+                "color": "196"
+            },
+            "title": {
+                "prefix": "✖ ",
+                "color": "196",
+                "bold": true
+            }
+        }
+    }
+}
