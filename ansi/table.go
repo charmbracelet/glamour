@@ -20,6 +20,7 @@ type TableElement struct {
 
 	tableImages []tableLink
 	tableLinks  []tableLink
+	OuterIndent uint
 }
 
 // A TableRowElement is used to render a single row in a table.
@@ -57,7 +58,8 @@ func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
 
 	_, _ = renderText(iw, bs.Current().Style.StylePrimitive, rules.BlockPrefix)
 	_, _ = renderText(iw, style, rules.Prefix)
-	width := int(ctx.blockStack.Width(ctx))
+	// Reserve the horizontal space used to align a table beneath list text.
+	width := max(1, int(ctx.blockStack.Width(ctx))-int(e.OuterIndent))
 
 	wrap := true
 	if ctx.options.TableWrap != nil {
@@ -137,12 +139,17 @@ func (e *TableElement) Finish(_ io.Writer, ctx RenderContext) error {
 	e.setBorders(ctx)
 
 	ow := ctx.blockStack.Current().Block
-	if _, err := ow.WriteString(ctx.table.lipgloss.String()); err != nil {
+	// Indent the completed table as a unit so every row remains aligned.
+	iw := NewIndentWriter(ow, int(e.OuterIndent), nil)
+	if _, err := io.WriteString(iw, ctx.table.lipgloss.String()); err != nil {
 		return fmt.Errorf("glamour: error writing to buffer: %w", err)
 	}
 
-	_, _ = renderText(ow, ctx.blockStack.With(rules.StylePrimitive), rules.Suffix)
-	_, _ = renderText(ow, ctx.blockStack.Current().Style.StylePrimitive, rules.BlockSuffix)
+	_, _ = renderText(iw, ctx.blockStack.With(rules.StylePrimitive), rules.Suffix)
+	_, _ = renderText(iw, ctx.blockStack.Current().Style.StylePrimitive, rules.BlockSuffix)
+	if err := iw.Close(); err != nil {
+		return fmt.Errorf("glamour: error closing table indentation: %w", err)
+	}
 
 	e.printTableLinks(ctx)
 
