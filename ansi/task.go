@@ -11,17 +11,18 @@ type TaskElement struct {
 
 // Render renders a TaskElement.
 func (e *TaskElement) Render(w io.Writer, ctx RenderContext) error {
-	var el *BaseElement
-
-	pre := ctx.options.Styles.Task.Unticked
-	if e.Checked {
-		pre = ctx.options.Styles.Task.Ticked
+	item := &ItemElement{
+		IsTask:      true,
+		TaskChecked: e.Checked,
 	}
+	return item.Render(w, ctx)
+}
 
-	el = &BaseElement{
-		Prefix: pre,
-		Style:  ctx.options.Styles.Task.StylePrimitive,
+// Finish finishes rendering a TaskElement.
+func (e *TaskElement) Finish(w io.Writer, ctx RenderContext) error {
+	item := &ItemElement{
+		IsTask:      true,
+		TaskChecked: e.Checked,
 	}
-
-	return el.Render(w, ctx)
+	return item.Finish(w, ctx)
 }

@@ -12,6 +12,7 @@ import (
 
 	"charm.land/glamour/v2/ansi"
 	"charm.land/glamour/v2/styles"
+	xansi "github.com/charmbracelet/x/ansi"
 	"github.com/charmbracelet/x/exp/golden"
 )
 
@@ -369,4 +370,139 @@ func TestWithChromaFormatterCustom(t *testing.T) {
 	}
 
 	golden.RequireEqual(t, []byte(b))
+}
+
+func TestWrappedListIndentation(t *testing.T) {
+	t.Run("unordered list wrap", func(t *testing.T) {
+		in := `- Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla mattis dignissim leo et tempus. Cras sit amet nisi id leo eleifend iaculis nec in lectus. Nam dictum laoreet ex eu laoreet. Morbi quis malesuada lacus, et blandit erat.
+    - Cras quis ornare mi, in condimentum tortor. Vivamus id convallis ligula. Morbi ac commodo lacus, in blandit augue. Cras sed nulla risus`
+
+		r, err := NewTermRenderer(
+			WithStandardStyle("dark"),
+			WithWordWrap(80),
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		out, err := r.Render(in)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		lines := strings.Split(out, "\n")
+		var textLines []string
+		for _, l := range lines {
+			stripped := xansi.Strip(strings.TrimRight(l, " "))
+			if len(strings.TrimSpace(stripped)) > 0 {
+				textLines = append(textLines, stripped)
+			}
+		}
+
+		if len(textLines) < 6 {
+			t.Fatalf("expected at least 6 non-empty lines, got %d:\n%v", len(textLines), textLines)
+		}
+
+		// First line of outer item: 2 spaces doc margin + bullet (col 2, text col 4)
+		if !strings.HasPrefix(textLines[0], "  • ") {
+			t.Errorf("expected outer item first line to start with '  • ', got: %q", textLines[0])
+		}
+		// Continuation lines of outer item: 4 spaces (2 doc margin + 2 hanging indent)
+		for i := 1; i <= 3; i++ {
+			if !strings.HasPrefix(textLines[i], "    ") || strings.HasPrefix(textLines[i], "    •") {
+				t.Errorf("expected outer item continuation line %d to start with 4 spaces, got: %q", i, textLines[i])
+			}
+		}
+
+		// First line of nested item: 4 spaces (2 doc margin + 2 list indent) + bullet
+		if !strings.HasPrefix(textLines[4], "    • ") {
+			t.Errorf("expected nested item first line to start with '    • ', got: %q", textLines[4])
+		}
+		// Continuation line of nested item: 6 spaces (2 doc margin + 2 list indent + 2 hanging indent)
+		if !strings.HasPrefix(textLines[5], "      ") {
+			t.Errorf("expected nested item continuation line to start with 6 spaces, got: %q", textLines[5])
+		}
+	})
+
+	t.Run("ordered list wrap", func(t *testing.T) {
+		in := `1. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla mattis dignissim leo et tempus. Cras sit amet nisi id leo eleifend iaculis nec in lectus. Nam dictum laoreet ex eu laoreet.`
+
+		r, err := NewTermRenderer(
+			WithStandardStyle("dark"),
+			WithWordWrap(80),
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		out, err := r.Render(in)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		lines := strings.Split(out, "\n")
+		var textLines []string
+		for _, l := range lines {
+			stripped := xansi.Strip(strings.TrimRight(l, " "))
+			if len(strings.TrimSpace(stripped)) > 0 {
+				textLines = append(textLines, stripped)
+			}
+		}
+
+		if len(textLines) < 2 {
+			t.Fatalf("expected at least 2 non-empty lines, got %d:\n%v", len(textLines), textLines)
+		}
+
+		// First line: 2 spaces doc margin + "1. " (col 2, text col 5)
+		if !strings.HasPrefix(textLines[0], "  1. ") {
+			t.Errorf("expected ordered item first line to start with '  1. ', got: %q", textLines[0])
+		}
+		// Continuation lines: 5 spaces (2 doc margin + 3 hanging indent for '1. ')
+		for i := 1; i < len(textLines); i++ {
+			if !strings.HasPrefix(textLines[i], "     ") {
+				t.Errorf("expected ordered continuation line %d to start with 5 spaces, got: %q", i, textLines[i])
+			}
+		}
+	})
+
+	t.Run("task list wrap", func(t *testing.T) {
+		in := `- [ ] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla mattis dignissim leo et tempus. Cras sit amet nisi id leo eleifend iaculis nec in lectus.`
+
+		r, err := NewTermRenderer(
+			WithStandardStyle("dark"),
+			WithWordWrap(80),
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		out, err := r.Render(in)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		lines := strings.Split(out, "\n")
+		var textLines []string
+		for _, l := range lines {
+			stripped := xansi.Strip(strings.TrimRight(l, " "))
+			if len(strings.TrimSpace(stripped)) > 0 {
+				textLines = append(textLines, stripped)
+			}
+		}
+
+		if len(textLines) < 2 {
+			t.Fatalf("expected at least 2 non-empty lines, got %d:\n%v", len(textLines), textLines)
+		}
+
+		// First line: 2 spaces doc margin + "[ ] " (col 2, text col 6)
+		if !strings.HasPrefix(textLines[0], "  [ ] ") {
+			t.Errorf("expected task item first line to start with '  [ ] ', got: %q", textLines[0])
+		}
+		// Continuation lines: 6 spaces (2 doc margin + 4 hanging indent for '[ ] ')
+		for i := 1; i < len(textLines); i++ {
+			if !strings.HasPrefix(textLines[i], "      ") {
+				t.Errorf("expected task continuation line %d to start with 6 spaces, got: %q", i, textLines[i])
+			}
+		}
+	})
 }
