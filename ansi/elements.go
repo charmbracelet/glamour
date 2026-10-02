@@ -338,11 +338,21 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 			line := n.Lines().At(i)
 			s += string(line.Value(source))
 		}
+		lang := string(n.Language(source))
+		if isMermaidEnabled(ctx.options) && strings.EqualFold(lang, "mermaid") {
+			return Element{
+				Entering: "\n",
+				Renderer: &DiagramElement{
+					Source:   s,
+					Language: lang,
+				},
+			}
+		}
 		return Element{
 			Entering: "\n",
 			Renderer: &CodeBlockElement{
 				Code:     s,
-				Language: string(n.Language(source)),
+				Language: lang,
 			},
 		}
 
