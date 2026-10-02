@@ -12,6 +12,7 @@ import (
 
 	"charm.land/glamour/v2/ansi"
 	"charm.land/glamour/v2/styles"
+	xansi "github.com/charmbracelet/x/ansi"
 	"github.com/charmbracelet/x/exp/golden"
 )
 
@@ -246,6 +247,69 @@ func TestTableAscii(t *testing.T) {
 	nonAsciiChars := nonAsciiRegexp.FindAllString(result, -1)
 	if len(nonAsciiChars) > 0 {
 		t.Errorf("Non-ASCII characters found in output: %v", nonAsciiChars)
+	}
+}
+
+func TestTableWidthIndentMargin(t *testing.T) {
+	markdown := strings.TrimSpace(`
+| Header A | Header B |
+| -------- | -------- |
+| Value 1  | Value 2  |
+`)
+
+	tests := []struct {
+		name     string
+		wordWrap int
+		indent   uint
+		margin   uint
+	}{
+		{
+			name:     "indent and margin within word wrap",
+			wordWrap: 60,
+			indent:   4,
+			margin:   2,
+		},
+		{
+			name:     "tight word wrap with indent and margin",
+			wordWrap: 40,
+			indent:   6,
+			margin:   2,
+		},
+		{
+			name:     "indent only within word wrap",
+			wordWrap: 50,
+			indent:   5,
+			margin:   0,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			cfg := styles.DarkStyleConfig
+			cfg.Table.Indent = &tc.indent
+			cfg.Table.Margin = &tc.margin
+
+			renderer, err := NewTermRenderer(
+				WithStyles(cfg),
+				WithWordWrap(tc.wordWrap),
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			result, err := renderer.Render(markdown)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			lines := strings.Split(result, "\n")
+			for i, line := range lines {
+				w := xansi.StringWidth(line)
+				if w > tc.wordWrap {
+					t.Errorf("line %d exceeds word wrap: width %d > %d: %q", i, w, tc.wordWrap, line)
+				}
+			}
+		})
 	}
 }
 
