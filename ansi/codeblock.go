@@ -87,7 +87,7 @@ func (e *CodeBlockElement) Render(w io.Writer, ctx RenderContext) error {
 		// Don't register the style if it's already registered.
 		_, ok := styles.Registry[theme]
 		if !ok {
-			styles.Register(chroma.MustNewStyle(theme,
+			style, err := chroma.NewStyle(theme,
 				chroma.StyleEntries{
 					chroma.Text:                chromaStyle(rules.Chroma.Text),
 					chroma.Error:               chromaStyle(rules.Chroma.Error),
@@ -120,7 +120,12 @@ func (e *CodeBlockElement) Render(w io.Writer, ctx RenderContext) error {
 					chroma.GenericStrong:       chromaStyle(rules.Chroma.GenericStrong),
 					chroma.GenericSubheading:   chromaStyle(rules.Chroma.GenericSubheading),
 					chroma.Background:          chromaStyle(rules.Chroma.Background),
-				}))
+				})
+			if err != nil {
+				mutex.Unlock()
+				return fmt.Errorf("glamour: invalid code block style: %w", err)
+			}
+			styles.Register(style)
 		}
 		mutex.Unlock()
 	}
