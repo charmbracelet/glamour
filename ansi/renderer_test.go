@@ -71,6 +71,9 @@ func TestRenderer(t *testing.T) {
 				),
 				goldmark.WithParserOptions(
 					parser.WithAutoHeadingID(),
+					parser.WithParagraphTransformers(
+						util.Prioritized(NewAlertTransformer(), alertTestPriority),
+					),
 				),
 			)
 
@@ -127,6 +130,9 @@ func TestRendererIssues(t *testing.T) {
 				),
 				goldmark.WithParserOptions(
 					parser.WithAutoHeadingID(),
+					parser.WithParagraphTransformers(
+						util.Prioritized(NewAlertTransformer(), alertTestPriority),
+					),
 				),
 			)
 

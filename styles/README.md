@@ -18,6 +18,7 @@ elements support the following style settings:
 | suffix           | string | Printed after the block's last element                       |
 | indent           | number | Specifies the indentation of the block                       |
 | indent_token     | string | Specifies the indentation format                             |
+| indent_token_style | style | Specifies the styling of the indentation token               |
 | margin           | number | Specifies the margin around the block                        |
 | color            | color  | Defines the default text color for the block                 |
 | background_color | color  | Defines the default background color for the block           |
@@ -146,6 +147,59 @@ Style:
 Output:
 
 ![Block Quote Example](https://github.com/charmbracelet/glamour/raw/master/styles/examples/block_quote.png)
+
+---
+
+### alerts
+
+The `alerts` element styles [GitHub alerts][alerts] (admonitions), which are
+rendered when the `alerts` renderer option is enabled:
+
+```markdown
+> [!NOTE]
+> Useful information that users should know, even when skimming content.
+```
+
+Each alert kind (`note`, `tip`, `important`, `warning` and `caution`) is a block
+element with one extra attribute:
+
+| Attribute | Value  | Description                                            |
+| --------- | ------ | ------------------------------------------------------ |
+| title     | style  | Styles the title line, e.g. `"ℹ Note"`. `prefix` is usually the icon, and `format` can be used to customize the label. |
+
+Anything an alert kind leaves unset is inherited from the `block_quote` element.
+The default styles color the title, and use `indent_token_style` to color the
+quote line to match it.
+
+#### Example
+
+Style:
+
+```json
+"alerts": {
+    "note": {
+        "indent": 1,
+        "indent_token": "│ ",
+        "indent_token_style": {
+            "color": "39"
+        },
+        "title": {
+            "prefix": "ℹ ",
+            "color": "39",
+            "bold": true
+        }
+    }
+}
+```
+
+Output:
+
+```
+│ ℹ Note
+│ Useful information that users should know, even when skimming content.
+```
+
+[alerts]: https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts
 
 ---
 
