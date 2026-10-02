@@ -435,12 +435,13 @@ func TestWithoutAlerts(t *testing.T) {
 // TestAlertsASCII checks that the ascii and notty styles stay ASCII-only, even
 // when rendering alerts.
 func TestAlertsASCII(t *testing.T) {
-	for _, style := range []ansi.StyleConfig{
+	asciiStyles := []ansi.StyleConfig{
 		styles.ASCIIStyleConfig,
 		styles.NoTTYStyleConfig,
-	} {
+	}
+	for i := range asciiStyles {
 		r, err := NewTermRenderer(
-			WithStyles(style),
+			WithStyles(asciiStyles[i]),
 			WithWordWrap(80),
 			WithAlerts(),
 		)
