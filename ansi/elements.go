@@ -72,7 +72,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		if node.Parent() != nil {
 			kind := node.Parent().Kind()
 			if kind == ast.KindListItem {
-				return Element{}
+				return textFlow(ctx)
 			}
 		}
 		return Element{
@@ -463,7 +463,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		// handled by KindListItem
 		return Element{}
 	case ast.KindTextBlock:
-		return Element{}
+		return textFlow(ctx)
 
 	case east.KindEmoji:
 		n := node.(*east.Emoji)

@@ -370,3 +370,78 @@ func TestWithChromaFormatterCustom(t *testing.T) {
 
 	golden.RequireEqual(t, []byte(b))
 }
+
+func TestWithBidiReordering(t *testing.T) {
+	r, err := NewTermRenderer(
+		WithStandardStyle(styles.NoTTYStyle),
+		WithWordWrap(60),
+		WithBidiReordering(true),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	in, err := os.ReadFile("testdata/bidi.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	b, err := r.Render(string(in))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	golden.RequireEqual(t, []byte(b))
+}
+
+func TestWithBidiReorderingLeftToRight(t *testing.T) {
+	for _, file := range []string{markdown, "testdata/example.md"} {
+		in, err := os.ReadFile(file)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		var out [2]string
+		for i, enabled := range []bool{false, true} {
+			r, err := NewTermRenderer(
+				WithStandardStyle(styles.DarkStyle),
+				WithBidiReordering(enabled),
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+			out[i], err = r.Render(string(in))
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+
+		if out[0] != out[1] {
+			t.Errorf("%s: bidi reordering changed left-to-right output", file)
+		}
+	}
+}
+
+func TestWithBidiReorderingRemovesMarks(t *testing.T) {
+	in, err := os.ReadFile("testdata/bidi.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, style := range []string{styles.DarkStyle, styles.LightStyle, styles.DraculaStyle} {
+		r, err := NewTermRenderer(
+			WithStandardStyle(style),
+			WithBidiReordering(true),
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+		b, err := r.Render(string(in))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if strings.ContainsAny(b, "⁨⁩") {
+			t.Errorf("%s: output contains bidi marks: %q", style, b)
+		}
+	}
+}

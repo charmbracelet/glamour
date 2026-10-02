@@ -38,6 +38,9 @@ func (e *BlockElement) Finish(w io.Writer, ctx RenderContext) error {
 			int(bs.Width(ctx)),
 			" ,.;-+|",
 		)
+		if ctx.options.BidiReordering {
+			s = reorderBidi(s)
+		}
 
 		mw := NewMarginWriter(ctx, w, bs.Current().Style)
 		defer mw.Close() //nolint:errcheck
