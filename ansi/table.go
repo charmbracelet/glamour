@@ -117,10 +117,28 @@ func (e *TableElement) setBorders(ctx RenderContext) {
 		}
 	}
 	ctx.table.lipgloss.Border(border)
-	ctx.table.lipgloss.BorderTop(false)
-	ctx.table.lipgloss.BorderLeft(false)
-	ctx.table.lipgloss.BorderRight(false)
-	ctx.table.lipgloss.BorderBottom(false)
+
+	// Border visibility. The defaults reproduce glamour's historical table
+	// look — header rule and column separators on, outer frame and inter-row
+	// dividers off — so styles that do not set the toggles render unchanged.
+	// Each edge can be overridden through StyleTable, e.g. RowBorder enables a
+	// divider between every row, or the four frame toggles box the table in.
+	ctx.table.lipgloss.BorderTop(borderEnabled(rules.TopBorder, false))
+	ctx.table.lipgloss.BorderBottom(borderEnabled(rules.BottomBorder, false))
+	ctx.table.lipgloss.BorderLeft(borderEnabled(rules.LeftBorder, false))
+	ctx.table.lipgloss.BorderRight(borderEnabled(rules.RightBorder, false))
+	ctx.table.lipgloss.BorderHeader(borderEnabled(rules.HeaderBorder, true))
+	ctx.table.lipgloss.BorderColumn(borderEnabled(rules.ColumnBorder, true))
+	ctx.table.lipgloss.BorderRow(borderEnabled(rules.RowBorder, false))
+}
+
+// borderEnabled resolves an optional table border toggle, falling back to
+// glamour's default when the style leaves it unset.
+func borderEnabled(toggle *bool, fallback bool) bool {
+	if toggle != nil {
+		return *toggle
+	}
+	return fallback
 }
 
 // Finish finishes rendering a TableElement.
