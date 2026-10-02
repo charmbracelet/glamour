@@ -17,7 +17,7 @@ type ImageElement struct {
 // Render renders an ImageElement.
 func (e *ImageElement) Render(w io.Writer, ctx RenderContext) error {
 	// Make OSC 8 hyperlink token.
-	hyperlink, resetHyperlink, _ := makeHyperlink(e.URL)
+	hyperlink, resetHyperlink, _ := ctx.makeHyperlink(e.URL)
 
 	style := ctx.options.Styles.ImageText
 	if e.TextOnly {
