@@ -135,8 +135,8 @@ func (e *TableElement) collectLinksAndImages(ctx RenderContext) error {
 				content:  linkDomain(uri),
 				linkType: linkTypeAuto,
 			}
-			if shortned, ok := autolink.Detect(uri); ok {
-				autoLink.content = shortned
+			if shortened, ok := autolink.Detect(uri); ok {
+				autoLink.content = shortened
 			}
 			links = append(links, autoLink)
 		case *ast.Image:
