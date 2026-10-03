@@ -112,11 +112,19 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 			n = n.Parent()
 		}
 
+		// A nested list that is the last item of its parent list item would
+		// otherwise emit a trailing blank line for each level of nesting,
+		// accumulating extra blank lines after deeply nested items (#102).
+		newline := true
+		if p := node.Parent(); p != nil && p.Kind() == ast.KindListItem && p.NextSibling() == nil {
+			newline = false
+		}
+
 		e := &BlockElement{
 			Block:   &bytes.Buffer{},
 			Style:   cascadeStyle(ctx.blockStack.Current().Style, s, false),
 			Margin:  true,
-			Newline: true,
+			Newline: newline,
 		}
 		return Element{
 			Entering: "\n",
