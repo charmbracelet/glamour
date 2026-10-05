@@ -37,6 +37,15 @@ type glyphSet struct {
 	arrowDown          rune
 	arrowLeft          rune
 	arrowRight         rune
+	openRight          rune
+	openLeft           rune
+	crossGlyph         rune
+	bar                rune
+	circle             rune
+	barDone            rune
+	barActive          rune
+	barCrit            rune
+	milestone          rune
 }
 
 var unicodeGlyphs = glyphSet{
@@ -48,6 +57,8 @@ var unicodeGlyphs = glyphSet{
 	teeDown: '┬', teeUp: '┴', teeLeft: '┤', teeRight: '├',
 	cross:   '┼',
 	arrowUp: '▲', arrowDown: '▼', arrowLeft: '◀', arrowRight: '▶',
+	openRight: '▷', openLeft: '◁', crossGlyph: '✗',
+	bar: '█', barDone: '░', barActive: '▓', barCrit: '▒', milestone: '◆', circle: '●',
 }
 
 var asciiGlyphs = glyphSet{
@@ -59,6 +70,8 @@ var asciiGlyphs = glyphSet{
 	teeDown: '+', teeUp: '+', teeLeft: '+', teeRight: '+',
 	cross:   '+',
 	arrowUp: '^', arrowDown: 'v', arrowLeft: '<', arrowRight: '>',
+	openRight: '>', openLeft: '<', crossGlyph: 'X',
+	bar: '#', barDone: '.', barActive: '@', barCrit: '*', milestone: 'D', circle: 'o',
 }
 
 // line returns the glyph for a cell whose connections are bits, drawn with

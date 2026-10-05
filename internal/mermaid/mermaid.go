@@ -54,10 +54,63 @@ func render(src string, limit int, g glyphSet) ([]string, error) {
 		return nil, errf("diagram too large (over %d lines)", maxSourceLines)
 	}
 
+	switch diagramKind(src) {
+	case kindSequence:
+		d, err := parseSequence(src)
+		if err != nil {
+			return nil, err
+		}
+		return drawSequenceFit(d, limit, g)
+	case kindGantt:
+		d, err := parseGantt(src)
+		if err != nil {
+			return nil, err
+		}
+		return drawGanttFit(d, limit, g)
+	case kindState:
+		d, err := parseState(src)
+		if err != nil {
+			return nil, err
+		}
+		return drawFlowchartFit(d, limit, g)
+	case kindER:
+		d, err := parseER(src)
+		if err != nil {
+			return nil, err
+		}
+		return drawFlowchartFit(d, limit, g)
+	case kindClass:
+		d, err := parseClass(src)
+		if err != nil {
+			return nil, err
+		}
+		return drawFlowchartFit(d, limit, g)
+	case kindPie:
+		return renderPie(src, limit, g)
+	case kindJourney:
+		return renderJourney(src, limit, g)
+	case kindTimeline:
+		return renderTimeline(src)
+	case kindMindmap:
+		return renderMindmap(src)
+	case kindQuadrant:
+		return renderQuadrant(src, limit, g)
+	case kindXYChart:
+		return renderXYChart(src, limit, g)
+	case kindGitGraph:
+		return renderGitGraph(src, limit, g)
+	}
+
 	d, err := Parse(src)
 	if err != nil {
 		return nil, err
 	}
+	return drawFlowchartFit(d, limit, g)
+}
+
+// drawFlowchartFit renders a flowchart-shaped diagram, compacting it when
+// it does not fit the limit.
+func drawFlowchartFit(d *diagram, limit int, g glyphSet) ([]string, error) {
 	if len(d.nodes) > maxNodes {
 		return nil, errf("diagram too large (over %d nodes)", maxNodes)
 	}

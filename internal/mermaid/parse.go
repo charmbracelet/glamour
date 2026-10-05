@@ -193,7 +193,7 @@ func (d *diagram) parseDirection(stmt string, lineno int) error {
 
 func (d *diagram) addNode(n *node) {
 	if existing, ok := d.nodeByID[n.id]; ok {
-		if n.label != n.id || n.shape != ShapeRect {
+		if n.label != n.id {
 			existing.label = n.label
 			existing.shape = n.shape
 		}

@@ -221,6 +221,13 @@ func runeWidth(r rune) int {
 	return max(1, ansi.StringWidth(string(r)))
 }
 
+func abs(n int) int {
+	if n < 0 {
+		return -n
+	}
+	return n
+}
+
 func sign(n int) int {
 	switch {
 	case n > 0:

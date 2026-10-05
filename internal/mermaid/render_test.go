@@ -192,16 +192,28 @@ func TestRenderASCIIGlyphs(t *testing.T) {
 }
 
 func TestRenderCycle(t *testing.T) {
-	_, err := render("flowchart LR\nA --> B --> A", 0, unicodeGlyphs)
-	if err == nil || !strings.Contains(err.Error(), "cycle") {
-		t.Errorf("expected cycle error, got %v", err)
+	got := renderOrFatal(t, "flowchart LR\nA --> B --> A", 0)
+	joined := strings.Join(got, "\n")
+	if !strings.Contains(joined, "A") || !strings.Contains(joined, "B") {
+		t.Errorf("expected both nodes, got:\n%s", joined)
+	}
+	// The feedback edge wraps around the drawing and re-enters.
+	if strings.Count(joined, "▶") != 2 {
+		t.Errorf("expected two arrowheads, got:\n%s", joined)
+	}
+	if !strings.Contains(joined, "└") {
+		t.Errorf("expected a wrapped feedback lane, got:\n%s", joined)
 	}
 }
 
 func TestRenderSelfLoop(t *testing.T) {
-	_, err := render("flowchart LR\nA --> A", 0, unicodeGlyphs)
-	if err == nil || !strings.Contains(err.Error(), "cycle") {
-		t.Errorf("expected cycle error, got %v", err)
+	got := renderOrFatal(t, "flowchart TD\nA --> A", 0)
+	joined := strings.Join(got, "\n")
+	if !strings.Contains(joined, "A") {
+		t.Errorf("expected the node, got:\n%s", joined)
+	}
+	if !strings.Contains(joined, "▼") {
+		t.Errorf("expected a re-entry arrowhead, got:\n%s", joined)
 	}
 }
 

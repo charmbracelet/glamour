@@ -62,7 +62,7 @@ func TestCacheHits(t *testing.T) {
 
 func TestCacheErrors(t *testing.T) {
 	resetCache()
-	src := "sequenceDiagram\nA->>B: hi"
+	src := "sankey-beta\na,b,10"
 
 	if _, err := renderCached(src, 0, unicodeGlyphs); err == nil {
 		t.Fatal("expected an error")

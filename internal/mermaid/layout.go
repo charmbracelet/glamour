@@ -32,21 +32,25 @@ type lnode struct {
 }
 
 // ledge is an edge during layout. chain holds the endpoints and, for edges
-// skipping layers, the virtual waypoints in between.
+// skipping layers, the virtual waypoints in between. Edges closing a cycle
+// are marked as feedback edges and routed around the drawing instead of
+// taking part in the layering.
 type ledge struct {
 	from, to *lnode
 	label    string
 	kind     edgeKind
 	chain    []*lnode
+	feedback bool
 }
 
 // layoutCtx carries the laid out diagram through positioning and routing.
 type layoutCtx struct {
-	st      settings
-	lr      bool
-	layers  [][]*lnode
-	bandPos []int
-	size    point
+	st       settings
+	lr       bool
+	layers   [][]*lnode
+	bandPos  []int
+	size     point
+	overhang int
 }
 
 // draw lays out the diagram and renders it onto a canvas.
@@ -90,14 +94,19 @@ func draw(d *diagram, st settings, g glyphSet) ([]string, int, error) {
 	l := &layoutCtx{st: st, lr: d.direction == DirLR, layers: layers}
 	l.widenForLabels(edges)
 	l.position()
+	l.overhang = labelOverhang(edges)
 
-	c := newCanvas(l.size.x+labelOverhang(edges), l.size.y)
+	feedback := feedbackEdges(edges)
+	l.shiftForFeedback(feedback)
+
+	c := newCanvas(l.size.x+l.overhang+l.lanePad(feedback), l.size.y+l.lanePadV(feedback))
 	for _, layer := range layers {
 		for _, n := range layer {
 			drawNode(c, n, st, g)
 		}
 	}
 	l.route(c, edges, g)
+	l.routeFeedback(c, feedback)
 	attachConnectors(c, layers, g, l.lr)
 
 	lines := c.render(g)
@@ -108,12 +117,43 @@ func draw(d *diagram, st settings, g glyphSet) ([]string, int, error) {
 	return lines, width, nil
 }
 
-// computeLayers assigns each node a layer via a longest-path ranking and
-// rejects graphs containing a cycle.
+// computeLayers assigns each node a layer via a longest-path ranking.
+// Edges that close a cycle, including self-loops, are marked as feedback
+// edges, excluded from the ranking, and routed around the drawing instead.
 func computeLayers(nodes []*lnode, edges []*ledge) error {
+	for {
+		for _, n := range nodes {
+			n.layer = 0
+		}
+		stuck := kahnRank(nodes, edges)
+		if len(stuck) == 0 {
+			return nil
+		}
+
+		pruneToCycle(stuck, edges)
+		var candidate *ledge
+		for _, e := range edges {
+			if !e.feedback && stuck[e.from] && stuck[e.to] {
+				candidate = e
+			}
+		}
+		if candidate == nil {
+			return errf("graph contains a cycle")
+		}
+		candidate.feedback = true
+	}
+}
+
+// kahnRank ranks the nodes along non-feedback edges and returns the set of
+// nodes that could not be ranked because they sit in, or downstream of, a
+// cycle.
+func kahnRank(nodes []*lnode, edges []*ledge) map[*lnode]bool {
 	indeg := make(map[*lnode]int, len(nodes))
 	adj := make(map[*lnode][]*lnode, len(nodes))
 	for _, e := range edges {
+		if e.feedback {
+			continue
+		}
 		adj[e.from] = append(adj[e.from], e.to)
 		indeg[e.to]++
 	}
@@ -139,22 +179,216 @@ func computeLayers(nodes []*lnode, edges []*ledge) error {
 			}
 		}
 	}
-	if processed != len(nodes) {
-		return errf("graph contains a cycle")
+
+	stuck := make(map[*lnode]bool)
+	for _, n := range nodes {
+		if indeg[n] > 0 {
+			stuck[n] = true
+		}
 	}
-	return nil
+	return stuck
 }
 
-// insertVirtuals gives every edge a waypoint chain, inserting virtual nodes
-// on edges that skip layers.
+// pruneToCycle narrows a stuck node set to the nodes actually part of a
+// cycle, dropping nodes that merely feed into or out of it.
+func pruneToCycle(stuck map[*lnode]bool, edges []*ledge) {
+	for changed := true; changed; {
+		changed = false
+		for n := range stuck {
+			hasIn, hasOut := false, false
+			for _, e := range edges {
+				if e.feedback {
+					continue
+				}
+				if stuck[e.from] && e.to == n {
+					hasIn = true
+				}
+				if stuck[e.to] && e.from == n {
+					hasOut = true
+				}
+			}
+			if !hasIn || !hasOut {
+				delete(stuck, n)
+				changed = true
+			}
+		}
+	}
+}
+
+// insertVirtuals gives every non-feedback edge a waypoint chain, inserting
+// virtual nodes on edges that skip layers.
 func insertVirtuals(edges []*ledge) {
 	for _, e := range edges {
+		if e.feedback {
+			continue
+		}
 		e.chain = []*lnode{e.from}
 		for l := e.from.layer + 1; l < e.to.layer; l++ {
 			e.chain = append(e.chain, &lnode{virtual: true, layer: l, w: 1, h: 1})
 		}
 		e.chain = append(e.chain, e.to)
 	}
+}
+
+// feedbackEdges returns the edges routed around the drawing.
+func feedbackEdges(edges []*ledge) []*ledge {
+	var feedback []*ledge
+	for _, e := range edges {
+		if e.feedback {
+			feedback = append(feedback, e)
+		}
+	}
+	return feedback
+}
+
+// lanePad returns the canvas columns reserved for feedback lanes of
+// top-down diagrams, which wrap around the right side.
+func (l *layoutCtx) lanePad(feedback []*ledge) int {
+	if l.lr || len(feedback) == 0 {
+		return 0
+	}
+	return 2 + 2*len(feedback)
+}
+
+// lanePadV returns the canvas rows reserved for feedback lanes of
+// left-to-right diagrams, which wrap around the bottom.
+func (l *layoutCtx) lanePadV(feedback []*ledge) int {
+	if !l.lr || len(feedback) == 0 {
+		return 0
+	}
+	return 2 + 2*len(feedback)
+}
+
+// shiftForFeedback moves the drawing out of the way of feedback edges that
+// would otherwise leave the canvas: a feedback edge entering the first band
+// from above needs a top margin, and one leaving the last band needs an
+// escape row or column below it.
+func (l *layoutCtx) shiftForFeedback(feedback []*ledge) {
+	if len(feedback) == 0 {
+		return
+	}
+	lastLayer := len(l.layers) - 1
+	shift, escape := false, false
+	for _, e := range feedback {
+		if e.to.layer == 0 {
+			shift = true
+		}
+		if e.from.layer == lastLayer {
+			escape = true
+		}
+	}
+	if shift {
+		for _, layer := range l.layers {
+			for _, n := range layer {
+				if l.lr {
+					n.x++
+				} else {
+					n.y++
+				}
+			}
+		}
+		for i := range l.bandPos {
+			l.bandPos[i]++
+		}
+	}
+	// Escape room for edges leaving the last band: a row below the drawing
+	// for top-down diagrams, a column to the right for left-to-right ones.
+	if shift || escape {
+		if l.lr {
+			l.size.x += 2
+		} else {
+			l.size.y += 2
+		}
+	}
+}
+
+// routeFeedback draws feedback edges around the margin of the drawing.
+func (l *layoutCtx) routeFeedback(c *canvas, feedback []*ledge) {
+	for k, e := range feedback {
+		if l.lr {
+			l.routeBackEdgeLR(c, e, k)
+		} else {
+			l.routeBackEdgeTD(c, e, k)
+		}
+	}
+}
+
+// routeBackEdgeTD wraps a top-down feedback edge around the right side of
+// the drawing: exit the source downwards, cross to a lane beyond the
+// drawing, climb to the row above the target band, and enter the target
+// from above.
+func (l *layoutCtx) routeBackEdgeTD(c *canvas, e *ledge, lane int) {
+	from, to := e.from, e.to
+	sx := from.x + from.w/2
+	sy := from.y + from.h
+	tx := to.x + to.w/2
+	ty := to.y - 1
+
+	laneX := l.size.x + l.overhang + 1 + 2*lane
+	pts := []point{
+		{x: sx, y: sy},
+		{x: sx, y: l.escapeBelow(from.layer)},
+		{x: laneX, y: l.escapeBelow(from.layer)},
+		{x: laneX, y: l.bandPos[to.layer] - 1},
+		{x: tx, y: l.bandPos[to.layer] - 1},
+		{x: tx, y: ty},
+	}
+
+	arrowDir := uint8(0)
+	if hasArrowhead(e.kind) {
+		arrowDir = dirDown
+	}
+	c.drawPath(pts, lineStyleFor(e.kind), arrowDir)
+	l.labelTD(c, e, pts)
+}
+
+// routeBackEdgeLR wraps a left-to-right feedback edge around the bottom of
+// the drawing: exit the source sideways, drop to a lane below the drawing,
+// run to the column left of the target band, and enter the target from the
+// left.
+func (l *layoutCtx) routeBackEdgeLR(c *canvas, e *ledge, lane int) {
+	from, to := e.from, e.to
+	sx := from.x + from.w
+	sy := from.y + from.h/2
+	tx := to.x - 1
+	ty := to.y + to.h/2
+
+	laneY := l.size.y + 1 + 2*lane
+	pts := []point{
+		{x: sx, y: sy},
+		{x: l.escapeRight(from.layer), y: sy},
+		{x: l.escapeRight(from.layer), y: laneY},
+		{x: l.bandPos[to.layer] - 1, y: laneY},
+		{x: l.bandPos[to.layer] - 1, y: ty},
+		{x: tx, y: ty},
+	}
+
+	arrowDir := uint8(0)
+	if hasArrowhead(e.kind) {
+		arrowDir = dirRight
+	}
+	c.drawPath(pts, lineStyleFor(e.kind), arrowDir)
+	l.labelLR(c, e, pts)
+}
+
+// escapeBelow returns the row a feedback edge crosses on its way out of
+// the given layer: the middle of the gap below the band, or a dedicated
+// row underneath the drawing for the last band.
+func (l *layoutCtx) escapeBelow(layer int) int {
+	if layer+1 < len(l.layers) {
+		return l.gapCoord(layer)
+	}
+	return l.size.y - 1
+}
+
+// escapeRight returns the column a feedback edge crosses on its way out of
+// the given layer: the middle of the gap right of the band, or a dedicated
+// column past the drawing for the last band.
+func (l *layoutCtx) escapeRight(layer int) int {
+	if layer+1 < len(l.layers) {
+		return l.gapCoord(layer)
+	}
+	return l.size.x - 1
 }
 
 // buildLayers buckets nodes and virtual waypoints into their layers. Order
@@ -169,6 +403,9 @@ func buildLayers(nodes []*lnode, edges []*ledge) [][]*lnode {
 		layers[n.layer] = append(layers[n.layer], n)
 	}
 	for _, e := range edges {
+		if e.feedback {
+			continue
+		}
 		for _, v := range e.chain[1 : len(e.chain)-1] {
 			layers[v.layer] = append(layers[v.layer], v)
 		}
@@ -182,6 +419,9 @@ func chainAdjacency(edges []*ledge) (preds, succs map[*lnode][]*lnode) {
 	preds = make(map[*lnode][]*lnode)
 	succs = make(map[*lnode][]*lnode)
 	for _, e := range edges {
+		if e.feedback {
+			continue
+		}
 		for i := 0; i+1 < len(e.chain); i++ {
 			a, b := e.chain[i], e.chain[i+1]
 			succs[a] = append(succs[a], b)
@@ -352,9 +592,12 @@ func (l *layoutCtx) gapCoord(i int) int {
 	return l.bandPos[i+1] - 1 - (gap-1)/2
 }
 
-// route draws all edges onto the canvas.
+// route draws all non-feedback edges onto the canvas.
 func (l *layoutCtx) route(c *canvas, edges []*ledge, g glyphSet) {
 	for _, e := range edges {
+		if e.feedback {
+			continue
+		}
 		if l.lr {
 			l.routeEdgeLR(c, e)
 		} else {
@@ -445,6 +688,17 @@ func (l *layoutCtx) labelLR(c *canvas, e *ledge, pts []point) {
 	if e.label == "" {
 		return
 	}
+	if e.feedback {
+		for i := 0; i+1 < len(pts); i++ {
+			a, b := pts[i], pts[i+1]
+			if a.y == b.y && abs(b.x-a.x) > stringWidth(e.label)+2 {
+				mid := (a.x + b.x) / 2
+				w := stringWidth(e.label)
+				c.labelSoft(point{x: mid - w/2, y: a.y}, " "+e.label+" ")
+				return
+			}
+		}
+	}
 	for i := 0; i+1 < len(pts); i++ {
 		a, b := pts[i], pts[i+1]
 		if a.x == b.x && a.y != b.y {
@@ -528,18 +782,18 @@ func attachConnectors(c *canvas, layers [][]*lnode, g glyphSet, lr bool) {
 			}
 			if lr {
 				cy := n.y + n.h/2
-				if connects(c, n.x+n.w, cy, dirRight) {
+				if connects(c, n.x+n.w, cy) {
 					c.text(n.x+n.w-1, cy, g.teeRight)
 				}
-				if connects(c, n.x-1, cy, dirRight) {
+				if connects(c, n.x-1, cy) {
 					c.text(n.x, cy, g.teeLeft)
 				}
 			} else {
 				cx := n.x + n.w/2
-				if connects(c, cx, n.y+n.h, dirDown) {
+				if connects(c, cx, n.y+n.h) {
 					c.text(cx, n.y+n.h-1, g.teeDown)
 				}
-				if connects(c, cx, n.y-1, dirDown) {
+				if connects(c, cx, n.y-1) {
 					c.text(cx, n.y, g.teeUp)
 				}
 			}
@@ -547,14 +801,13 @@ func attachConnectors(c *canvas, layers [][]*lnode, g glyphSet, lr bool) {
 	}
 }
 
-// connects reports whether the cell at x, y carries a connection toward
-// the given direction.
-func connects(c *canvas, x, y int, dir uint8) bool {
+// connects reports whether the cell at x, y carries any line or arrowhead.
+func connects(c *canvas, x, y int) bool {
 	if !c.inside(x, y) {
 		return false
 	}
 	cl := c.cells[y][x]
-	return cl.arrow == dir || cl.bits&dir != 0
+	return cl.bits != 0 || cl.arrow != 0
 }
 
 // wrapLabel wraps a label to maxW display columns, hard-splitting words
