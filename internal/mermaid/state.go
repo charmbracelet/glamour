@@ -30,8 +30,8 @@ func parseState(src string) (*diagram, error) {
 		}
 
 		switch word {
-		case "direction":
-			dir := strings.ToUpper(strings.TrimSpace(trimmed[len("direction"):]))
+		case kwDirection:
+			dir := strings.ToUpper(strings.TrimSpace(trimmed[len(kwDirection):]))
 			switch dir {
 			case "LR":
 				d.direction = DirLR
@@ -48,7 +48,7 @@ func parseState(src string) (*diagram, error) {
 				continue
 			}
 			return nil, errf("could not parse (line %d): %q", lineno, trimmed)
-		case "note", "fork", "join":
+		case kwNote, "fork", "join":
 			return nil, errf("unsupported syntax (line %d): %q", lineno, word)
 		default:
 			if err := parseStateTransition(d, trimmed, lineno); err != nil {

@@ -2,6 +2,17 @@ package mermaid
 
 import "strings"
 
+// Keywords shared across the diagram parsers.
+const (
+	kwClick     = "click"
+	kwDirection = "direction"
+	kwGantt     = "gantt"
+	kwJourney   = "journey"
+	kwNote      = "note"
+	kwTimeline  = "timeline"
+	kwTitle     = "title"
+)
+
 // Direction is the layout direction of a flowchart.
 type Direction int
 
@@ -89,7 +100,7 @@ type diagram struct {
 // they are reported explicitly so users get a precise reason.
 var otherDiagramTypes = []string{
 	"sequenceDiagram", "classDiagram", "stateDiagram", "erDiagram",
-	"journey", "gantt", "pie", "gitGraph", "mindmap", "timeline",
+	kwJourney, kwGantt, "pie", "gitGraph", "mindmap", kwTimeline,
 	"quadrantChart", "sankey", "C4Context", "architecture",
 }
 
@@ -97,14 +108,14 @@ var otherDiagramTypes = []string{
 // support; diagrams using them fall back to their source.
 var unsupportedKeywords = []string{
 	"subgraph", "end", "classdef", "class", "style", "linkstyle",
-	"click", "direction", "acctitle", "accdescr", "init",
+	kwClick, kwDirection, "acctitle", "accdescr", "init",
 }
 
 // unsupportedEdgeOps are edge constructs this package does not route.
 var unsupportedEdgeOps = []string{"<--", "--o", "--x", "o--", "x--", "&"}
 
-// Parse parses a mermaid flowchart or graph definition.
-func Parse(src string) (*diagram, error) {
+// parse parses a mermaid flowchart or graph definition.
+func parse(src string) (*diagram, error) {
 	src = strings.ReplaceAll(src, "\r\n", "\n")
 	src, title := stripFrontmatter(src)
 	d := &diagram{
@@ -452,7 +463,7 @@ func (p *chainParser) parsePipeLabel() (string, error) {
 
 // parseLabel parses a node label delimited by open and close, honouring
 // quoted sections that may contain the delimiters.
-func (p *chainParser) parseLabel(open, close string) (string, error) {
+func (p *chainParser) parseLabel(open, closing string) (string, error) {
 	p.i += len(open)
 	start := p.i
 	inQuote := false
@@ -467,9 +478,9 @@ func (p *chainParser) parseLabel(open, close string) (string, error) {
 			p.i++
 			continue
 		}
-		if !inQuote && p.at(close) {
+		if !inQuote && p.at(closing) {
 			s := p.s[start:p.i]
-			p.i += len(close)
+			p.i += len(closing)
 			return unquoteLabel(s), nil
 		}
 		p.i++

@@ -36,7 +36,7 @@ func diagramKind(src string) dKind {
 			return kindFlowchart
 		case "sequencediagram":
 			return kindSequence
-		case "gantt":
+		case kwGantt:
 			return kindGantt
 		case "statediagram", "statediagram-v2":
 			return kindState
@@ -46,9 +46,9 @@ func diagramKind(src string) dKind {
 			return kindClass
 		case "pie":
 			return kindPie
-		case "journey":
+		case kwJourney:
 			return kindJourney
-		case "timeline":
+		case kwTimeline:
 			return kindTimeline
 		case "mindmap":
 			return kindMindmap

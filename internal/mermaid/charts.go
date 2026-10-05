@@ -54,6 +54,19 @@ type pieEntry struct {
 	value float64
 }
 
+// pieInlineTitle extracts the title from an inline "pie Show buckets"
+// header, keeping an explicit title directive or frontmatter title.
+func pieInlineTitle(trimmed, title string) string {
+	rest := strings.TrimSpace(trimmed[len("pie"):])
+	if rest == "" || title != "" {
+		return title
+	}
+	if strings.HasPrefix(strings.ToLower(rest), kwTitle) {
+		rest = strings.TrimSpace(rest[len(kwTitle):])
+	}
+	return strings.Trim(rest, `"`)
+}
+
 func parsePie(src string) (string, []pieEntry, error) {
 	src = strings.ReplaceAll(src, "\r\n", "\n")
 	src, title := stripFrontmatter(src)
@@ -68,22 +81,17 @@ func parsePie(src string) (string, []pieEntry, error) {
 			continue
 		}
 		if !seenHeader {
-			if strings.EqualFold(firstWord(trimmed), "pie") {
-				seenHeader = true
-				if rest := strings.TrimSpace(trimmed[len("pie"):]); rest != "" && title == "" {
-					if strings.HasPrefix(strings.ToLower(rest), "title") {
-						rest = strings.TrimSpace(rest[len("title"):])
-					}
-					title = strings.Trim(rest, `"`)
-				}
-				continue
+			if !strings.EqualFold(firstWord(trimmed), "pie") {
+				return "", nil, errf(`could not parse (line %d): expected "pie"`, lineno)
 			}
-			return "", nil, errf(`could not parse (line %d): expected "pie"`, lineno)
+			seenHeader = true
+			title = pieInlineTitle(trimmed, title)
+			continue
 		}
 		word := strings.ToLower(firstWord(trimmed))
 		rest := strings.TrimSpace(trimmed[len(word):])
 		switch word {
-		case "title":
+		case kwTitle:
 			if title == "" {
 				title = strings.Trim(rest, `"`)
 			}
@@ -131,14 +139,14 @@ func renderJourney(src string, limit int, g glyphSet) ([]string, error) {
 		word := strings.ToLower(firstWord(trimmed))
 		rest := strings.TrimSpace(trimmed[len(word):])
 		if !seenHeader {
-			if word == "journey" {
+			if word == kwJourney {
 				seenHeader = true
 				continue
 			}
 			return nil, errf(`could not parse (line %d): expected "journey"`, lineno)
 		}
 		switch word {
-		case "title":
+		case kwTitle:
 			if title == "" {
 				title = rest
 			}
@@ -217,15 +225,15 @@ func renderTimeline(src string) ([]string, error) {
 		}
 		word := strings.ToLower(firstWord(trimmed))
 		if !seenHeader {
-			if word == "timeline" {
+			if word == kwTimeline {
 				seenHeader = true
 				continue
 			}
 			return nil, errf(`could not parse (line %d): expected "timeline"`, lineno)
 		}
-		if word == "title" {
+		if word == kwTitle {
 			if title == "" {
-				title = strings.TrimSpace(trimmed[len("title"):])
+				title = strings.TrimSpace(trimmed[len(kwTitle):])
 			}
 			continue
 		}
@@ -284,9 +292,9 @@ func renderXYChart(src string, limit int, g glyphSet) ([]string, error) {
 			return nil, errf(`could not parse (line %d): expected "xychart-beta"`, lineno)
 		}
 		switch word {
-		case "title":
+		case kwTitle:
 			if title == "" {
-				title = strings.TrimSpace(trimmed[len("title"):])
+				title = strings.TrimSpace(trimmed[len(kwTitle):])
 			}
 		case "x-axis", "xaxis":
 			labels = parseAxisLabels(trimmed)
@@ -365,12 +373,12 @@ func parseAxisLabels(line string) []string {
 	if open < 0 {
 		return nil
 	}
-	close := strings.LastIndexByte(line, ']')
-	if close <= open {
+	closeIdx := strings.LastIndexByte(line, ']')
+	if closeIdx <= open {
 		return nil
 	}
 	var labels []string
-	for _, label := range strings.Split(line[open+1:close], ",") {
+	for _, label := range strings.Split(line[open+1:closeIdx], ",") {
 		labels = append(labels, strings.Trim(strings.TrimSpace(label), `"`))
 	}
 	return labels
@@ -382,12 +390,12 @@ func parseFloatList(s string) ([]float64, error) {
 	if open < 0 {
 		return nil, errf("expected [values]")
 	}
-	close := strings.LastIndexByte(s, ']')
-	if close <= open {
+	closeIdx := strings.LastIndexByte(s, ']')
+	if closeIdx <= open {
 		return nil, errf("expected [values]")
 	}
 	var values []float64
-	for _, field := range strings.Split(s[open+1:close], ",") {
+	for _, field := range strings.Split(s[open+1:closeIdx], ",") {
 		v, err := strconv.ParseFloat(strings.TrimSpace(field), 64)
 		if err != nil {
 			return nil, errf("bad value %q", field)
@@ -409,10 +417,9 @@ func truncateLabel(s string, w int) string {
 	if stringWidth(s) <= w {
 		return s
 	}
-	runes := []rune(s)
 	out := make([]rune, 0, w)
 	width := 0
-	for _, r := range runes {
+	for _, r := range s {
 		rw := runeWidth(r)
 		if width+rw > w-1 {
 			break

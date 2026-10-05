@@ -88,7 +88,7 @@ func parseSequence(src string) (*seqDiagram, error) {
 			}
 		case "autonumber", "activate", "deactivate":
 			// Procedural directives without layout impact; ignored.
-		case "note":
+		case kwNote:
 			ev, err := d.parseNote(trimmed, lineno)
 			if err != nil {
 				return nil, err

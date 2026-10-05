@@ -30,15 +30,9 @@ func drawSequenceFit(d *seqDiagram, limit int, g glyphSet) ([]string, error) {
 		return nil, errf("diagram too large (over %d events)", maxSeqEvents)
 	}
 
-	lines, width, err := drawSequence(d, defaultSettings, g)
-	if err != nil {
-		return nil, err
-	}
+	lines, width := drawSequence(d, defaultSettings, g)
 	if limit > 0 && width > limit {
-		lines, width, err = drawSequence(d, compactSettings, g)
-		if err != nil {
-			return nil, err
-		}
+		lines, width = drawSequence(d, compactSettings, g)
 		if width > limit {
 			return nil, errf("too wide to render (needs %d columns, %d available)", width, limit)
 		}
@@ -58,7 +52,7 @@ func countSeqEvents(events []seqEvent) int {
 }
 
 // drawSequence lays out and draws a sequence diagram.
-func drawSequence(d *seqDiagram, st settings, g glyphSet) ([]string, int, error) {
+func drawSequence(d *seqDiagram, st settings, g glyphSet) ([]string, int) {
 	l := &seqLayout{d: d, st: st, g: g}
 	n := len(d.participants)
 	l.x = make([]int, n)
@@ -97,8 +91,10 @@ func drawSequence(d *seqDiagram, st settings, g glyphSet) ([]string, int, error)
 	l.c = newCanvas(l.width+4, height)
 
 	for i, p := range d.participants {
-		drawNode(l.c, &lnode{node: &node{label: p.label}, lines: l.lines[i],
-			x: l.x[i], y: 0, w: l.w[i], h: len(l.lines[i]) + 2*st.boxPad + 2}, st, g)
+		drawNode(l.c, &lnode{
+			node: &node{label: p.label}, lines: l.lines[i],
+			x: l.x[i], y: 0, w: l.w[i], h: len(l.lines[i]) + 2*st.boxPad + 2,
+		}, st, g)
 	}
 
 	for _, ev := range d.events {
@@ -119,7 +115,7 @@ func drawSequence(d *seqDiagram, st settings, g glyphSet) ([]string, int, error)
 	for _, line := range lines {
 		width = max(width, stringWidth(line))
 	}
-	return lines, width, nil
+	return lines, width
 }
 
 // rightExtra returns the columns needed right of the last participant for
@@ -155,7 +151,7 @@ func (l *seqLayout) leftShift() int {
 
 // allEvents flattens nested fragment events.
 func allEvents(events []seqEvent) []seqEvent {
-	var flat []seqEvent
+	flat := make([]seqEvent, 0, len(events))
 	for _, ev := range events {
 		flat = append(flat, ev)
 		flat = append(flat, allEvents(ev.events)...)
@@ -178,6 +174,8 @@ func measureSeqEvent(ev seqEvent, st settings) int {
 			rows += measureSeqEvent(child, st) + 1
 		}
 		return rows
+	case seqDivider:
+		return 1
 	}
 	return 1
 }
@@ -192,6 +190,8 @@ func (l *seqLayout) event(ev seqEvent, depth int) {
 		l.note(ev)
 	case seqFragment:
 		l.fragment(ev, depth)
+	case seqDivider:
+		l.divider(ev, 0, l.width)
 	}
 	l.maxY = max(l.maxY, l.y)
 }
@@ -349,7 +349,8 @@ func (l *seqLayout) headGlyph(head seqHead, right bool) rune {
 			return l.g.openRight
 		}
 		return l.g.openLeft
-	default:
+	case seqHeadCross:
 		return l.g.crossGlyph
 	}
+	return l.g.crossGlyph
 }

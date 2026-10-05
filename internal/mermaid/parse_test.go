@@ -18,13 +18,13 @@ func TestParseDirection(t *testing.T) {
 		{"graph LR\nA --> B", DirLR},
 	}
 	for _, c := range cases {
-		d, err := Parse(c.src)
+		d, err := parse(c.src)
 		if err != nil {
-			t.Errorf("Parse(%q): %v", c.src, err)
+			t.Errorf("parse(%q): %v", c.src, err)
 			continue
 		}
 		if d.direction != c.want {
-			t.Errorf("Parse(%q) direction = %v, want %v", c.src, d.direction, c.want)
+			t.Errorf("parse(%q) direction = %v, want %v", c.src, d.direction, c.want)
 		}
 	}
 }
@@ -50,15 +50,15 @@ func TestParseDirectionErrors(t *testing.T) {
 		{"flowchart TD\n%% comment only", "empty"},
 	}
 	for _, c := range cases {
-		_, err := Parse(c.src)
+		_, err := parse(c.src)
 		if err == nil || !strings.Contains(err.Error(), c.match) {
-			t.Errorf("Parse(%q) error = %v, want containing %q", c.src, err, c.match)
+			t.Errorf("parse(%q) error = %v, want containing %q", c.src, err, c.match)
 		}
 	}
 }
 
 func TestParseNodes(t *testing.T) {
-	d, err := Parse("flowchart TD\nA[Build] --> B(Test) --> C((Ship)) --> D{Gate} --> E{{Hex}} --> F([Stadium])")
+	d, err := parse("flowchart TD\nA[Build] --> B(Test) --> C((Ship)) --> D{Gate} --> E{{Hex}} --> F([Stadium])")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -86,7 +86,7 @@ func TestParseNodes(t *testing.T) {
 }
 
 func TestParsePlainNodesDefaultToID(t *testing.T) {
-	d, err := Parse("flowchart TD\nA --> B[Label]")
+	d, err := parse("flowchart TD\nA --> B[Label]")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -96,7 +96,7 @@ func TestParsePlainNodesDefaultToID(t *testing.T) {
 }
 
 func TestParseMergesLaterShape(t *testing.T) {
-	d, err := Parse("flowchart TD\nA --> B\nB[Label]")
+	d, err := parse("flowchart TD\nA --> B\nB[Label]")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -106,7 +106,7 @@ func TestParseMergesLaterShape(t *testing.T) {
 }
 
 func TestParseQuotedLabels(t *testing.T) {
-	d, err := Parse(`flowchart TD
+	d, err := parse(`flowchart TD
 A["label with ] bracket"] --> B --> C["quoted \" esc"]`)
 	if err != nil {
 		t.Fatal(err)
@@ -120,7 +120,7 @@ A["label with ] bracket"] --> B --> C["quoted \" esc"]`)
 }
 
 func TestParseLineBreaks(t *testing.T) {
-	d, err := Parse("flowchart TD\nA[two<br/>lines]")
+	d, err := parse("flowchart TD\nA[two<br/>lines]")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -130,7 +130,7 @@ func TestParseLineBreaks(t *testing.T) {
 }
 
 func TestParseEdgeKinds(t *testing.T) {
-	d, err := Parse("flowchart TD\nA --> B\nB --- C\nC -.-> D\nD -.- E\nE ==> F\nF === G\nG ---> H")
+	d, err := parse("flowchart TD\nA --> B\nB --- C\nC -.-> D\nD -.- E\nE ==> F\nF === G\nG ---> H")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -158,19 +158,19 @@ func TestParseEdgeLabels(t *testing.T) {
 		{`A -->|"quoted|"| B`, "quoted|"},
 	}
 	for _, c := range cases {
-		d, err := Parse("flowchart LR\n" + c.src)
+		d, err := parse("flowchart LR\n" + c.src)
 		if err != nil {
-			t.Errorf("Parse(%q): %v", c.src, err)
+			t.Errorf("parse(%q): %v", c.src, err)
 			continue
 		}
 		if len(d.edges) != 1 || d.edges[0].label != c.label {
-			t.Errorf("Parse(%q) label = %q, want %q", c.src, d.edges[0].label, c.label)
+			t.Errorf("parse(%q) label = %q, want %q", c.src, d.edges[0].label, c.label)
 		}
 	}
 }
 
 func TestParseChains(t *testing.T) {
-	d, err := Parse("flowchart TD\nA --> B --> C")
+	d, err := parse("flowchart TD\nA --> B --> C")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -183,7 +183,7 @@ func TestParseChains(t *testing.T) {
 }
 
 func TestParseSemicolonsAndComments(t *testing.T) {
-	d, err := Parse("flowchart TD\n%% a comment\nA --> B; B --> C")
+	d, err := parse("flowchart TD\n%% a comment\nA --> B; B --> C")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -193,7 +193,7 @@ func TestParseSemicolonsAndComments(t *testing.T) {
 }
 
 func TestParseFrontmatter(t *testing.T) {
-	d, err := Parse("---\ntitle: Build flow\n---\nflowchart LR\nA --> B")
+	d, err := parse("---\ntitle: Build flow\n---\nflowchart LR\nA --> B")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -203,7 +203,7 @@ func TestParseFrontmatter(t *testing.T) {
 }
 
 func TestParseHyphenatedIDs(t *testing.T) {
-	d, err := Parse("flowchart TD\nbuild-1 --> test-2.something")
+	d, err := parse("flowchart TD\nbuild-1 --> test-2.something")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -216,19 +216,19 @@ func TestParseHyphenatedIDs(t *testing.T) {
 }
 
 func TestParseTrailingGarbage(t *testing.T) {
-	if _, err := Parse("flowchart TD\nA --> B trailing"); err == nil {
+	if _, err := parse("flowchart TD\nA --> B trailing"); err == nil {
 		t.Error("expected an error for trailing garbage")
 	}
 }
 
 func TestParseIsDeterministic(t *testing.T) {
 	src := "flowchart TD\nA --> B\nA --> C\nB --> D\nC --> D"
-	first, err := Parse(src)
+	first, err := parse(src)
 	if err != nil {
 		t.Fatal(err)
 	}
 	for i := 0; i < 3; i++ {
-		again, err := Parse(src)
+		again, err := parse(src)
 		if err != nil {
 			t.Fatal(err)
 		}

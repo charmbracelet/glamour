@@ -12,8 +12,10 @@ type settings struct {
 	maxLabelW          int
 }
 
-var defaultSettings = settings{hGap: 4, vGap: 3, boxPad: 1, maxLabelW: 24}
-var compactSettings = settings{hGap: 1, vGap: 1, boxPad: 0, maxLabelW: 12}
+var (
+	defaultSettings = settings{hGap: 4, vGap: 3, boxPad: 1, maxLabelW: 24}
+	compactSettings = settings{hGap: 1, vGap: 1, boxPad: 0, maxLabelW: 12}
+)
 
 // maxLRLabelGap caps how wide left-to-right diagrams grow to make room for
 // edge labels.
@@ -105,7 +107,7 @@ func draw(d *diagram, st settings, g glyphSet) ([]string, int, error) {
 			drawNode(c, n, st, g)
 		}
 	}
-	l.route(c, edges, g)
+	l.route(c, edges)
 	l.routeFeedback(c, feedback)
 	attachConnectors(c, layers, g, l.lr)
 
@@ -593,7 +595,7 @@ func (l *layoutCtx) gapCoord(i int) int {
 }
 
 // route draws all non-feedback edges onto the canvas.
-func (l *layoutCtx) route(c *canvas, edges []*ledge, g glyphSet) {
+func (l *layoutCtx) route(c *canvas, edges []*ledge) {
 	for _, e := range edges {
 		if e.feedback {
 			continue
@@ -616,7 +618,8 @@ func (l *layoutCtx) routeEdgeTD(c *canvas, e *ledge) {
 	tx := to.x + to.w/2
 	ty := to.y - 1
 
-	pts := []point{{x: sx, y: sy}}
+	pts := make([]point, 0, 1+2*(len(e.chain)-2)+3)
+	pts = append(pts, point{x: sx, y: sy})
 	x, li := sx, from.layer
 	for _, v := range e.chain[1 : len(e.chain)-1] {
 		gy := l.gapCoord(li)
@@ -644,7 +647,8 @@ func (l *layoutCtx) routeEdgeLR(c *canvas, e *ledge) {
 	tx := to.x - 1
 	ty := to.y + to.h/2
 
-	pts := []point{{x: sx, y: sy}}
+	pts := make([]point, 0, 1+2*(len(e.chain)-2)+3)
+	pts = append(pts, point{x: sx, y: sy})
 	y, li := sy, from.layer
 	for _, v := range e.chain[1 : len(e.chain)-1] {
 		gx := l.gapCoord(li)
@@ -781,23 +785,35 @@ func attachConnectors(c *canvas, layers [][]*lnode, g glyphSet, lr bool) {
 				continue
 			}
 			if lr {
-				cy := n.y + n.h/2
-				if connects(c, n.x+n.w, cy) {
-					c.text(n.x+n.w-1, cy, g.teeRight)
-				}
-				if connects(c, n.x-1, cy) {
-					c.text(n.x, cy, g.teeLeft)
-				}
+				attachConnectorsLR(c, n, g)
 			} else {
-				cx := n.x + n.w/2
-				if connects(c, cx, n.y+n.h) {
-					c.text(cx, n.y+n.h-1, g.teeDown)
-				}
-				if connects(c, cx, n.y-1) {
-					c.text(cx, n.y, g.teeUp)
-				}
+				attachConnectorsTD(c, n, g)
 			}
 		}
+	}
+}
+
+// attachConnectorsLR opens the left and right borders of a left-to-right
+// node where edges attach.
+func attachConnectorsLR(c *canvas, n *lnode, g glyphSet) {
+	cy := n.y + n.h/2
+	if connects(c, n.x+n.w, cy) {
+		c.text(n.x+n.w-1, cy, g.teeRight)
+	}
+	if connects(c, n.x-1, cy) {
+		c.text(n.x, cy, g.teeLeft)
+	}
+}
+
+// attachConnectorsTD opens the top and bottom borders of a top-down node
+// where edges attach.
+func attachConnectorsTD(c *canvas, n *lnode, g glyphSet) {
+	cx := n.x + n.w/2
+	if connects(c, cx, n.y+n.h) {
+		c.text(cx, n.y+n.h-1, g.teeDown)
+	}
+	if connects(c, cx, n.y-1) {
+		c.text(cx, n.y, g.teeUp)
 	}
 }
 

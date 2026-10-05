@@ -40,7 +40,7 @@ func renderQuadrant(src string, limit int, g glyphSet) ([]string, error) {
 			return nil, errf(`could not parse (line %d): expected "quadrantChart"`, lineno)
 		}
 		switch word {
-		case "title":
+		case kwTitle:
 			if title == "" {
 				title = rest
 			}
@@ -134,11 +134,11 @@ func renderQuadrant(src string, limit int, g glyphSet) ([]string, error) {
 
 func parseQuadrantPoint(name, coords string) (quadrantPoint, error) {
 	open := strings.IndexByte(coords, '[')
-	close := strings.LastIndexByte(coords, ']')
-	if open < 0 || close <= open {
+	closeIdx := strings.LastIndexByte(coords, ']')
+	if open < 0 || closeIdx <= open {
 		return quadrantPoint{}, errf("expected [x, y]")
 	}
-	parts := strings.Split(coords[open+1:close], ",")
+	parts := strings.Split(coords[open+1:closeIdx], ",")
 	if len(parts) != 2 {
 		return quadrantPoint{}, errf("expected [x, y]")
 	}

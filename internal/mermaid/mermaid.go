@@ -99,9 +99,10 @@ func render(src string, limit int, g glyphSet) ([]string, error) {
 		return renderXYChart(src, limit, g)
 	case kindGitGraph:
 		return renderGitGraph(src, limit, g)
+	case kindOther, kindFlowchart:
 	}
 
-	d, err := Parse(src)
+	d, err := parse(src)
 	if err != nil {
 		return nil, err
 	}

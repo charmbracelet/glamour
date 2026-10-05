@@ -111,5 +111,9 @@ func safeRender(src string, limit int) (lines []string, err error) {
 			lines, err = nil, fmt.Errorf("internal error: %v", r)
 		}
 	}()
-	return mermaid.Render(src, limit)
+	lines, err = mermaid.Render(src, limit)
+	if err != nil {
+		return nil, fmt.Errorf("glamour: %w", err)
+	}
+	return lines, nil
 }

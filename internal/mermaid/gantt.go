@@ -90,7 +90,7 @@ func parseGantt(src string) (*ganttDiagram, error) {
 		rest := strings.TrimSpace(trimmed[len(word):])
 
 		if !seenHeader {
-			if word == "gantt" {
+			if word == kwGantt {
 				seenHeader = true
 				continue
 			}
@@ -98,11 +98,11 @@ func parseGantt(src string) (*ganttDiagram, error) {
 		}
 
 		switch word {
-		case "title":
+		case kwTitle:
 			if d.title == "" {
 				d.title = rest
 			}
-		case "dateformat", "axisformat", "excludes", "includes", "todaymarker", "click":
+		case "dateformat", "axisformat", "excludes", "includes", "todaymarker", kwClick:
 			// Rendering directives; dates are parsed independently.
 		case "section":
 			section = rest
@@ -245,14 +245,14 @@ func drawGanttFit(d *ganttDiagram, limit int, g glyphSet) ([]string, error) {
 	if limit > 0 {
 		barArea = limit - labelCol - 3
 	}
-	lines, width, _ := drawGantt(d, g, labelCol, barArea)
+	lines, width := drawGantt(d, g, labelCol, barArea)
 	if limit > 0 && width > limit {
 		labelCol = ganttLabelCol(d, 12)
 		barArea = limit - labelCol - 3
 		if barArea < 8 {
 			return nil, errf("too wide to render (needs %d columns, %d available)", labelCol+11, limit)
 		}
-		lines, width, _ = drawGantt(d, g, labelCol, barArea)
+		lines, _ = drawGantt(d, g, labelCol, barArea)
 	}
 	if d.title != "" {
 		lines = append([]string{d.title, ""}, lines...)
@@ -275,7 +275,7 @@ func ganttLabelCol(d *ganttDiagram, maxW int) int {
 }
 
 // drawGantt renders the chart as text rows with a time axis.
-func drawGantt(d *ganttDiagram, g glyphSet, labelCol, barArea int) ([]string, int, bool) {
+func drawGantt(d *ganttDiagram, g glyphSet, labelCol, barArea int) ([]string, int) {
 	if barArea < 8 {
 		barArea = 8
 	}
@@ -396,7 +396,7 @@ func drawGantt(d *ganttDiagram, g glyphSet, labelCol, barArea int) ([]string, in
 	for _, line := range lines {
 		width = max(width, stringWidth(line))
 	}
-	return lines, width, true
+	return lines, width
 }
 
 func timeMin(a, b time.Time) time.Time {

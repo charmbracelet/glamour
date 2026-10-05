@@ -41,8 +41,8 @@ func parseClass(src string) (*diagram, error) {
 		}
 
 		switch word {
-		case "direction":
-			dir := strings.ToUpper(strings.TrimSpace(trimmed[len("direction"):]))
+		case kwDirection:
+			dir := strings.ToUpper(strings.TrimSpace(trimmed[len(kwDirection):]))
 			switch dir {
 			case "LR":
 				d.direction = DirLR
@@ -67,7 +67,7 @@ func parseClass(src string) (*diagram, error) {
 				return nil, errf("could not parse (line %d): empty class name", lineno)
 			}
 			d.addNode(&node{id: id, label: id})
-		case "note", "namespace", "click":
+		case kwNote, "namespace", kwClick:
 			return nil, errf("unsupported syntax (line %d): %q", lineno, word)
 		default:
 			if err := parseClassRelationship(d, trimmed, lineno); err != nil {

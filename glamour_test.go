@@ -438,7 +438,7 @@ func TestMermaidFallback(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !strings.Contains(b, "mermaid: unsupported diagram type") {
+	if !strings.Contains(b, "unsupported diagram type") {
 		t.Errorf("expected a fallback note, got:\n%s", b)
 	}
 	if !strings.Contains(b, "showing source") || !strings.Contains(b, "C4Context") {
