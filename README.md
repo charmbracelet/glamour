@@ -51,6 +51,29 @@ out, err := r.Render(in)
 fmt.Print(out)
 ```
 
+### GitHub Alerts
+
+[Alerts][alerts] (admonitions) are rendered as callouts when you opt in with
+`glamour.WithAlerts()`:
+
+```go
+r, _ := glamour.NewTermRenderer(
+    glamour.WithAlerts(),
+)
+```
+
+```markdown
+> [!NOTE]
+> Useful information that users should know, even when skimming content.
+```
+
+Like GitHub, the marker has to be alone on the first line of the quote, and the
+type must be uppercase. `[!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]` and
+`[!CAUTION]` are supported. Alerts are off by default; use the `alerts` section
+of a style to change how they look.
+
+[alerts]: https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts
+
 ### Color Downsampling
 
 Since the renderer is designed to be "pure" and always produce the same output

@@ -203,6 +203,13 @@ var TokyoNightStyleConfig = ansi.StyleConfig{
 			StylePrimitive: ansi.StylePrimitive{},
 		},
 	},
+	Alerts: ansi.StyleAlerts{
+		Note:      alertStyle("ℹ ", "#7aa2f7"),
+		Tip:       alertStyle("★ ", "#9ece6a"),
+		Important: alertStyle("⚑ ", "#bb9af7"),
+		Warning:   alertStyle("⚠ ", "#e0af68"),
+		Caution:   alertStyle("✖ ", "#f7768e"),
+	},
 	DefinitionDescription: ansi.StylePrimitive{
 		BlockPrefix: defaultArrowBlockPrefix,
 	},

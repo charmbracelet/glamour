@@ -70,6 +70,9 @@ type StyleBlock struct {
 	Indent      *uint   `json:"indent,omitempty"`
 	IndentToken *string `json:"indent_token,omitempty"`
 	Margin      *uint   `json:"margin,omitempty"`
+	// IndentTokenStyle styles the indent token. Attributes it leaves unset
+	// are inherited from the enclosing block's style.
+	IndentTokenStyle *StylePrimitive `json:"indent_token_style,omitempty"`
 }
 
 // StyleCodeBlock holds the style settings for a code block.
@@ -91,6 +94,41 @@ type StyleTable struct {
 	CenterSeparator *string `json:"center_separator,omitempty"`
 	ColumnSeparator *string `json:"column_separator,omitempty"`
 	RowSeparator    *string `json:"row_separator,omitempty"`
+}
+
+// StyleAlert holds the style settings for a GitHub-style alert. Attributes it
+// leaves unset are inherited from the block_quote style.
+type StyleAlert struct {
+	StyleBlock
+	// Title styles the alert's title line, e.g. "ℹ Note". Prefix is usually
+	// the icon, and Format can be used to customize the label.
+	Title StylePrimitive `json:"title,omitempty"`
+}
+
+// StyleAlerts holds the style settings for each kind of GitHub-style alert.
+type StyleAlerts struct {
+	Note      StyleAlert `json:"note,omitempty"`
+	Tip       StyleAlert `json:"tip,omitempty"`
+	Important StyleAlert `json:"important,omitempty"`
+	Warning   StyleAlert `json:"warning,omitempty"`
+	Caution   StyleAlert `json:"caution,omitempty"`
+}
+
+// For returns the style of the given alert kind.
+func (a StyleAlerts) For(kind AlertKind) StyleAlert {
+	switch kind {
+	case AlertNote:
+		return a.Note
+	case AlertTip:
+		return a.Tip
+	case AlertImportant:
+		return a.Important
+	case AlertWarning:
+		return a.Warning
+	case AlertCaution:
+		return a.Caution
+	}
+	return StyleAlert{}
 }
 
 // StyleConfig is used to configure the styling behavior of an ANSIRenderer.
@@ -128,6 +166,8 @@ type StyleConfig struct {
 	CodeBlock StyleCodeBlock `json:"code_block,omitempty"`
 
 	Table StyleTable `json:"table,omitempty"`
+
+	Alerts StyleAlerts `json:"alerts,omitempty"`
 
 	DefinitionList        StyleBlock     `json:"definition_list,omitempty"`
 	DefinitionTerm        StylePrimitive `json:"definition_term,omitempty"`
