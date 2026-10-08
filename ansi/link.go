@@ -3,7 +3,6 @@ package ansi
 import (
 	"bytes"
 	"fmt"
-	"hash/fnv"
 	"io"
 	"net/url"
 
@@ -25,7 +24,7 @@ type LinkElement struct {
 // Render renders a LinkElement.
 func (e *LinkElement) Render(w io.Writer, ctx RenderContext) error {
 	// Make OSC 8 hyperlink token.
-	e.hyperlink, e.resetHyperlink, e.validURL = makeHyperlink(e.URL)
+	e.hyperlink, e.resetHyperlink, e.validURL = ctx.makeHyperlink(e.URL)
 
 	// When inline hyperlinks are enabled and the URL is valid, render only
 	// the link text (underlined, hyperlinked) and hide the URL.
@@ -103,18 +102,15 @@ func (e *LinkElement) renderHrefPart(w io.Writer, ctx RenderContext) error {
 }
 
 // makeHyperlink takes a URL and returns an OSC 8 hyperlink token.
-func makeHyperlink(link string) (string, string, bool) {
+func (ctx RenderContext) makeHyperlink(link string) (string, string, bool) {
 	// Make OSC 8 hyperlink token.
 	var hyperlink, resetHyperlink string
 
 	u, err := url.Parse(link)
 	validURL := err == nil && "#"+u.Fragment != link // if the URL only consists of an anchor, ignore it
 	if validURL {
-		h := fnv.New32a()
-		if _, err := io.WriteString(h, link); err != nil {
-			return "", "", false
-		}
-		urlID := fmt.Sprintf("id=%d", h.Sum32())
+		*ctx.hyperlinkID++
+		urlID := fmt.Sprintf("id=%d", *ctx.hyperlinkID)
 		hyperlink = ansi.SetHyperlink(link, urlID)
 		resetHyperlink = ansi.ResetHyperlink()
 	}
