@@ -51,6 +51,35 @@ out, err := r.Render(in)
 fmt.Print(out)
 ```
 
+### Mermaid Diagrams
+
+Fenced code blocks with the `mermaid` language are rendered as box-drawing
+diagrams, sized to the word wrap width:
+
+```go
+r, _ := glamour.NewTermRenderer(
+    glamour.WithWordWrap(80),
+    // diagrams are enabled by default; pass false to render them
+    // as ordinary code blocks
+    glamour.WithMermaid(false),
+)
+```
+
+Flowcharts (nodes, shapes, labelled edges, TD/TB/LR directions, cycles
+routed as feedback loops around the drawing), sequence diagrams
+(participants, message arrow styles, self-messages, notes and
+loop/opt/alt/par frames), state diagrams (start and end markers, aliased
+states, cyclic transitions), class diagrams (members, stereotypes,
+inheritance, realization, aggregation), ER diagrams (entities,
+attributes, cardinalities), gantt charts (sections, task flags, milestone
+markers on a scaled time axis), pie charts, mindmaps, timelines, user
+journeys, quadrant charts, xy charts and git graphs are supported.
+Anything the renderer cannot handle, such as subgraphs or the rarer C4,
+sankey and packet diagrams, falls back to the source shown as a code
+block preceded by a note explaining why. Glyphs are Unicode box-drawing
+characters, switching to ASCII automatically when the locale suggests a
+terminal that cannot display them.
+
 ### Color Downsampling
 
 Since the renderer is designed to be "pure" and always produce the same output

@@ -61,6 +61,10 @@ func TestRenderer(t *testing.T) {
 				options.InlineTableLinks = true
 			case "table_with_footer_links", "table_with_footer_links_no_color":
 				options.InlineTableLinks = false
+			case "mermaid":
+				// Pin the locale so the diagram glyphs in the golden
+				// file are deterministic.
+				t.Setenv("LC_ALL", "en_US.UTF-8")
 			}
 
 			md := goldmark.New(

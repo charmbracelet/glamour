@@ -370,3 +370,184 @@ func TestWithChromaFormatterCustom(t *testing.T) {
 
 	golden.RequireEqual(t, []byte(b))
 }
+
+const mermaidMarkdown = "```mermaid\nflowchart LR\nA[Build] --> B{Tests pass?}\nB -->|yes| C[Release]\n```"
+
+func TestMermaidDiagram(t *testing.T) {
+	t.Setenv("LC_ALL", "en_US.UTF-8")
+
+	r, err := NewTermRenderer(
+		WithStandardStyle(styles.DarkStyle),
+		WithWordWrap(80),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	b, err := r.Render(mermaidMarkdown)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !strings.Contains(b, "┌") || !strings.Contains(b, "Build") {
+		t.Errorf("expected a rendered diagram, got:\n%s", b)
+	}
+	if strings.Contains(b, "flowchart LR") {
+		t.Errorf("expected the source not to be shown, got:\n%s", b)
+	}
+}
+
+func TestWithMermaidDisabled(t *testing.T) {
+	t.Setenv("LC_ALL", "en_US.UTF-8")
+
+	r, err := NewTermRenderer(
+		WithStandardStyle(styles.DarkStyle),
+		WithWordWrap(80),
+		WithMermaid(false),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	b, err := r.Render(mermaidMarkdown)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !strings.Contains(b, "flowchart LR") {
+		t.Errorf("expected the source to be shown, got:\n%s", b)
+	}
+	if strings.ContainsAny(b, "┌┐└┘") {
+		t.Errorf("expected no diagram, got:\n%s", b)
+	}
+}
+
+func TestMermaidFallback(t *testing.T) {
+	t.Setenv("LC_ALL", "en_US.UTF-8")
+
+	r, err := NewTermRenderer(
+		WithStandardStyle(styles.DarkStyle),
+		WithWordWrap(80),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	b, err := r.Render("```mermaid\nC4Context\nperson(user, User)\n```")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !strings.Contains(b, "unsupported diagram type") {
+		t.Errorf("expected a fallback note, got:\n%s", b)
+	}
+	if !strings.Contains(b, "showing source") || !strings.Contains(b, "C4Context") {
+		t.Errorf("expected the source to be shown, got:\n%s", b)
+	}
+}
+
+func TestMermaidSequenceDiagram(t *testing.T) {
+	t.Setenv("LC_ALL", "en_US.UTF-8")
+
+	r, err := NewTermRenderer(
+		WithStandardStyle(styles.DarkStyle),
+		WithWordWrap(80),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	b, err := r.Render("```mermaid\nsequenceDiagram\nA->>B: hi\nB-->>A: ok\n```")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"┌", "│ A │", "hi", "┆", "▶", "◀"} {
+		if !strings.Contains(b, want) {
+			t.Errorf("expected %q in sequence output, got:\n%s", want, b)
+		}
+	}
+}
+
+func TestMermaidGantt(t *testing.T) {
+	t.Setenv("LC_ALL", "en_US.UTF-8")
+
+	r, err := NewTermRenderer(
+		WithStandardStyle(styles.DarkStyle),
+		WithWordWrap(80),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	b, err := r.Render("```mermaid\ngantt\nDesign :done, 2024-01-01, 5d\nBuild :2024-01-06, 10d\n```")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"Design", "Build", "░", "█", "Jan"} {
+		if !strings.Contains(b, want) {
+			t.Errorf("expected %q in gantt output, got:\n%s", want, b)
+		}
+	}
+}
+
+func TestMermaidAllTypes(t *testing.T) {
+	t.Setenv("LC_ALL", "en_US.UTF-8")
+
+	r, err := NewTermRenderer(
+		WithStandardStyle(styles.DarkStyle),
+		WithWordWrap(80),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	cases := []struct {
+		src  string
+		want string
+	}{
+		{"stateDiagram-v2\n[*] --> A\nA --> B", "●"},
+		{"classDiagram\nclass A\nA <|-- B", "A"},
+		{"erDiagram\nA ||--o{ B : x", "1:0..*"},
+		{"pie\n\"a\" : 1", "█"},
+		{"mindmap\n  root\n    A", "└─ A"},
+		{"timeline\n2000 : x", "• x"},
+		{"journey\ntitle T\nsection S\n  task: 5: Me", "Me"},
+		{"quadrantChart\nA: [0.5, 0.5]", "┼"},
+		{"xychart-beta\nbar [1, 2]", "█"},
+		{"gitGraph\ncommit\nbranch x\ncommit", "●"},
+	}
+	for _, c := range cases {
+		b, err := r.Render("```mermaid\n" + c.src + "\n```")
+		if err != nil {
+			t.Errorf("render(%q): %v", c.src, err)
+			continue
+		}
+		if !strings.Contains(b, c.want) {
+			t.Errorf("render(%q) missing %q:\n%s", c.src, c.want, b)
+		}
+	}
+}
+
+func TestMermaidASCIIGlyphs(t *testing.T) {
+	t.Setenv("LC_ALL", "C")
+
+	r, err := NewTermRenderer(
+		WithStandardStyle(styles.DarkStyle),
+		WithWordWrap(80),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	b, err := r.Render(mermaidMarkdown)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if strings.ContainsAny(b, "┌┐└┘│─") {
+		t.Errorf("expected ASCII glyphs, got:\n%s", b)
+	}
+	if !strings.Contains(b, "+") || !strings.Contains(b, "Build") {
+		t.Errorf("expected an ASCII diagram, got:\n%s", b)
+	}
+}

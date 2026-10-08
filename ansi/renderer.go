@@ -36,6 +36,9 @@ type Options struct {
 	Styles           StyleConfig
 	ChromaFormatter  string
 	HyperlinkMode    HyperlinkMode
+	// Mermaid controls rendering of mermaid code blocks as box-drawing
+	// diagrams. nil, the default, enables it.
+	Mermaid *bool
 }
 
 // ANSIRenderer renders markdown content as ANSI escaped sequences.
