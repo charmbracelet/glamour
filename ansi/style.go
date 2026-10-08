@@ -91,6 +91,21 @@ type StyleTable struct {
 	CenterSeparator *string `json:"center_separator,omitempty"`
 	ColumnSeparator *string `json:"column_separator,omitempty"`
 	RowSeparator    *string `json:"row_separator,omitempty"`
+
+	// Border visibility toggles. These control which borders are drawn,
+	// independently of the separator characters above. When a field is nil,
+	// glamour's historical default applies: the header rule and the column
+	// separators are drawn, while the outer frame and the inter-row dividers
+	// are not. Set any field to override a single edge — e.g. RowBorder to
+	// true draws a divider between every row, or the four frame fields to
+	// true to box the table in.
+	HeaderBorder *bool `json:"header_border,omitempty"`
+	RowBorder    *bool `json:"row_border,omitempty"`
+	ColumnBorder *bool `json:"column_border,omitempty"`
+	TopBorder    *bool `json:"top_border,omitempty"`
+	BottomBorder *bool `json:"bottom_border,omitempty"`
+	LeftBorder   *bool `json:"left_border,omitempty"`
+	RightBorder  *bool `json:"right_border,omitempty"`
 }
 
 // StyleConfig is used to configure the styling behavior of an ANSIRenderer.
