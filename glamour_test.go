@@ -257,35 +257,41 @@ func TestTableWidthIndentMargin(t *testing.T) {
 | Value 1  | Value 2  |
 `)
 
+	var docMargin uint
 	tests := []struct {
-		name     string
-		wordWrap int
-		indent   uint
-		margin   uint
+		name       string
+		wordWrap   int
+		indent     uint
+		margin     uint
+		wantIndent int
 	}{
 		{
-			name:     "indent and margin within word wrap",
-			wordWrap: 60,
-			indent:   4,
-			margin:   2,
+			name:       "indent and margin within word wrap",
+			wordWrap:   60,
+			indent:     4,
+			margin:     2,
+			wantIndent: 6,
 		},
 		{
-			name:     "tight word wrap with indent and margin",
-			wordWrap: 40,
-			indent:   6,
-			margin:   2,
+			name:       "tight word wrap with indent and margin",
+			wordWrap:   40,
+			indent:     6,
+			margin:     2,
+			wantIndent: 8,
 		},
 		{
-			name:     "indent only within word wrap",
-			wordWrap: 50,
-			indent:   5,
-			margin:   0,
+			name:       "indent only within word wrap",
+			wordWrap:   40,
+			indent:     5,
+			margin:     0,
+			wantIndent: 5,
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			cfg := styles.DarkStyleConfig
+			cfg.Document.Margin = &docMargin
 			cfg.Table.Indent = &tc.indent
 			cfg.Table.Margin = &tc.margin
 
@@ -308,6 +314,20 @@ func TestTableWidthIndentMargin(t *testing.T) {
 				if w > tc.wordWrap {
 					t.Errorf("line %d exceeds word wrap: width %d > %d: %q", i, w, tc.wordWrap, line)
 				}
+			}
+
+			var checked bool
+			for _, line := range strings.Split(xansi.Strip(result), "\n") {
+				if strings.Contains(line, "┼") {
+					checked = true
+					got := len(line) - len(strings.TrimLeft(line, " "))
+					if got != tc.wantIndent {
+						t.Fatalf("table starts at column %d, want %d: %q", got, tc.wantIndent, line)
+					}
+				}
+			}
+			if !checked {
+				t.Fatal("table separator not found in output")
 			}
 		})
 	}
