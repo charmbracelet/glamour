@@ -29,8 +29,10 @@ const (
 	AsciiStyle      = "ascii" //nolint: revive
 	DarkStyle       = "dark"
 	DraculaStyle    = "dracula"
-	TokyoNightStyle = "tokyo-night"
-	LightStyle      = "light"
+	TokyoNightStyle   = "tokyo-night"
+	RosePineStyle     = "rose-pine"
+	RosePineDawnStyle = "rose-pine-dawn"
+	LightStyle        = "light"
 	NoTTYStyle      = "notty"
 	PinkStyle       = "pink"
 )
@@ -681,8 +683,10 @@ var (
 		PinkStyle:  &PinkStyleConfig,
 
 		// Popular themes
-		DraculaStyle:    &DraculaStyleConfig,
-		TokyoNightStyle: &TokyoNightStyleConfig,
+		DraculaStyle:      &DraculaStyleConfig,
+		TokyoNightStyle:   &TokyoNightStyleConfig,
+		RosePineStyle:     &RosePineStyleConfig,
+		RosePineDawnStyle: &RosePineDawnStyleConfig,
 	}
 )
 
