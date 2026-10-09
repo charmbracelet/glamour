@@ -276,6 +276,34 @@ func TestWithHyperlinkModeInline(t *testing.T) {
 	}
 }
 
+func TestWithHyperlinkModeInlineWithBase(t *testing.T) {
+	r, err := NewTermRenderer(
+		WithHyperlinkMode(ansi.HyperlinkModeInline),
+		WithBaseURL("https://charm.land"),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	b, err := r.Render("[click here](/libs)")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// the URL should not be printed as text
+	if strings.Contains(b, "https://charm.land/libs\x1b]8;;\a") && strings.Contains(b, "https://charm.land/libs https://charm.land/libs") {
+		t.Errorf("expected URL to be hidden, got: %q", b)
+	}
+	// link text should be wrapped in an OSC 8 hyperlink
+	if !strings.Contains(b, "\x1b]8;") || !strings.Contains(b, "click here") {
+		t.Errorf("expected OSC 8 hyperlink around link text, got: %q", b)
+	}
+	// link text should be underlined (SGR 4)
+	if !strings.Contains(b, "\x1b[4m") {
+		t.Errorf("expected link text to be underlined, got: %q", b)
+	}
+}
+
 func TestWithHyperlinkModeAuto(t *testing.T) {
 	r, err := NewTermRenderer(
 		WithHyperlinkMode(ansi.HyperlinkModeAuto),
