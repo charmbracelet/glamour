@@ -20,6 +20,8 @@ type TableElement struct {
 
 	tableImages []tableLink
 	tableLinks  []tableLink
+
+	iw *IndentWriter
 }
 
 // A TableRowElement is used to render a single row in a table.
@@ -51,7 +53,7 @@ func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
 	iw := NewIndentWriter(w, int(indentation+margin), func(_ io.Writer) {
 		_, _ = renderText(w, bs.Current().Style.StylePrimitive, " ")
 	})
-	defer iw.Close() //nolint:errcheck
+	ctx.table.iw = iw
 
 	style := bs.With(rules.StylePrimitive)
 
@@ -63,9 +65,12 @@ func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
 	if ctx.options.TableWrap != nil {
 		wrap = *ctx.options.TableWrap
 	}
-	ctx.table.lipgloss = table.New().Width(width).Wrap(wrap)
+	tableWidth := max(0, width-int(indentation+margin))
+	ctx.table.lipgloss = table.New().Width(tableWidth).Wrap(wrap)
 
 	if err := e.collectLinksAndImages(ctx); err != nil {
+		_ = iw.Close()
+		ctx.table.iw = nil
 		return err
 	}
 
@@ -129,6 +134,7 @@ func (e *TableElement) Finish(_ io.Writer, ctx RenderContext) error {
 		ctx.table.lipgloss = nil
 		ctx.table.tableImages = nil
 		ctx.table.tableLinks = nil
+		ctx.table.iw = nil
 	}()
 
 	rules := ctx.options.Styles.Table
@@ -136,17 +142,36 @@ func (e *TableElement) Finish(_ io.Writer, ctx RenderContext) error {
 	e.setStyles(ctx)
 	e.setBorders(ctx)
 
-	ow := ctx.blockStack.Current().Block
-	if _, err := ow.WriteString(ctx.table.lipgloss.String()); err != nil {
+	iw := ctx.table.iw
+	if iw == nil {
+		var indentation uint
+		var margin uint
+		if rules.Indent != nil {
+			indentation = *rules.Indent
+		}
+		if rules.Margin != nil {
+			margin = *rules.Margin
+		}
+
+		ow := ctx.blockStack.Current().Block
+		iw = NewIndentWriter(ow, int(indentation+margin), func(_ io.Writer) {
+			_, _ = renderText(ow, ctx.blockStack.Current().Style.StylePrimitive, " ")
+		})
+	}
+
+	if _, err := io.WriteString(iw, ctx.table.lipgloss.String()); err != nil {
+		_ = iw.Close()
 		return fmt.Errorf("glamour: error writing to buffer: %w", err)
 	}
 
-	_, _ = renderText(ow, ctx.blockStack.With(rules.StylePrimitive), rules.Suffix)
-	_, _ = renderText(ow, ctx.blockStack.Current().Style.StylePrimitive, rules.BlockSuffix)
+	_, _ = renderText(iw, ctx.blockStack.With(rules.StylePrimitive), rules.Suffix)
+	_, _ = renderText(iw, ctx.blockStack.Current().Style.StylePrimitive, rules.BlockSuffix)
+	if err := iw.Close(); err != nil {
+		return fmt.Errorf("glamour: error closing indent writer: %w", err)
+	}
 
 	e.printTableLinks(ctx)
 
-	ctx.table.lipgloss = nil
 	return nil
 }
 
