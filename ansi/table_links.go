@@ -3,6 +3,7 @@ package ansi
 import (
 	"bytes"
 	"fmt"
+	"html"
 	"io"
 	"net/url"
 	"slices"
@@ -38,7 +39,7 @@ func (e *TableElement) printTableLinks(ctx RenderContext) {
 	}
 
 	w := ctx.blockStack.Current().Block
-	termWidth := int(ctx.blockStack.Width(ctx)) //nolint: gosec
+	termWidth := int(ctx.blockStack.Width(ctx))
 
 	renderLinkText := func(link tableLink, position, padding int) string {
 		token := strings.Repeat(" ", padding)
@@ -200,7 +201,7 @@ func nodeContent(node ast.Node, source []byte) ([]byte, error) {
 		for n := node.FirstChild(); n != nil; n = n.NextSibling() {
 			switch nn := n.(type) {
 			case *ast.Text:
-				if _, err := builder.Write(nn.Segment.Value(source)); err != nil {
+				if _, err := builder.WriteString(html.UnescapeString(string(nn.Segment.Value(source)))); err != nil {
 					return fmt.Errorf("glamour: error writing text node: %w", err)
 				}
 			default:

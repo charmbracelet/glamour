@@ -41,6 +41,22 @@ func renderText(w io.Writer, rules StylePrimitive, s string) (int, error) { //no
 		return 0, nil
 	}
 
+	n, err := io.WriteString(w, styleText(rules, s))
+	if err != nil {
+		return n, fmt.Errorf("glamour: error writing to writer: %w", err)
+	}
+	return n, nil
+}
+
+// styleText applies rules to s and returns the styled string. Split out
+// of renderText so callers that write the same styled text repeatedly
+// (padding and indent runs, which emit one cell at a time) can build it
+// once instead of rederiving the style on every cell.
+func styleText(rules StylePrimitive, s string) string {
+	if len(s) == 0 {
+		return ""
+	}
+
 	// XXX: We're using [ansi.Style] instead of [lipgloss.Style] because
 	// Lip Gloss has a weird bug where it adds spaces when rendering joined
 	// strings. Needs further investigation.
@@ -79,12 +95,7 @@ func renderText(w io.Writer, rules StylePrimitive, s string) (int, error) { //no
 		style = style.Blink(true)
 	}
 
-	n, err := io.WriteString(w, style.Styled(s))
-	if err != nil {
-		return n, fmt.Errorf("glamour: error writing to writer: %w", err)
-	}
-
-	return n, nil
+	return style.Styled(s)
 }
 
 // StyleOverrideRender renders a BaseElement with an overridden style.
