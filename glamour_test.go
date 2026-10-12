@@ -286,6 +286,13 @@ func TestTableWidthIndentMargin(t *testing.T) {
 			margin:     0,
 			wantIndent: 5,
 		},
+		{
+			name:       "margin only within word wrap",
+			wordWrap:   40,
+			indent:     0,
+			margin:     4,
+			wantIndent: 4,
+		},
 	}
 
 	for _, tc := range tests {
@@ -317,12 +324,17 @@ func TestTableWidthIndentMargin(t *testing.T) {
 			}
 
 			var checked bool
+			wantEnd := tc.wordWrap - int(tc.margin)
 			for _, line := range strings.Split(xansi.Strip(result), "\n") {
 				if strings.Contains(line, "┼") {
 					checked = true
 					got := len(line) - len(strings.TrimLeft(line, " "))
 					if got != tc.wantIndent {
 						t.Fatalf("table starts at column %d, want %d: %q", got, tc.wantIndent, line)
+					}
+					gotEnd := xansi.StringWidth(strings.TrimRight(line, " "))
+					if gotEnd != wantEnd {
+						t.Fatalf("table separator ends at column %d, want %d: %q", gotEnd, wantEnd, line)
 					}
 				}
 			}

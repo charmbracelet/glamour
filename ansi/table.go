@@ -65,7 +65,7 @@ func (e *TableElement) Render(w io.Writer, ctx RenderContext) error {
 	if ctx.options.TableWrap != nil {
 		wrap = *ctx.options.TableWrap
 	}
-	tableWidth := max(0, width-int(indentation+margin))
+	tableWidth := max(0, width-int(indentation+2*margin))
 	ctx.table.lipgloss = table.New().Width(tableWidth).Wrap(wrap)
 
 	if err := e.collectLinksAndImages(ctx); err != nil {
