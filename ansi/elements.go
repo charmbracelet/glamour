@@ -366,7 +366,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		s := string(n.Text(source)) //nolint: staticcheck
 		return Element{
 			Renderer: &CodeSpanElement{
-				Text:  html.UnescapeString(s),
+				Text:  s,
 				Style: cascadeStyle(ctx.blockStack.Current().Style, ctx.options.Styles.Code, false).StylePrimitive,
 			},
 		}
