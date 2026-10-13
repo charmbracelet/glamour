@@ -180,7 +180,10 @@
       }
     }
   },
-  "table": {},
+  "table": {
+    "even_row": {},
+    "odd_row": {}
+  },
   "definition_list": {},
   "definition_term": {},
   "definition_description": {

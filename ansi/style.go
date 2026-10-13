@@ -86,11 +86,19 @@ type StyleList struct {
 }
 
 // StyleTable holds the style settings for a table.
+//
+// EvenRow and OddRow style data rows by their visual 1-indexed position:
+// the first data row is "odd", the second is "even", and so on. The header
+// row is excluded from this alternation. Set either field to apply a
+// background color, foreground color, or text attribute to those rows;
+// leave both unset to preserve the previous behavior.
 type StyleTable struct {
 	StyleBlock
-	CenterSeparator *string `json:"center_separator,omitempty"`
-	ColumnSeparator *string `json:"column_separator,omitempty"`
-	RowSeparator    *string `json:"row_separator,omitempty"`
+	CenterSeparator *string        `json:"center_separator,omitempty"`
+	ColumnSeparator *string        `json:"column_separator,omitempty"`
+	RowSeparator    *string        `json:"row_separator,omitempty"`
+	EvenRow         StylePrimitive `json:"even_row,omitempty"`
+	OddRow          StylePrimitive `json:"odd_row,omitempty"`
 }
 
 // StyleConfig is used to configure the styling behavior of an ANSIRenderer.
