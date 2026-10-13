@@ -94,6 +94,12 @@ func styleText(rules StylePrimitive, s string) string {
 	if rules.Blink != nil && *rules.Blink {
 		style = style.Blink(true)
 	}
+	if rules.Faint != nil && *rules.Faint {
+		style = style.Faint()
+	}
+	if rules.Conceal != nil && *rules.Conceal {
+		style = style.Conceal(true)
+	}
 
 	return style.Styled(s)
 }
