@@ -125,6 +125,13 @@ func TestStyles(t *testing.T) {
 	}
 
 	_, err = NewTermRenderer(
+		WithStandardStyle(styles.MonokaiStyle),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = NewTermRenderer(
 		WithEnvironmentConfig(),
 	)
 	if err != nil {
