@@ -25,7 +25,7 @@ type LinkElement struct {
 // Render renders a LinkElement.
 func (e *LinkElement) Render(w io.Writer, ctx RenderContext) error {
 	// Make OSC 8 hyperlink token.
-	link := resolveRelativeURL(ctx.options.BaseURL, e.URL)
+	link := resolveRelativeURL(e.BaseURL, e.URL)
 	e.hyperlink, e.resetHyperlink, e.validURL = makeHyperlink(link)
 
 	// When inline hyperlinks are enabled and the URL is valid, render only

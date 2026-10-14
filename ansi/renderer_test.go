@@ -118,6 +118,9 @@ func TestRendererIssues(t *testing.T) {
 				tableWrap := false
 				options.TableWrap = &tableWrap
 			}
+			if bn == "637" {
+				options.BaseURL = "https://github.com/charmbracelet/glamour"
+			}
 
 			md := goldmark.New(
 				goldmark.WithExtensions(
