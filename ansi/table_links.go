@@ -61,7 +61,8 @@ func (e *TableElement) printTableLinks(ctx RenderContext) {
 	}
 
 	renderLinkHref := func(link tableLink, linkText string) {
-		hyperlink, resetHyperlink, _ := makeHyperlink(link.href)
+		href := resolveRelativeURL(ctx.options.BaseURL, link.href)
+		hyperlink, resetHyperlink, _ := makeHyperlink(href)
 
 		style := ctx.options.Styles.Link
 		if link.linkType == linkTypeImage {
@@ -69,7 +70,7 @@ func (e *TableElement) printTableLinks(ctx RenderContext) {
 		}
 
 		linkMaxWidth := max(termWidth-xansi.StringWidth(linkText)-1, 0)
-		token := hyperlink + xansi.Truncate(link.href, linkMaxWidth, "…") + resetHyperlink
+		token := hyperlink + xansi.Truncate(href, linkMaxWidth, "…") + resetHyperlink
 
 		el := &BaseElement{Token: token, Style: style}
 		_ = el.Render(w, ctx)

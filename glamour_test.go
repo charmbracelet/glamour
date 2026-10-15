@@ -12,6 +12,7 @@ import (
 
 	"charm.land/glamour/v2/ansi"
 	"charm.land/glamour/v2/styles"
+	xansi "github.com/charmbracelet/x/ansi"
 	"github.com/charmbracelet/x/exp/golden"
 )
 
@@ -320,6 +321,77 @@ func TestWithHyperlinkModeAuto(t *testing.T) {
 	// the URL should be printed as text after the link text
 	if !strings.Contains(b, "click here") || !strings.Contains(b, "https://charm.land") {
 		t.Errorf("expected link text and URL in output, got: %q", b)
+	}
+}
+
+func TestTableFooterLinksWithBaseURL(t *testing.T) {
+	tests := []struct {
+		name, base, link, image, wantLink, wantImage string
+		inline                                       bool
+	}{
+		{
+			name: "relative", base: "https://docs.example/guide/",
+			link: "page.md", image: "figure.png",
+			wantLink: "https://docs.example/guide/page.md", wantImage: "https://docs.example/guide/figure.png",
+		},
+		{
+			name: "root relative", base: "https://docs.example",
+			link: "/page.md", image: "/figure.png",
+			wantLink: "https://docs.example/page.md", wantImage: "https://docs.example/figure.png",
+		},
+		{
+			name: "absolute", base: "https://docs.example/guide/",
+			link: "https://other.example/page.md", image: "https://other.example/figure.png",
+			wantLink: "https://other.example/page.md", wantImage: "https://other.example/figure.png",
+		},
+		{
+			name: "fragment", base: "https://docs.example/guide/",
+			link: "#section", image: "#diagram",
+			wantLink: "https://docs.example/guide/#section", wantImage: "https://docs.example/guide/#diagram",
+		},
+		{
+			name: "no base", link: "page.md", image: "figure.png",
+			wantLink: "page.md", wantImage: "figure.png",
+		},
+		{
+			name: "inline", base: "https://docs.example/guide/", inline: true,
+			link: "page.md", image: "figure.png",
+			wantLink: "https://docs.example/guide/page.md", wantImage: "https://docs.example/guide/figure.png",
+		},
+		{
+			name: "absolute opaque", base: "https://docs.example/guide/",
+			link: "mailto:reader@example.com", image: "https://other.example/figure.png",
+			wantLink: "mailto:reader@example.com", wantImage: "https://other.example/figure.png",
+		},
+	}
+	osc := regexp.MustCompile("\x1b\\]8;[^;]*;([^\x1b\a]*)")
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			r, err := NewTermRenderer(WithStandardStyle(styles.NoTTYStyle), WithWordWrap(160), WithBaseURL(tc.base), WithInlineTableLinks(tc.inline))
+			if err != nil {
+				t.Fatal(err)
+			}
+			markdown := fmt.Sprintf("| links |\n| --- |\n| [guide](%s) ![diagram](%s) |\n", tc.link, tc.image)
+			out, err := r.Render(markdown)
+			if err != nil {
+				t.Fatal(err)
+			}
+			plain := xansi.Strip(out)
+			for _, want := range []string{tc.wantLink, tc.wantImage} {
+				if !strings.Contains(plain, want) {
+					t.Errorf("visible URL %q missing from %q", want, plain)
+				}
+				count := 0
+				for _, match := range osc.FindAllStringSubmatch(out, -1) {
+					if match[1] == want {
+						count++
+					}
+				}
+				if count != 2 {
+					t.Errorf("URL %q has %d OSC 8 targets, want 2 (cell and footer, or inline text and URL)", want, count)
+				}
+			}
+		})
 	}
 }
 
