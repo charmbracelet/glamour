@@ -1,7 +1,7 @@
                                                                                 
      Label                │     Value                │     URL                  
 ──────────────────────────┼──────────────────────────┼──────────────────────────
-     First                │     foo                  │     ]8;id=2239008578;https://charm.shcharm.sh[1]]8;;          
-     Second               │     bar                  │     ]8;id=2239008578;https://charm.shcharm.sh[1]]8;;          
+     First                │     foo                  │     ]8;id=1;https://charm.shcharm.sh[1]]8;;          
+     Second               │     bar                  │     ]8;id=2;https://charm.shcharm.sh[1]]8;;          
                                                                                 
-[1]: charm.sh ]8;id=2239008578;https://charm.shhttps://charm.sh]8;;                                                  
+[1]: charm.sh ]8;id=3;https://charm.shhttps://charm.sh]8;;                                                  

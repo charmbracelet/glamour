@@ -103,6 +103,11 @@ func (r *ANSIRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegisterer) {
 }
 
 func (r *ANSIRenderer) renderNode(w util.BufWriter, source []byte, node ast.Node, entering bool) (ast.WalkStatus, error) {
+	// Keep anchor IDs stable when the same document is rendered again.
+	if entering && node.Kind() == ast.KindDocument {
+		*r.context.hyperlinkID = 0
+	}
+
 	writeTo := io.Writer(w)
 	bs := r.context.blockStack
 
