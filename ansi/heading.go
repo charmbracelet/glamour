@@ -55,6 +55,9 @@ func (e *HeadingElement) Render(w io.Writer, ctx RenderContext) error {
 
 	_, _ = renderText(w, bs.Parent().Style.StylePrimitive, rules.BlockPrefix)
 	_, _ = renderText(bs.Current().Block, bs.Current().Style.StylePrimitive, rules.Prefix)
+	if ctx.options.BidiReordering {
+		_, _ = io.WriteString(bs.Current().Block, bidiOpen)
+	}
 	return nil
 }
 
@@ -65,7 +68,14 @@ func (e *HeadingElement) Finish(w io.Writer, ctx RenderContext) error {
 	mw := NewMarginWriter(ctx, w, rules)
 	defer mw.Close() //nolint:errcheck
 
-	flow := lipgloss.Wrap(bs.Current().Block.String(), int(bs.Width(ctx)), "")
+	blk := bs.Current().Block.String()
+	if ctx.options.BidiReordering {
+		blk = closeBidiFlow(blk)
+	}
+	flow := lipgloss.Wrap(blk, int(bs.Width(ctx)), "")
+	if ctx.options.BidiReordering {
+		flow = reorderBidi(flow)
+	}
 	_, err := io.WriteString(mw, flow)
 	if err != nil {
 		return fmt.Errorf("glamour: error writing to writer: %w", err)

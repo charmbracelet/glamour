@@ -30,6 +30,9 @@ func (e *ParagraphElement) Render(w io.Writer, ctx RenderContext) error {
 
 	_, _ = renderText(w, bs.Parent().Style.StylePrimitive, rules.BlockPrefix)
 	_, _ = renderText(bs.Current().Block, bs.Current().Style.StylePrimitive, rules.Prefix)
+	if ctx.options.BidiReordering {
+		_, _ = io.WriteString(bs.Current().Block, bidiOpen)
+	}
 	return nil
 }
 
@@ -40,12 +43,18 @@ func (e *ParagraphElement) Finish(w io.Writer, ctx RenderContext) error {
 
 	mw := NewMarginWriter(ctx, w, rules)
 	defer mw.Close() //nolint:errcheck
-	if len(strings.TrimSpace(bs.Current().Block.String())) > 0 {
-		blk := bs.Current().Block.String()
+	blk := bs.Current().Block.String()
+	if ctx.options.BidiReordering {
+		blk = closeBidiFlow(blk)
+	}
+	if len(strings.TrimSpace(blk)) > 0 {
 		if !ctx.options.PreserveNewLines {
 			blk = strings.ReplaceAll(blk, "\n", " ")
 		}
 		flow := lipgloss.Wrap(blk, int(bs.Width(ctx)), "")
+		if ctx.options.BidiReordering {
+			flow = reorderBidi(flow)
+		}
 
 		_, err := io.WriteString(mw, flow)
 		if err != nil {
