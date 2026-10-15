@@ -280,8 +280,8 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 				href:     u,
 				linkType: linkTypeAuto,
 			}
-			if shortned, ok := autolink.Detect(u); ok {
-				tl.content = shortned
+			if shortened, ok := autolink.Detect(u); ok {
+				tl.content = shortened
 			}
 			text := linkWithSuffix(tl, ctx.table.tableLinks)
 
