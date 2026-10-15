@@ -77,6 +77,38 @@
     "column_separator": "|",
     "row_separator": "-"
   },
+  "alerts": {
+    "note": {
+      "italic": false,
+      "indent": 1,
+      "indent_token": "| ",
+      "title": {}
+    },
+    "tip": {
+      "italic": false,
+      "indent": 1,
+      "indent_token": "| ",
+      "title": {}
+    },
+    "important": {
+      "italic": false,
+      "indent": 1,
+      "indent_token": "| ",
+      "title": {}
+    },
+    "warning": {
+      "italic": false,
+      "indent": 1,
+      "indent_token": "| ",
+      "title": {}
+    },
+    "caution": {
+      "italic": false,
+      "indent": 1,
+      "indent_token": "| ",
+      "title": {}
+    }
+  },
   "definition_list": {},
   "definition_term": {},
   "definition_description": {

@@ -84,6 +84,23 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 
 	// Blockquote
 	case ast.KindBlockquote:
+		if kind, ok := AlertKindFromNode(node); ok {
+			style, title := alertStyle(ctx, kind)
+			e := &AlertElement{
+				BlockElement: BlockElement{
+					Block:  &bytes.Buffer{},
+					Style:  style,
+					Margin: true,
+				},
+				Kind:  kind,
+				Title: title,
+			}
+			return Element{
+				Entering: "\n",
+				Renderer: e,
+				Finisher: e,
+			}
+		}
 		e := &BlockElement{
 			Block:  &bytes.Buffer{},
 			Style:  cascadeStyle(ctx.blockStack.Current().Style, ctx.options.Styles.BlockQuote, false),

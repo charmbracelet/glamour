@@ -80,6 +80,73 @@
   },
   "code_block": {},
   "table": {},
+  "alerts": {
+    "note": {
+      "italic": false,
+      "indent": 1,
+      "indent_token": "│ ",
+      "indent_token_style": {
+        "color": "99"
+      },
+      "title": {
+        "prefix": "ℹ ",
+        "color": "99",
+        "bold": true
+      }
+    },
+    "tip": {
+      "italic": false,
+      "indent": 1,
+      "indent_token": "│ ",
+      "indent_token_style": {
+        "color": "84"
+      },
+      "title": {
+        "prefix": "★ ",
+        "color": "84",
+        "bold": true
+      }
+    },
+    "important": {
+      "italic": false,
+      "indent": 1,
+      "indent_token": "│ ",
+      "indent_token_style": {
+        "color": "212"
+      },
+      "title": {
+        "prefix": "⚑ ",
+        "color": "212",
+        "bold": true
+      }
+    },
+    "warning": {
+      "italic": false,
+      "indent": 1,
+      "indent_token": "│ ",
+      "indent_token_style": {
+        "color": "214"
+      },
+      "title": {
+        "prefix": "⚠ ",
+        "color": "214",
+        "bold": true
+      }
+    },
+    "caution": {
+      "italic": false,
+      "indent": 1,
+      "indent_token": "│ ",
+      "indent_token_style": {
+        "color": "196"
+      },
+      "title": {
+        "prefix": "✖ ",
+        "color": "196",
+        "bold": true
+      }
+    }
+  },
   "definition_list": {},
   "definition_term": {},
   "definition_description": {

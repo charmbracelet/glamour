@@ -1,0 +1,27 @@
+                                                                                
+[38;5;39m│ [m[38;5;39;1mℹ [m[38;5;39;1mNote[m                                                                        
+[38;5;39m│ [mUseful information that users should know, even when skimming content.        
+                                                                                
+[38;5;41m│ [m[38;5;41;1m★ [m[38;5;41;1mTip[m                                                                         
+[38;5;41m│ [mHelpful advice for doing things better or more easily.                        
+                                                                                
+[38;5;141m│ [m[38;5;141;1m⚑ [m[38;5;141;1mImportant[m                                                                   
+[38;5;141m│ [mKey information users need to know to achieve their goal.                     
+                                                                                
+[38;5;214m│ [m[38;5;214;1m⚠ [m[38;5;214;1mWarning[m                                                                     
+[38;5;214m│ [mUrgent info that needs immediate user attention to avoid problems.            
+                                                                                
+[38;5;196m│ [m[38;5;196;1m✖ [m[38;5;196;1mCaution[m                                                                     
+[38;5;196m│ [mAdvises about risks or negative outcomes of certain actions.                  
+                                                                                
+[38;5;39m│ [m[38;5;39;1mℹ [m[38;5;39;1mNote[m                                                                        
+[38;5;39m│ [mAlerts can hold other blocks:                                                 
+[38;5;39m│ [m                                                                              
+[38;5;39m│ [ma list item                                                                   
+[38;5;39m│ [manother list item                                                             
+                                                                                
+[38;5;41m│ [m[38;5;41;1m★ [m[38;5;41;1mTip[m                                                                         
+                                                                                
+[!NOTE] not an alert The marker has to be alone on its line.                    
+                                                                                
+Not an alert either.                                                            

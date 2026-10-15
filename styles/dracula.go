@@ -210,6 +210,13 @@ var DraculaStyleConfig = ansi.StyleConfig{
 			StylePrimitive: ansi.StylePrimitive{},
 		},
 	},
+	Alerts: ansi.StyleAlerts{
+		Note:      alertStyle("ℹ ", "#8be9fd"),
+		Tip:       alertStyle("★ ", "#50fa7b"),
+		Important: alertStyle("⚑ ", "#bd93f9"),
+		Warning:   alertStyle("⚠ ", "#f1fa8c"),
+		Caution:   alertStyle("✖ ", "#ff5555"),
+	},
 	DefinitionDescription: ansi.StylePrimitive{
 		BlockPrefix: defaultArrowBlockPrefix,
 	},

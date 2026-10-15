@@ -24,6 +24,11 @@ import (
 const (
 	defaultWidth = 80
 	highPriority = 1000
+
+	// alertPriority places the alert paragraph transformer after the default
+	// link reference (100) and GFM table (200) transformers, which it must not
+	// run ahead of: it can remove the paragraph holding an alert marker.
+	alertPriority = 300
 )
 
 // A TermRendererOption sets an option on a TermRenderer.
@@ -218,6 +223,26 @@ func WithHyperlinkMode(mode ansi.HyperlinkMode) TermRendererOption {
 func WithEmoji() TermRendererOption {
 	return func(tr *TermRenderer) error {
 		emoji.New().Extend(tr.md)
+		return nil
+	}
+}
+
+// WithAlerts enables GitHub-style alerts (admonitions):
+//
+//	> [!NOTE]
+//	> Useful information that users should know, even when skimming content.
+//
+// Blockquotes whose first line is [!NOTE], [!TIP], [!IMPORTANT], [!WARNING] or
+// [!CAUTION] are rendered as callouts, and the marker is not rendered. Alerts
+// are off by default, and their appearance is controlled by the "alerts" style
+// section.
+func WithAlerts() TermRendererOption {
+	return func(tr *TermRenderer) error {
+		tr.md.Parser().AddOptions(
+			parser.WithParagraphTransformers(
+				util.Prioritized(ansi.NewAlertTransformer(), alertPriority),
+			),
+		)
 		return nil
 	}
 }
