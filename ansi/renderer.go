@@ -168,6 +168,9 @@ func isChild(node ast.Node) bool {
 }
 
 func resolveRelativeURL(baseURL string, rel string) string {
+	if baseURL == "" {
+		return rel
+	}
 	u, err := url.Parse(rel)
 	if err != nil {
 		return rel

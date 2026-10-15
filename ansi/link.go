@@ -24,7 +24,8 @@ type LinkElement struct {
 // Render renders a LinkElement.
 func (e *LinkElement) Render(w io.Writer, ctx RenderContext) error {
 	// Make OSC 8 hyperlink token.
-	e.hyperlink, e.resetHyperlink, e.validURL = ctx.makeHyperlink(e.URL)
+	link := resolveRelativeURL(e.BaseURL, e.URL)
+	e.hyperlink, e.resetHyperlink, e.validURL = ctx.makeHyperlink(link)
 
 	// When inline hyperlinks are enabled and the URL is valid, render only
 	// the link text (underlined, hyperlinked) and hide the URL.
@@ -34,7 +35,7 @@ func (e *LinkElement) Render(w io.Writer, ctx RenderContext) error {
 		return err
 	}
 	if !inline && !e.SkipHref {
-		if err := e.renderHrefPart(w, ctx); err != nil {
+		if err := e.renderHrefPart(w, ctx, link); err != nil {
 			return err
 		}
 	}
@@ -81,14 +82,14 @@ func (e *LinkElement) renderTextPart(w io.Writer, ctx RenderContext, inline bool
 	return nil
 }
 
-func (e *LinkElement) renderHrefPart(w io.Writer, ctx RenderContext) error {
+func (e *LinkElement) renderHrefPart(w io.Writer, ctx RenderContext, link string) error {
 	prefix := ""
 	if !e.SkipText {
 		prefix = " "
 	}
 
 	if e.validURL {
-		token := e.hyperlink + resolveRelativeURL(e.BaseURL, e.URL) + e.resetHyperlink
+		token := e.hyperlink + link + e.resetHyperlink
 		el := &BaseElement{
 			Token:  token,
 			Prefix: prefix,

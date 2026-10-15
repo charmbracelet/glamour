@@ -276,6 +276,34 @@ func TestWithHyperlinkModeInline(t *testing.T) {
 	}
 }
 
+func TestWithHyperlinkModeInlineWithBase(t *testing.T) {
+	r, err := NewTermRenderer(
+		WithHyperlinkMode(ansi.HyperlinkModeInline),
+		WithBaseURL("https://charm.land"),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	b, err := r.Render("[click here](/libs)")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// the URL should not be printed as text
+	if strings.Contains(b, "https://charm.land/libs\x1b]8;;\a") && strings.Contains(b, "https://charm.land/libs https://charm.land/libs") {
+		t.Errorf("expected URL to be hidden, got: %q", b)
+	}
+	// link text should be wrapped in an OSC 8 hyperlink
+	if !strings.Contains(b, "\x1b]8;") || !strings.Contains(b, "click here") {
+		t.Errorf("expected OSC 8 hyperlink around link text, got: %q", b)
+	}
+	// link text should be underlined (SGR 4)
+	if !strings.Contains(b, "\x1b[4m") {
+		t.Errorf("expected link text to be underlined, got: %q", b)
+	}
+}
+
 func TestWithHyperlinkModeAuto(t *testing.T) {
 	r, err := NewTermRenderer(
 		WithHyperlinkMode(ansi.HyperlinkModeAuto),
@@ -411,6 +439,36 @@ func TestHyperlinkAnchorIDs(t *testing.T) {
 			}
 			if again != out {
 				t.Error("rendering the same document changed its output")
+			}
+		})
+	}
+}
+
+func TestHyperlinkAnchorIDsWithBaseURL(t *testing.T) {
+	opening := regexp.MustCompile(`\x1b\]8;id=([^;]+);https://example\.com/item\x07`)
+	for _, tc := range []struct {
+		name     string
+		markdown string
+	}{
+		{"links", "[First](/item) [Second](/item)"},
+		{"images", "![First](/item) ![Second](/item)"},
+		{"mixed", "[Link](/item) ![Image](/item)"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			r, err := NewTermRenderer(WithBaseURL("https://example.com"), WithHyperlinkMode(ansi.HyperlinkModeAuto))
+			if err != nil {
+				t.Fatal(err)
+			}
+			out, err := r.Render(tc.markdown)
+			if err != nil {
+				t.Fatal(err)
+			}
+			ids := make(map[string]struct{})
+			for _, match := range opening.FindAllStringSubmatch(out, -1) {
+				ids[match[1]] = struct{}{}
+			}
+			if len(ids) != 2 {
+				t.Errorf("got %d anchor IDs for the resolved URL, want 2 in %q", len(ids), out)
 			}
 		})
 	}
