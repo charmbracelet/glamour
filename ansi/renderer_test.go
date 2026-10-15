@@ -147,3 +147,16 @@ func TestRendererIssues(t *testing.T) {
 		})
 	}
 }
+
+func TestResolveRelativeURL(t *testing.T) {
+	for _, tc := range []struct{ base, rel, want string }{
+		{"", "cmd/gold/", "cmd/gold/"},
+		{"", "./assets/image.png", "./assets/image.png"},
+		{"https://charm.land", "/libs", "https://charm.land/libs"},
+		{"https://charm.land", "https://example.com", "https://example.com"},
+	} {
+		if got := resolveRelativeURL(tc.base, tc.rel); got != tc.want {
+			t.Errorf("resolveRelativeURL(%q, %q) = %q, want %q", tc.base, tc.rel, got, tc.want)
+		}
+	}
+}
