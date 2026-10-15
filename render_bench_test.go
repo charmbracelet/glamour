@@ -47,3 +47,32 @@ func BenchmarkRenderMixed(b *testing.B) {
 		b.Run(fmt.Sprintf("blocks=%d", n), func(b *testing.B) { benchRender(b, mixedDoc(n)) })
 	}
 }
+
+func diagramDoc(n int) string {
+	var b strings.Builder
+	for i := range n {
+		fmt.Fprintf(&b, "## Heading %d\n\nSome prose around the diagram.\n\n```mermaid\nflowchart TD\nA%d[Build] --> B%d{Tests pass?}\nB%d -->|yes| C%d[Release]\nB%d -->|no| D%d[Fix bugs]\nD%d --> C%d\n```\n\n", i, i, i, i, i, i, i, i, i)
+	}
+	return b.String()
+}
+
+func BenchmarkRenderDiagram(b *testing.B) {
+	for _, n := range []int{1, 10, 100} {
+		b.Run(fmt.Sprintf("diagrams=%d", n), func(b *testing.B) { benchRender(b, diagramDoc(n)) })
+	}
+}
+
+func BenchmarkRenderDiagramDisabled(b *testing.B) {
+	doc := diagramDoc(10)
+	r, err := NewTermRenderer(WithStandardStyle("dark"), WithWordWrap(120), WithMermaid(false))
+	if err != nil {
+		b.Fatal(err)
+	}
+	b.SetBytes(int64(len(doc)))
+	b.ReportAllocs()
+	for b.Loop() {
+		if _, err := r.Render(doc); err != nil {
+			b.Fatal(err)
+		}
+	}
+}

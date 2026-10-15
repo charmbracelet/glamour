@@ -230,6 +230,16 @@ func WithChromaFormatter(formatter string) TermRendererOption {
 	}
 }
 
+// WithMermaid enables or disables rendering of mermaid code blocks as
+// box-drawing diagrams. It is enabled by default; pass false to render
+// them as ordinary code blocks instead.
+func WithMermaid(enable bool) TermRendererOption {
+	return func(tr *TermRenderer) error {
+		tr.ansiOptions.Mermaid = &enable
+		return nil
+	}
+}
+
 // WithOptions sets multiple TermRenderer options within a single TermRendererOption.
 func WithOptions(options ...TermRendererOption) TermRendererOption {
 	return func(tr *TermRenderer) error {
