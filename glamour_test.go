@@ -220,6 +220,57 @@ func FuzzData(f *testing.F) {
 	})
 }
 
+func TestTableBorderRows(t *testing.T) {
+	markdown := strings.TrimSpace(`
+| Header A  | Header B  |
+| --------- | --------- |
+| Cell 1    | Cell 2    |
+| Cell 3    | Cell 4    |
+| Cell 5    | Cell 6    |
+`)
+
+	rules := func(on *bool) string {
+		t.Helper()
+		cfg := styles.ASCIIStyleConfig
+		cfg.Table.BorderRows = on
+		renderer, err := NewTermRenderer(
+			WithStyles(cfg),
+			WithWordWrap(80),
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+		result, err := renderer.Render(markdown)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return result
+	}
+
+	dashLines := func(rendered string) int {
+		n := 0
+		for _, line := range strings.Split(rendered, "\n") {
+			if strings.Contains(line, "---") {
+				n++
+			}
+		}
+		return n
+	}
+
+	off := false
+	if got, want := dashLines(rules(nil)), dashLines(rules(&off)); got != want {
+		t.Fatalf("nil and false border_rows differ: nil=%d false=%d", got, want)
+	}
+	if got, want := dashLines(rules(nil)), 1; got != want {
+		t.Fatalf("default table rules = %d, want %d (header only)", got, want)
+	}
+
+	on := true
+	if got, want := dashLines(rules(&on)), 3; got != want {
+		t.Fatalf("border_rows table rules = %d, want %d (header plus two body rules)", got, want)
+	}
+}
+
 func TestTableAscii(t *testing.T) {
 	markdown := strings.TrimSpace(`
 | Header A  | Header B  |
