@@ -80,6 +80,21 @@ lipgloss.Print(out)
 
 [lipgloss]: https://github.com/charmbracelet/lipgloss
 
+### Building Without Syntax Highlighting
+
+Code blocks are highlighted with [Chroma][chroma], which registers its lexers
+and styles when the program starts. Programs that don't need highlighting can
+leave Chroma out of the binary with a build tag:
+
+```bash
+go build -tags glamour_nochroma
+```
+
+Code blocks then render with the style's plain `code_block` rules. The build
+starts faster and is several megabytes smaller.
+
+[chroma]: https://github.com/alecthomas/chroma
+
 ## Styles
 
 You can find all available default styles in our [gallery](https://github.com/charmbracelet/glamour/tree/main/styles/gallery).
