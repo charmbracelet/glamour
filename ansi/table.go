@@ -121,6 +121,9 @@ func (e *TableElement) setBorders(ctx RenderContext) {
 	ctx.table.lipgloss.BorderLeft(false)
 	ctx.table.lipgloss.BorderRight(false)
 	ctx.table.lipgloss.BorderBottom(false)
+	if rules.BorderRows != nil {
+		ctx.table.lipgloss.BorderRow(*rules.BorderRows)
+	}
 }
 
 // Finish finishes rendering a TableElement.
