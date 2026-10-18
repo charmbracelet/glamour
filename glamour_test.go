@@ -8,6 +8,7 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"sync"
 	"testing"
 
 	"charm.land/glamour/v2/ansi"
@@ -354,6 +355,78 @@ func ExampleASCIIStyleConfig() {
 	// ...Cell.1...............................|.Cell.2..............................
 	// ...Cell.3...............................|.Cell.4..............................
 	// ...Cell.5...............................|.Cell.6..............................
+}
+
+const (
+	chromaStyleTestMarkdown = "```go\nfunc main() {}\n```\n"
+	darkKeywordColor        = "38;2;0;170;255"  // #00AAFF
+	lightKeywordColor       = "38;2;39;158;252" // #279EFC
+)
+
+func renderChromaStyle(t *testing.T, style string) string {
+	t.Helper()
+
+	r, err := NewTermRenderer(
+		WithStandardStyle(style),
+		WithChromaFormatter("terminal16m"),
+	)
+	if err != nil {
+		t.Error(err)
+		return ""
+	}
+
+	b, err := r.Render(chromaStyleTestMarkdown)
+	if err != nil {
+		t.Error(err)
+	}
+	return b
+}
+
+func checkKeywordColor(t *testing.T, style, out string) {
+	t.Helper()
+
+	want, unwanted := darkKeywordColor, lightKeywordColor
+	if style == styles.LightStyle {
+		want, unwanted = lightKeywordColor, darkKeywordColor
+	}
+	if !strings.Contains(out, want) {
+		t.Errorf("%s: expected keyword color %q in output", style, want)
+	}
+	if strings.Contains(out, unwanted) {
+		t.Errorf("%s: unexpected keyword color %q in output", style, unwanted)
+	}
+}
+
+// TestChromaStylePerRenderer checks that each renderer highlights code with
+// its own chroma style, regardless of which renderers were created before it.
+func TestChromaStylePerRenderer(t *testing.T) {
+	tests := []struct {
+		name  string
+		order []string
+	}{
+		{name: "dark then light", order: []string{styles.DarkStyle, styles.LightStyle}},
+		{name: "light then dark", order: []string{styles.LightStyle, styles.DarkStyle}},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			for _, style := range tc.order {
+				checkKeywordColor(t, style, renderChromaStyle(t, style))
+			}
+		})
+	}
+}
+
+func TestChromaStyleConcurrent(t *testing.T) {
+	var wg sync.WaitGroup
+	for range 10 {
+		for _, style := range []string{styles.DarkStyle, styles.LightStyle} {
+			wg.Go(func() {
+				checkKeywordColor(t, style, renderChromaStyle(t, style))
+			})
+		}
+	}
+	wg.Wait()
 }
 
 func TestWithChromaFormatterDefault(t *testing.T) {
