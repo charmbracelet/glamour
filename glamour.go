@@ -204,6 +204,16 @@ func WithPreservedNewLines() TermRendererOption {
 	}
 }
 
+// WithHyperlinkMode sets how hyperlinks are rendered. Use
+// [ansi.HyperlinkModeInline] when the terminal supports OSC 8 hyperlinks: the
+// link text will be underlined and the URL hidden.
+func WithHyperlinkMode(mode ansi.HyperlinkMode) TermRendererOption {
+	return func(tr *TermRenderer) error {
+		tr.ansiOptions.HyperlinkMode = mode
+		return nil
+	}
+}
+
 // WithEmoji sets a TermRenderer's emoji rendering.
 func WithEmoji() TermRendererOption {
 	return func(tr *TermRenderer) error {
@@ -272,6 +282,10 @@ func (tr *TermRenderer) Render(in string) (string, error) {
 // RenderBytes returns the markdown rendered into a byte slice.
 func (tr *TermRenderer) RenderBytes(in []byte) ([]byte, error) {
 	var buf bytes.Buffer
+	// Styled output runs a few times the size of its markdown source, so
+	// size the buffer up front rather than letting it double its way
+	// there and recopy the document at every step.
+	buf.Grow(len(in) * 3)
 	err := tr.md.Convert(in, &buf)
 	return buf.Bytes(), err
 }
