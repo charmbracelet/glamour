@@ -72,7 +72,18 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		if node.Parent() != nil {
 			kind := node.Parent().Kind()
 			if kind == ast.KindListItem {
-				return Element{}
+				// The first paragraph of a list item is the item's line, so it
+				// renders as an empty element and lets the inline children
+				// write straight onto the item. A loose item's later
+				// paragraphs are paragraphs, and need a boundary of their own
+				// or the last word fuses with the first word of the next.
+				if node.PreviousSibling() == nil {
+					return Element{}
+				}
+				return Element{
+					Renderer: &ParagraphElement{},
+					Finisher: &ParagraphElement{},
+				}
 			}
 		}
 		return Element{
