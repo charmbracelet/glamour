@@ -225,6 +225,27 @@ Output:
 
 ![Table Example](https://github.com/charmbracelet/glamour/raw/master/styles/examples/table.png)
 
+#### Borders
+
+By default a table draws the header rule and the column separators only. Each
+border can be toggled independently — for example, to draw a divider between
+every row, or to box the whole table in:
+
+```json
+"table": {
+    "row_border": true,
+    "top_border": true,
+    "bottom_border": true,
+    "left_border": true,
+    "right_border": true
+}
+```
+
+The available toggles are `header_border`, `row_border`, `column_border`,
+`top_border`, `bottom_border`, `left_border` and `right_border`. When a toggle
+is omitted it keeps glamour's default (`header_border` and `column_border` on;
+the rest off).
+
 ## Inline Elements
 
 All inline elements support the following style settings:
