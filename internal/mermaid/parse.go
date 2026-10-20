@@ -94,6 +94,8 @@ type diagram struct {
 	nodeByID      map[string]*node
 	edges         []*edge
 	haveDirection bool
+	subgraphs     []*subgraph
+	open          *subgraph
 }
 
 // otherDiagramTypes are mermaid diagram types this package does not render;
@@ -107,7 +109,7 @@ var otherDiagramTypes = []string{
 // unsupportedKeywords are flowchart statement keywords this package does not
 // support; diagrams using them fall back to their source.
 var unsupportedKeywords = []string{
-	"subgraph", "end", "classdef", "class", "style", "linkstyle",
+	"classdef", "class", "style", "linkstyle",
 	kwClick, kwDirection, "acctitle", "accdescr", "init",
 }
 
@@ -141,6 +143,14 @@ func parse(src string) (*diagram, error) {
 			}
 		}
 	}
+	if d.open != nil {
+		return nil, errf("could not parse: subgraph %q is missing its \"end\"", d.open.id)
+	}
+	for _, sg := range d.subgraphs {
+		if _, clash := d.nodeByID[sg.id]; clash && len(sg.members) == 0 {
+			return nil, errf("unsupported syntax %q", "edge to subgraph "+sg.id)
+		}
+	}
 	if !d.haveDirection {
 		return nil, errf("empty diagram")
 	}
@@ -156,6 +166,12 @@ func (d *diagram) parseStatement(stmt string, lineno int) error {
 	}
 
 	word := strings.ToLower(firstWord(stmt))
+	switch word {
+	case kwSubgraph:
+		return d.openSubgraph(stmt, lineno)
+	case kwEnd:
+		return d.closeSubgraph(lineno)
+	}
 	for _, keyword := range unsupportedKeywords {
 		if word == keyword {
 			return errf("unsupported syntax %q", keyword)
@@ -203,6 +219,7 @@ func (d *diagram) parseDirection(stmt string, lineno int) error {
 }
 
 func (d *diagram) addNode(n *node) {
+	d.assignToOpenSubgraph(n.id)
 	if existing, ok := d.nodeByID[n.id]; ok {
 		if n.label != n.id {
 			existing.label = n.label

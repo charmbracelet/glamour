@@ -101,7 +101,13 @@ func draw(d *diagram, st settings, g glyphSet) ([]string, int, error) {
 	feedback := feedbackEdges(edges)
 	l.shiftForFeedback(feedback)
 
+	boxes, err := l.reserveSubgraphs(d)
+	if err != nil {
+		return nil, 0, err
+	}
+
 	c := newCanvas(l.size.x+l.overhang+l.lanePad(feedback), l.size.y+l.lanePadV(feedback))
+	drawSubgraphs(c, boxes)
 	for _, layer := range layers {
 		for _, n := range layer {
 			drawNode(c, n, st, g)
@@ -678,12 +684,20 @@ func (l *layoutCtx) labelTD(c *canvas, e *ledge, pts []point) {
 		if a.y == b.y && a.x != b.x {
 			w := stringWidth(e.label)
 			mid := (a.x + b.x) / 2
-			c.labelSoft(point{x: mid - w/2, y: a.y}, " "+e.label+" ")
+			at := point{x: mid - w/2, y: a.y}
+			if i > 0 && c.frameInSpan(at, w+2) {
+				// The jog sits on a subgraph border: label the vertical run
+				// leading into it instead.
+				prev := pts[i-1]
+				c.labelAvoidFrame(point{x: a.x + 1, y: (prev.y + a.y) / 2}, " "+e.label)
+				return
+			}
+			c.labelSoft(at, " "+e.label+" ")
 			return
 		}
 	}
 	midY := (pts[0].y + pts[len(pts)-1].y) / 2
-	c.labelSoft(point{x: pts[0].x + 1, y: midY}, " "+e.label)
+	c.labelAvoidFrame(point{x: pts[0].x + 1, y: midY}, " "+e.label)
 }
 
 // labelLR stamps the edge label next to the first vertical segment, or
@@ -714,7 +728,7 @@ func (l *layoutCtx) labelLR(c *canvas, e *ledge, pts []point) {
 	}
 	w := stringWidth(e.label)
 	midX := (pts[0].x + pts[len(pts)-1].x) / 2
-	c.labelSoft(point{x: midX - w/2, y: pts[0].y - 1}, e.label)
+	c.labelAvoidFrame(point{x: midX - w/2, y: pts[0].y - 1}, e.label)
 }
 
 // drawNode draws a node as a bordered box with its label centred. Virtual
