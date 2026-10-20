@@ -14,6 +14,7 @@ type cell struct {
 	bits  uint8
 	style lineStyle
 	arrow uint8
+	frame bool
 }
 
 // canvas is the grid diagrams are drawn onto.
@@ -172,6 +173,34 @@ func (c *canvas) labelSoft(p point, s string) {
 		}
 		x += runeWidth(r)
 	}
+}
+
+// frameInSpan reports whether any of the w cells starting at p belong to a
+// subgraph border.
+func (c *canvas) frameInSpan(p point, w int) bool {
+	for x := p.x; x < p.x+w; x++ {
+		if c.inside(x, p.y) && c.cells[p.y][x].frame {
+			return true
+		}
+	}
+	return false
+}
+
+// labelAvoidFrame stamps a label like labelSoft, nudging it up or down a few
+// rows when it would sit on a subgraph border.
+func (c *canvas) labelAvoidFrame(p point, s string) {
+	w := stringWidth(s)
+	for _, dy := range []int{0, -1, 1, -2, 2} {
+		clear := true
+		for x := p.x; x < p.x+w && clear; x++ {
+			clear = !c.inside(x, p.y+dy) || !c.cells[p.y+dy][x].frame
+		}
+		if clear {
+			c.labelSoft(point{x: p.x, y: p.y + dy}, s)
+			return
+		}
+	}
+	c.labelSoft(p, s)
 }
 
 // render turns the canvas into lines with trailing blanks trimmed.
