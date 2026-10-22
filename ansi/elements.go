@@ -333,11 +333,14 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 	case ast.KindFencedCodeBlock:
 		n := node.(*ast.FencedCodeBlock)
 		l := n.Lines().Len()
-		s := ""
+		// Repeated string concatenation copies the accumulated body each time.
+		// A Builder keeps code extraction linear in the total number of bytes.
+		var code strings.Builder
 		for i := 0; i < l; i++ {
 			line := n.Lines().At(i)
-			s += string(line.Value(source))
+			code.Write(line.Value(source))
 		}
+		s := code.String()
 		return Element{
 			Entering: "\n",
 			Renderer: &CodeBlockElement{
@@ -349,11 +352,12 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 	case ast.KindCodeBlock:
 		n := node.(*ast.CodeBlock)
 		l := n.Lines().Len()
-		s := ""
+		var code strings.Builder
 		for i := 0; i < l; i++ {
 			line := n.Lines().At(i)
-			s += string(line.Value(source))
+			code.Write(line.Value(source))
 		}
+		s := code.String()
 		return Element{
 			Entering: "\n",
 			Renderer: &CodeBlockElement{
