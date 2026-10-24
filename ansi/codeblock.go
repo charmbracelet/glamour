@@ -3,6 +3,7 @@ package ansi
 import (
 	"fmt"
 	"io"
+	"strings"
 	"sync"
 
 	"github.com/alecthomas/chroma/v2"
@@ -143,7 +144,10 @@ func (e *CodeBlockElement) Render(w io.Writer, ctx RenderContext) error {
 
 	// fallback rendering
 	el := &BaseElement{
-		Token: e.Code,
+		// Chroma handles CRLF line endings on its own, this path doesn't. A
+		// stray \r would return the cursor to the start of the line, and the
+		// padding written after it would then overwrite the code.
+		Token: strings.ReplaceAll(e.Code, "\r\n", "\n"),
 		Style: rules.StylePrimitive,
 	}
 
