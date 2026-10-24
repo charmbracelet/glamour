@@ -118,6 +118,9 @@ func TestRendererIssues(t *testing.T) {
 				tableWrap := false
 				options.TableWrap = &tableWrap
 			}
+			if bn == "637" {
+				options.BaseURL = "https://github.com/charmbracelet/glamour"
+			}
 
 			md := goldmark.New(
 				goldmark.WithExtensions(
@@ -144,3 +147,74 @@ func TestRendererIssues(t *testing.T) {
 		})
 	}
 }
+
+func TestResolveRelativeURL(t *testing.T) {
+	for _, tc := range []struct{ base, rel, want string }{
+		{"", "cmd/gold/", "cmd/gold/"},
+		{"", "./assets/image.png", "./assets/image.png"},
+		{"https://charm.land", "/libs", "https://charm.land/libs"},
+		{"https://charm.land", "https://example.com", "https://example.com"},
+	} {
+		if got := resolveRelativeURL(tc.base, tc.rel); got != tc.want {
+			t.Errorf("resolveRelativeURL(%q, %q) = %q, want %q", tc.base, tc.rel, got, tc.want)
+		}
+	}
+}
+
+func TestCodeBlockIndentToken(t *testing.T) {
+	in := []byte("```go\nfmt.Println(\"hi\")\nfmt.Println(\"bye\")\n```\n")
+
+	renderWith := func(t *testing.T, cb StyleCodeBlock) string {
+		t.Helper()
+		options := Options{
+			Styles: StyleConfig{
+				CodeBlock: cb,
+			},
+		}
+		md := goldmark.New(
+			goldmark.WithExtensions(
+				extension.GFM,
+				extension.DefinitionList,
+				emoji.Emoji,
+			),
+			goldmark.WithParserOptions(
+				parser.WithAutoHeadingID(),
+			),
+		)
+		ar := NewRenderer(options)
+		md.SetRenderer(
+			renderer.NewRenderer(
+				renderer.WithNodeRenderers(util.Prioritized(ar, 1000))))
+
+		var buf bytes.Buffer
+		if err := md.Convert(in, &buf); err != nil {
+			t.Fatalf("convert: %v", err)
+		}
+		return buf.String()
+	}
+
+	indent := uint(1)
+	token := "│ "
+	got := renderWith(t, StyleCodeBlock{
+		StyleBlock: StyleBlock{
+			Indent:      &indent,
+			IndentToken: &token,
+		},
+	})
+	want := "\n│ fmt.Println(\"hi\")\n│ fmt.Println(\"bye\")\n"
+	if got != want {
+		t.Errorf("with IndentToken: got %q, want %q", got, want)
+	}
+
+	margin := uint(2)
+	gotDefault := renderWith(t, StyleCodeBlock{
+		StyleBlock: StyleBlock{
+			Margin: &margin,
+		},
+	})
+	wantDefault := "\n  fmt.Println(\"hi\")\n  fmt.Println(\"bye\")\n"
+	if gotDefault != wantDefault {
+		t.Errorf("without IndentToken: got %q, want %q", gotDefault, wantDefault)
+	}
+}
+
