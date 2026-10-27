@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
 
 	"github.com/yuin/goldmark"
 	emoji "github.com/yuin/goldmark-emoji"
@@ -20,6 +21,10 @@ import (
 	"charm.land/glamour/v2/ansi"
 	styles "charm.land/glamour/v2/styles"
 )
+
+// emailRegexp matches only addresses with a proper alphabetic TLD (2+ letters),
+// preventing version strings like pkg@1.0.0 from being autolinked as email.
+var emailRegexp = regexp.MustCompile(`[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}`)
 
 const (
 	defaultWidth = 80
@@ -69,7 +74,16 @@ func NewTermRenderer(options ...TermRendererOption) (*TermRenderer, error) {
 	tr := &TermRenderer{
 		md: goldmark.New(
 			goldmark.WithExtensions(
-				extension.GFM,
+				// Use individual GFM components so we can configure the linkify
+				// extension with a stricter email regex. The default regex matches
+				// version strings like pkg@1.0.0 as email addresses; requiring an
+				// alphabetic TLD prevents those false positives.
+				extension.Table,
+				extension.Strikethrough,
+				extension.TaskList,
+				extension.NewLinkify(
+					extension.WithLinkifyEmailRegexp(emailRegexp),
+				),
 				extension.DefinitionList,
 			),
 			goldmark.WithParserOptions(
