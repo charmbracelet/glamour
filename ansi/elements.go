@@ -72,7 +72,11 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		if node.Parent() != nil {
 			kind := node.Parent().Kind()
 			if kind == ast.KindListItem {
-				return Element{}
+				if node.PreviousSibling() == nil {
+					return Element{}
+				}
+				// Non-first paragraph in a list item needs a newline separator.
+				return Element{Entering: "\n"}
 			}
 		}
 		return Element{
