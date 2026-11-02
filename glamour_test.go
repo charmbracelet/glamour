@@ -249,6 +249,49 @@ func TestTableAscii(t *testing.T) {
 	}
 }
 
+func TestTableCellCodeSpanBackslashes(t *testing.T) {
+	// A code span keeps its backslashes, inside a table cell as well as
+	// outside of one.
+	markdown := "| Name | Code |\n" +
+		"| ---- | ---- |\n" +
+		"| two  | `\\\\` |\n" +
+		"| four | `\\\\\\\\` |\n"
+
+	renderer, err := NewTermRenderer(
+		WithStyles(styles.NoTTYStyleConfig),
+		WithWordWrap(80),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	result, err := renderer.Render(markdown)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	want := map[string]string{
+		"two":  `\\`,
+		"four": `\\\\`,
+	}
+	for _, line := range strings.Split(result, "\n") {
+		name, code, ok := strings.Cut(line, "|")
+		if !ok {
+			continue
+		}
+		name = strings.TrimSpace(name)
+		if w, ok := want[name]; ok {
+			if got := strings.TrimSpace(code); got != w {
+				t.Errorf("row %q: expected code cell %q, got %q", name, w, got)
+			}
+			delete(want, name)
+		}
+	}
+	if len(want) > 0 {
+		t.Errorf("rows %v not found in output:\n%s", want, result)
+	}
+}
+
 func TestWithHyperlinkModeInline(t *testing.T) {
 	r, err := NewTermRenderer(
 		WithHyperlinkMode(ansi.HyperlinkModeInline),
