@@ -216,3 +216,20 @@ func TestRendererDoesNotDecodeControlEntitiesInHTMLBlock(t *testing.T) {
 		t.Fatalf("unexpected render: %q", got)
 	}
 }
+
+func TestRendererDoesNotDecodeControlEntitiesInTableLinks(t *testing.T) {
+	md := goldmark.New(goldmark.WithExtensions(extension.GFM))
+	md.SetRenderer(renderer.NewRenderer(
+		renderer.WithNodeRenderers(util.Prioritized(NewRenderer(Options{}), 1000))))
+
+	var buf bytes.Buffer
+	if err := md.Convert([]byte("| a |\n| - |\n| [&#27;cFAKE](https://example.com) |\n"), &buf); err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(buf.String(), "\x1bc") {
+		t.Fatalf("rendered source terminal control: %q", buf.String())
+	}
+	if !strings.Contains(buf.String(), "[1]: &#27;cFAKE") {
+		t.Fatalf("control reference was not preserved: %q", buf.String())
+	}
+}
