@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"strings"
 
 	"charm.land/lipgloss/v2"
 	"charm.land/lipgloss/v2/table"
@@ -167,7 +168,9 @@ func (e *TableHeadElement) Finish(_ io.Writer, ctx RenderContext) error {
 		return nil
 	}
 
-	ctx.table.lipgloss.Headers(ctx.table.header...)
+	if strings.Join(ctx.table.header, "") != "" {
+		ctx.table.lipgloss.Headers(ctx.table.header...)
+	}
 	ctx.table.header = []string{}
 	return nil
 }
