@@ -414,17 +414,37 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 	// HTML Elements
 	case ast.KindHTMLBlock:
 		n := node.(*ast.HTMLBlock)
+		raw := string(n.Text(source)) //nolint: staticcheck
+		if src, alt, ok := parseImgTag(raw); ok {
+			return Element{
+				Renderer: &ImageElement{
+					Text:    alt,
+					BaseURL: ctx.options.BaseURL,
+					URL:     src,
+				},
+			}
+		}
 		return Element{
 			Renderer: &BaseElement{
-				Token: ctx.SanitizeHTML(string(n.Text(source)), true), //nolint: staticcheck
+				Token: ctx.SanitizeHTML(raw, true),
 				Style: ctx.options.Styles.HTMLBlock.StylePrimitive,
 			},
 		}
 	case ast.KindRawHTML:
 		n := node.(*ast.RawHTML)
+		raw := string(n.Text(source)) //nolint: staticcheck
+		if src, alt, ok := parseImgTag(raw); ok {
+			return Element{
+				Renderer: &ImageElement{
+					Text:    alt,
+					BaseURL: ctx.options.BaseURL,
+					URL:     src,
+				},
+			}
+		}
 		return Element{
 			Renderer: &BaseElement{
-				Token: ctx.SanitizeHTML(string(n.Text(source)), true), //nolint: staticcheck
+				Token: ctx.SanitizeHTML(raw, true),
 				Style: ctx.options.Styles.HTMLSpan.StylePrimitive,
 			},
 		}
