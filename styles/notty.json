@@ -75,7 +75,9 @@
   "table": {
     "center_separator": "|",
     "column_separator": "|",
-    "row_separator": "-"
+    "row_separator": "-",
+    "even_row": {},
+    "odd_row": {}
   },
   "definition_list": {},
   "definition_term": {},
