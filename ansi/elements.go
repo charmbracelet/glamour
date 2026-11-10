@@ -198,14 +198,10 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		}
 
 	case astext.KindStrikethrough:
-		n := node.(*astext.Strikethrough)
-		s := string(n.Text(source)) //nolint: staticcheck
-		style := ctx.options.Styles.Strikethrough
-
 		return Element{
-			Renderer: &BaseElement{
-				Token: html.UnescapeString(s),
-				Style: style,
+			Renderer: &strikethroughElement{
+				node:   node,
+				source: source,
 			},
 		}
 

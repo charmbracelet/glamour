@@ -519,6 +519,11 @@ Output:
 
 The `strikethrough` element represents strikethrough text.
 
+Nested inline elements retain their rendering, including link destinations and
+code styling. When the effective style has a nonempty `format` template or an
+enabled `upper`, `lower`, or `title` setting, the content is flattened to plain
+text before transforming it, preserving custom text-transform behavior.
+
 #### Example
 
 Markdown:
