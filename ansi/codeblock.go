@@ -5,9 +5,9 @@ import (
 	"io"
 	"sync"
 
-	"github.com/alecthomas/chroma/v2"
-	"github.com/alecthomas/chroma/v2/quick"
-	"github.com/alecthomas/chroma/v2/styles"
+	"github.com/alecthomas/chroma/v3"
+	"github.com/alecthomas/chroma/v3/quick"
+	"github.com/alecthomas/chroma/v3/styles"
 )
 
 const (
@@ -85,7 +85,7 @@ func (e *CodeBlockElement) Render(w io.Writer, ctx RenderContext) error {
 		theme = chromaStyleTheme
 		mutex.Lock()
 		// Don't register the style if it's already registered.
-		_, ok := styles.Registry[theme]
+		_, ok := styles.Lookup(theme)
 		if !ok {
 			styles.Register(chroma.MustNewStyle(theme,
 				chroma.StyleEntries{
