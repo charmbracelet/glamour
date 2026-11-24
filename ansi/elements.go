@@ -414,6 +414,11 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 	// HTML Elements
 	case ast.KindHTMLBlock:
 		n := node.(*ast.HTMLBlock)
+		if ctx.options.ImageProtocol != ImageProtocolNone {
+			if el := parseHTMLImages(ctx, string(n.Text(source))); el != nil { //nolint: staticcheck
+				return Element{Renderer: el}
+			}
+		}
 		return Element{
 			Renderer: &BaseElement{
 				Token: ctx.SanitizeHTML(string(n.Text(source)), true), //nolint: staticcheck
@@ -422,6 +427,11 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		}
 	case ast.KindRawHTML:
 		n := node.(*ast.RawHTML)
+		if ctx.options.ImageProtocol != ImageProtocolNone {
+			if el := parseHTMLImages(ctx, string(n.Text(source))); el != nil { //nolint: staticcheck
+				return Element{Renderer: el}
+			}
+		}
 		return Element{
 			Renderer: &BaseElement{
 				Token: ctx.SanitizeHTML(string(n.Text(source)), true), //nolint: staticcheck
