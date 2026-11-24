@@ -249,6 +249,31 @@ func TestTableAscii(t *testing.T) {
 	}
 }
 
+func TestCodeBlockCRLF(t *testing.T) {
+	const lf = "text\n\n```go\nfunc main() {}\nx := 1\n```\n\n    indented\n    code\n"
+	crlf := strings.ReplaceAll(lf, "\n", "\r\n")
+
+	for _, style := range []string{styles.NoTTYStyle, styles.AsciiStyle} {
+		t.Run(style, func(t *testing.T) {
+			r, err := NewTermRenderer(WithStandardStyle(style))
+			if err != nil {
+				t.Fatal(err)
+			}
+			want, err := r.Render(lf)
+			if err != nil {
+				t.Fatal(err)
+			}
+			got, err := r.Render(crlf)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got != want {
+				t.Errorf("CRLF input rendered differently:\ngot:  %q\nwant: %q", got, want)
+			}
+		})
+	}
+}
+
 func TestWithHyperlinkModeInline(t *testing.T) {
 	r, err := NewTermRenderer(
 		WithHyperlinkMode(ansi.HyperlinkModeInline),
