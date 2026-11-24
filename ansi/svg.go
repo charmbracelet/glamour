@@ -104,7 +104,7 @@ func readSVGConfig(r io.Reader) (imageConfig, error) {
 	if err != nil {
 		return imageConfig{}, fmt.Errorf("glamour: error reading SVG image: %w", err)
 	}
-	icon, err := parseSVG(bytes.NewReader(normalizeSVGPaths(data)))
+	icon, err := parseSVG(bytes.NewReader(normalizeSVG(data)))
 	if err != nil {
 		return imageConfig{}, err
 	}
@@ -151,7 +151,7 @@ func rasterizeSVGReader(r io.Reader, maxW, maxH int) (image.Image, error) {
 	if err != nil {
 		return nil, fmt.Errorf("glamour: error reading SVG image: %w", err)
 	}
-	data = normalizeSVGPaths(data)
+	data = normalizeSVG(data)
 	icon, err := parseSVG(bytes.NewReader(data))
 	if err != nil {
 		return nil, err
@@ -605,6 +605,40 @@ var svgCommandArgs = map[byte]int{
 // svgPathDataPattern matches the path data attributes of an SVG document,
 // i.e. d="..." and d='...', including the whitespace before them.
 var svgPathDataPattern = regexp.MustCompile(`(?is)(\s)d(\s*=\s*)("([^"]*)"|'([^']*)')`)
+
+// svgRGBAColorPattern matches fill and stroke attributes whose value is an
+// rgba() color, including the whitespace before them (so that attributes
+// merely ending in "fill", like data-fill, are left alone).
+var svgRGBAColorPattern = regexp.MustCompile(`(?i)(\s)(fill|stroke)(\s*=\s*)(?:"\s*rgba\(([^)"]*)\)\s*"|'\s*rgba\(([^)']*)\)\s*')`)
+
+// normalizeSVG prepares an SVG document for the parser: path data and colors
+// are rewritten into forms it reads reliably.
+func normalizeSVG(data []byte) []byte {
+	return normalizeSVGColors(normalizeSVGPaths(data))
+}
+
+// normalizeSVGColors rewrites fill and stroke attributes that use rgba(),
+// which the parser rejects (failing the whole document), into an rgb() color
+// plus a fill-opacity or stroke-opacity attribute. Badges commonly use
+// fill="rgba(0,0,0,0)" for their transparent link areas.
+func normalizeSVGColors(data []byte) []byte {
+	return svgRGBAColorPattern.ReplaceAllFunc(data, func(m []byte) []byte {
+		sub := svgRGBAColorPattern.FindSubmatch(m)
+		args := sub[4]
+		if len(args) == 0 {
+			args = sub[5]
+		}
+		parts := strings.Split(string(args), ",")
+		if len(parts) != 4 {
+			return m
+		}
+		for i := range parts {
+			parts[i] = strings.TrimSpace(parts[i])
+		}
+		prop := strings.ToLower(string(sub[2]))
+		return fmt.Appendf(nil, `%s%s%s"rgb(%s,%s,%s)" %s-opacity="%s"`, sub[1], sub[2], sub[3], parts[0], parts[1], parts[2], prop, parts[3])
+	})
+}
 
 // normalizeSVGPaths rewrites the path data of an SVG document, see
 // [normalizeSVGPath].
