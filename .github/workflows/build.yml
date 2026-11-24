@@ -2,10 +2,30 @@ name: build
 on: [push, pull_request]
 
 jobs:
+  # Scan with the latest stable Go so only dependency vulnerabilities fail the
+  # check; the go directive in go.mod stays at the minimum supported version.
+  govulncheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: golang/govulncheck-action@v1
+        with:
+          go-version-input: stable
+
   build:
-    uses: charmbracelet/meta/.github/workflows/build.yml@main
-    secrets:
-      gh_pat: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+          cache: true
+      - run: go mod tidy
+      - run: git diff --exit-code
+      - run: go build ./...
+      - run: go test ./...
 
   semgrep:
     uses: charmbracelet/meta/.github/workflows/semgrep.yml@main
