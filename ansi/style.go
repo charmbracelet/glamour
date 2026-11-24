@@ -91,6 +91,8 @@ type StyleTable struct {
 	CenterSeparator *string `json:"center_separator,omitempty"`
 	ColumnSeparator *string `json:"column_separator,omitempty"`
 	RowSeparator    *string `json:"row_separator,omitempty"`
+	// BorderRows draws a rule between body rows. Nil keeps the default (off).
+	BorderRows *bool `json:"border_rows,omitempty"`
 }
 
 // StyleConfig is used to configure the styling behavior of an ANSIRenderer.
