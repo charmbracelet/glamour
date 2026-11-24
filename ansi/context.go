@@ -14,16 +14,20 @@ type RenderContext struct {
 	blockStack *BlockStack
 	table      *TableElement
 
+	// Shared by value copies of the context so each anchor has a distinct ID.
+	hyperlinkID *uint64
+
 	stripper *bluemonday.Policy
 }
 
 // NewRenderContext returns a new RenderContext.
 func NewRenderContext(options Options) RenderContext {
 	return RenderContext{
-		options:    options,
-		blockStack: &BlockStack{},
-		table:      &TableElement{},
-		stripper:   bluemonday.StrictPolicy(),
+		options:     options,
+		blockStack:  &BlockStack{},
+		table:       &TableElement{},
+		hyperlinkID: new(uint64),
+		stripper:    bluemonday.StrictPolicy(),
 	}
 }
 
