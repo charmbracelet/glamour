@@ -765,6 +765,7 @@ func readImageConfig(ctx RenderContext, url string) (imageConfig, error) {
 		return imageConfig{}, err
 	}
 
+	var buf []byte
 	switch kind {
 	case imageSourceLocal:
 		path := localImagePath(url)
@@ -783,10 +784,6 @@ func readImageConfig(ctx RenderContext, url string) (imageConfig, error) {
 			return imageConfig{}, fmt.Errorf("glamour: error decoding image config: %w", err)
 		}
 		return imageConfig{config: cfg, format: format}, nil
-	}
-
-	var buf []byte
-	switch kind {
 	case imageSourceData:
 		buf, err = imageData(ctx, url)
 		if err != nil {

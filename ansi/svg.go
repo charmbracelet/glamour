@@ -3,6 +3,7 @@ package ansi
 import (
 	"bufio"
 	"bytes"
+	"encoding/hex"
 	"encoding/xml"
 	"fmt"
 	"image"
@@ -349,6 +350,27 @@ func svgAttrFloat(el xml.StartElement, name string) (float64, bool) {
 	return 0, false
 }
 
+// parseSVGHexColor parses the hex digits h of an SVG color s: #rgb, #rgba,
+// #rrggbb, or #rrggbbaa.
+func parseSVGHexColor(s, h string) (color.RGBA, error) {
+	if len(h) == 3 || len(h) == 4 {
+		b := make([]byte, 0, 2*len(h))
+		for i := range len(h) {
+			b = append(b, h[i], h[i])
+		}
+		h = string(b)
+	}
+	b, err := hex.DecodeString(h)
+	if err != nil || (len(b) != 3 && len(b) != 4) {
+		return color.RGBA{}, fmt.Errorf("glamour: invalid SVG color %q", s)
+	}
+	c := color.RGBA{b[0], b[1], b[2], 0xff}
+	if len(b) == 4 {
+		c.A = b[3]
+	}
+	return c, nil
+}
+
 // svgColorNames maps the named SVG colors used in badges and icons. Hex and
 // rgb() colors are parsed by parseSVGColor.
 var svgColorNames = map[string]color.RGBA{
@@ -372,26 +394,8 @@ func parseSVGColor(s string) (color.RGBA, error) {
 		return c, nil
 	}
 
-	if hex, ok := strings.CutPrefix(s, "#"); ok {
-		if len(hex) == 3 || len(hex) == 4 {
-			var b []byte
-			for i := 0; i < len(hex); i++ {
-				b = append(b, hex[i], hex[i])
-			}
-			hex = string(b)
-		}
-		if len(hex) == 6 || len(hex) == 8 {
-			v, err := strconv.ParseUint(hex, 16, 32)
-			if err != nil {
-				return color.RGBA{}, fmt.Errorf("glamour: invalid SVG color %q", s)
-			}
-			c := color.RGBA{uint8(v >> 16), uint8(v >> 8), uint8(v), 0xff}
-			if len(hex) == 8 {
-				c = color.RGBA{uint8(v >> 24), uint8(v >> 16), uint8(v >> 8), uint8(v)}
-			}
-			return c, nil
-		}
-		return color.RGBA{}, fmt.Errorf("glamour: invalid SVG color %q", s)
+	if h, ok := strings.CutPrefix(s, "#"); ok {
+		return parseSVGHexColor(s, h)
 	}
 
 	if strings.HasPrefix(s, "rgb(") || strings.HasPrefix(s, "rgba(") {
@@ -520,11 +524,13 @@ var (
 
 func svgFonts() (*opentype.Font, *opentype.Font, error) {
 	svgFontsOnce.Do(func() {
-		svgRegular, svgFontsErr = opentype.Parse(goregular.TTF)
-		if svgFontsErr != nil {
-			return
+		var err error
+		if svgRegular, err = opentype.Parse(goregular.TTF); err == nil {
+			svgBold, err = opentype.Parse(gobold.TTF)
 		}
-		svgBold, svgFontsErr = opentype.Parse(gobold.TTF)
+		if err != nil {
+			svgFontsErr = fmt.Errorf("glamour: error parsing the builtin SVG font: %w", err)
+		}
 	})
 	return svgRegular, svgBold, svgFontsErr
 }
@@ -533,17 +539,21 @@ func svgFonts() (*opentype.Font, *opentype.Font, error) {
 func svgFace(size float64, bold bool) (font.Face, error) {
 	regular, boldFont, err := svgFonts()
 	if err != nil {
-		return nil, fmt.Errorf("glamour: error parsing the builtin SVG font: %w", err)
+		return nil, err
 	}
 	f := regular
 	if bold {
 		f = boldFont
 	}
-	return opentype.NewFace(f, &opentype.FaceOptions{
+	face, err := opentype.NewFace(f, &opentype.FaceOptions{
 		Size:    size,
 		DPI:     72,
 		Hinting: font.HintingFull,
 	})
+	if err != nil {
+		return nil, fmt.Errorf("glamour: error creating SVG font face: %w", err)
+	}
+	return face, nil
 }
 
 // svgMeasure returns the width of the text at the given size, in pixels.
@@ -608,7 +618,7 @@ func normalizeSVGPaths(data []byte) []byte {
 		if len(sub[5]) > 0 {
 			value, quote = sub[5], `'`
 		}
-		var b []byte
+		b := make([]byte, 0, len(m)+len(value))
 		b = append(b, sub[1]...)
 		b = append(b, 'd')
 		b = append(b, sub[2]...)
