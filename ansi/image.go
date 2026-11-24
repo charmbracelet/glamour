@@ -424,7 +424,7 @@ func (e *ImageElement) encodeGraphics(ctx RenderContext, url string, config imag
 			Columns:         cols,
 			Rows:            rows,
 			DoNotMoveCursor: true,
-			Quite:           2,
+			Quiet:           2,
 		}
 		var buf bytes.Buffer
 		if err := writeKittyImage(ctx, &buf, url, config, cols, rows, &opts); err != nil {
@@ -472,7 +472,7 @@ func encodeKittyPlaceholders(ctx RenderContext, url string, config imageConfig, 
 		Format:       kitty.PNG,
 		Transmission: kitty.Direct,
 		ID:           id,
-		Quite:        2,
+		Quiet:        2,
 	}
 	var transmit bytes.Buffer
 	if err := writeKittyImage(ctx, &transmit, url, config, cols, rows, &opts); err != nil {
@@ -496,7 +496,7 @@ func encodeKittyPlaceholders(ctx RenderContext, url string, config imageConfig, 
 		ID:               id,
 		Columns:          cols,
 		Rows:             rows,
-		Quite:            2,
+		Quiet:            2,
 	}
 
 	// Single-row images are anchored to the text flow, so they are placed

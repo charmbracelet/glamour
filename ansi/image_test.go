@@ -342,7 +342,7 @@ func TestWriteKittyImageTransmission(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	opts := &kitty.Options{Action: kitty.Transmit, Format: kitty.PNG, Transmission: kitty.Direct, ID: 1, Quite: 2}
+	opts := &kitty.Options{Action: kitty.Transmit, Format: kitty.PNG, Transmission: kitty.Direct, ID: 1, Quiet: 2}
 	if err := writeKittyImage(ctx, &buf, path, config, 10, 5, opts); err != nil {
 		t.Fatal(err)
 	}
@@ -361,7 +361,7 @@ func TestWriteKittyImageTransmission(t *testing.T) {
 	}
 
 	buf.Reset()
-	opts2 := &kitty.Options{Action: kitty.Transmit, Format: kitty.PNG, Transmission: kitty.Direct, ID: 2, Quite: 2}
+	opts2 := &kitty.Options{Action: kitty.Transmit, Format: kitty.PNG, Transmission: kitty.Direct, ID: 2, Quiet: 2}
 	if err := writeKittyImage(ctx, &buf, path2, config2, 10, 5, opts2); err != nil {
 		t.Fatal(err)
 	}
@@ -388,7 +388,7 @@ func TestWriteKittyImageTransmissionOverSSH(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	opts := &kitty.Options{Action: kitty.Transmit, Format: kitty.PNG, Transmission: kitty.Direct, ID: 1, Quite: 2}
+	opts := &kitty.Options{Action: kitty.Transmit, Format: kitty.PNG, Transmission: kitty.Direct, ID: 1, Quiet: 2}
 	if err := writeKittyImage(ctx, &buf, path, config, 10, 5, opts); err != nil {
 		t.Fatal(err)
 	}
