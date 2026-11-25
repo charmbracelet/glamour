@@ -601,12 +601,37 @@ func TestNormalizeSVGColors(t *testing.T) {
 		{
 			name: "single quotes and spaces",
 			in:   `<rect fill='rgba(10, 20, 30, 0.5)'/>`,
-			want: `<rect fill="rgb(10,20,30)" fill-opacity="0.5"/>`,
+			want: `<rect fill='rgb(10,20,30)' fill-opacity="0.5"/>`,
 		},
 		{
 			name: "stroke",
 			in:   `<rect stroke="rgba(1,2,3,.25)"/>`,
-			want: `<rect stroke="rgb(1,2,3)" stroke-opacity=".25"/>`,
+			want: `<rect stroke="rgb(1,2,3)" stroke-opacity="0.25"/>`,
+		},
+		{
+			name: "existing opacity is multiplied",
+			in:   `<rect fill="rgba(0,0,0,0)" fill-opacity=".5"/>`,
+			want: `<rect fill="rgb(0,0,0)" fill-opacity="0"/>`,
+		},
+		{
+			name: "existing opacity is multiplied by alpha",
+			in:   `<rect fill-opacity="0.5" fill="rgba(1,2,3,0.5)"/>`,
+			want: `<rect fill-opacity="0.25" fill="rgb(1,2,3)"/>`,
+		},
+		{
+			name: "style",
+			in:   `<rect style="fill:rgba(0,0,0,0)"/>`,
+			want: `<rect style="fill:rgb(0,0,0)" fill-opacity="0"/>`,
+		},
+		{
+			name: "style with existing opacity",
+			in:   `<rect style="stroke: rgba(1,2,3,.5); stroke-opacity: .5"/>`,
+			want: `<rect style="stroke: rgb(1,2,3); stroke-opacity: 0.25"/>`,
+		},
+		{
+			name: "style overrides attribute",
+			in:   `<rect fill="rgba(1,2,3,0.5)" style="fill:#fff"/>`,
+			want: `<rect fill="rgb(1,2,3)" style="fill:#fff"/>`,
 		},
 		{
 			name: "other colors and attributes are kept",
@@ -634,7 +659,7 @@ func TestNormalizeSVGColors(t *testing.T) {
 func TestSVGRGBAOverlayRender(t *testing.T) {
 	svg := `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="20">` +
 		`<rect width="100" height="20" fill="#555"/>` +
-		`<a href="https://example.com"><rect width="100" height="20" fill="%s"/></a>` +
+		`<a href="https://example.com"><rect width="100" height="20" %s/></a>` +
 		`</svg>`
 
 	pixel := func(overlay string) color.NRGBA {
@@ -647,11 +672,17 @@ func TestSVGRGBAOverlayRender(t *testing.T) {
 	}
 
 	// A transparent overlay leaves the background showing.
-	if got := pixel("rgba(0,0,0,0)"); got.R != 0x55 || got.G != 0x55 || got.B != 0x55 || got.A != 0xff {
-		t.Errorf("pixel under a transparent overlay = %+v, want the #555 background", got)
+	for _, overlay := range []string{
+		`fill="rgba(0,0,0,0)"`,
+		`style="fill:rgba(0,0,0,0)"`,
+		`fill="rgba(0,0,0,0)" fill-opacity=".5"`,
+	} {
+		if got := pixel(overlay); got.R != 0x55 || got.G != 0x55 || got.B != 0x55 || got.A != 0xff {
+			t.Errorf("pixel under a transparent overlay %s = %+v, want the #555 background", overlay, got)
+		}
 	}
 	// An opaque overlay covers it.
-	if got := pixel("rgba(255,0,0,1)"); got.R != 0xff || got.G != 0 || got.B != 0 || got.A != 0xff {
+	if got := pixel(`fill="rgba(255,0,0,1)"`); got.R != 0xff || got.G != 0 || got.B != 0 || got.A != 0xff {
 		t.Errorf("pixel under an opaque overlay = %+v, want red", got)
 	}
 }

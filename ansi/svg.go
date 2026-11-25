@@ -606,10 +606,8 @@ var svgCommandArgs = map[byte]int{
 // i.e. d="..." and d='...', including the whitespace before them.
 var svgPathDataPattern = regexp.MustCompile(`(?is)(\s)d(\s*=\s*)("([^"]*)"|'([^']*)')`)
 
-// svgRGBAColorPattern matches fill and stroke attributes whose value is an
-// rgba() color, including the whitespace before them (so that attributes
-// merely ending in "fill", like data-fill, are left alone).
-var svgRGBAColorPattern = regexp.MustCompile(`(?i)(\s)(fill|stroke)(\s*=\s*)(?:"\s*rgba\(([^)"]*)\)\s*"|'\s*rgba\(([^)']*)\)\s*')`)
+// svgTagPattern matches the start tags of an SVG document.
+var svgTagPattern = regexp.MustCompile(`<[A-Za-z][^>]*>`)
 
 // normalizeSVG prepares an SVG document for the parser: path data and colors
 // are rewritten into forms it reads reliably.
@@ -617,27 +615,154 @@ func normalizeSVG(data []byte) []byte {
 	return normalizeSVGColors(normalizeSVGPaths(data))
 }
 
-// normalizeSVGColors rewrites fill and stroke attributes that use rgba(),
-// which the parser rejects (failing the whole document), into an rgb() color
-// plus a fill-opacity or stroke-opacity attribute. Badges commonly use
-// fill="rgba(0,0,0,0)" for their transparent link areas.
+// normalizeSVGColors rewrites fill and stroke colors that use rgba(), which
+// the parser rejects (failing the whole document), into an rgb() color, and
+// folds their alpha into the element's fill-opacity or stroke-opacity. Both
+// the fill="..." attribute and the style="fill:..." forms are handled. Badges
+// commonly use fill="rgba(0,0,0,0)" for their transparent link areas.
 func normalizeSVGColors(data []byte) []byte {
-	return svgRGBAColorPattern.ReplaceAllFunc(data, func(m []byte) []byte {
-		sub := svgRGBAColorPattern.FindSubmatch(m)
-		args := sub[4]
-		if len(args) == 0 {
-			args = sub[5]
+	return svgTagPattern.ReplaceAllFunc(data, func(tag []byte) []byte {
+		if !bytes.Contains(bytes.ToLower(tag), []byte("rgba(")) {
+			return tag
 		}
-		parts := strings.Split(string(args), ",")
-		if len(parts) != 4 {
-			return m
+		s := string(tag)
+		for _, prop := range []string{"fill", "stroke"} {
+			s = normalizeSVGColor(s, prop)
 		}
-		for i := range parts {
-			parts[i] = strings.TrimSpace(parts[i])
-		}
-		prop := strings.ToLower(string(sub[2]))
-		return fmt.Appendf(nil, `%s%s%s"rgb(%s,%s,%s)" %s-opacity="%s"`, sub[1], sub[2], sub[3], parts[0], parts[1], parts[2], prop, parts[3])
+		return []byte(s)
 	})
+}
+
+// normalizeSVGColor rewrites the rgba() colors of one property (fill or
+// stroke) of a start tag, see [normalizeSVGColors]. An existing opacity for
+// the property is multiplied by the color's alpha rather than duplicated.
+func normalizeSVGColor(tag, prop string) string {
+	alpha, isRGBA, styled := 1.0, false, false
+	if style, ok := svgAttr(tag, "style"); ok {
+		if v, ok := svgDecl(style, prop); ok {
+			styled = true
+			if rgb, a, ok := parseSVGRGBA(v); ok {
+				tag = svgSetAttr(tag, "style", svgSetDecl(style, prop, rgb))
+				alpha, isRGBA = a, true
+			}
+		}
+	}
+	if v, ok := svgAttr(tag, prop); ok {
+		if rgb, a, ok := parseSVGRGBA(v); ok {
+			tag = svgSetAttr(tag, prop, rgb)
+			// A style declaration takes precedence over the attribute.
+			if !styled {
+				alpha, isRGBA = a, true
+			}
+		}
+	}
+	if !isRGBA {
+		return tag
+	}
+
+	opacity := prop + "-opacity"
+	if style, ok := svgAttr(tag, "style"); ok {
+		if v, ok := svgDecl(style, opacity); ok {
+			return svgSetAttr(tag, "style", svgSetDecl(style, opacity, formatSVGOpacity(parseSVGOpacity(v)*alpha)))
+		}
+	}
+	cur := 1.0
+	if v, ok := svgAttr(tag, opacity); ok {
+		cur = parseSVGOpacity(v)
+	}
+	return svgSetAttr(tag, opacity, formatSVGOpacity(cur*alpha))
+}
+
+// svgAttrSpan returns the position of the value of a start tag's attribute.
+func svgAttrSpan(tag, name string) (start, end int, ok bool) {
+	re := regexp.MustCompile(`(?i)\s` + regexp.QuoteMeta(name) + `\s*=\s*(?:"([^"]*)"|'([^']*)')`)
+	m := re.FindStringSubmatchIndex(tag)
+	switch {
+	case m == nil:
+		return 0, 0, false
+	case m[2] >= 0:
+		return m[2], m[3], true
+	default:
+		return m[4], m[5], true
+	}
+}
+
+// svgAttr returns the value of a start tag's attribute.
+func svgAttr(tag, name string) (string, bool) {
+	start, end, ok := svgAttrSpan(tag, name)
+	return tag[start:end], ok
+}
+
+// svgSetAttr sets the value of a start tag's attribute, adding it if needed.
+func svgSetAttr(tag, name, value string) string {
+	if start, end, ok := svgAttrSpan(tag, name); ok {
+		return tag[:start] + value + tag[end:]
+	}
+	i := len(tag) - 1
+	if strings.HasSuffix(tag, "/>") {
+		i--
+	}
+	return tag[:i] + " " + name + `="` + value + `"` + tag[i:]
+}
+
+// svgDeclSpan returns the position of the value of a style declaration.
+func svgDeclSpan(style, name string) (start, end int, ok bool) {
+	re := regexp.MustCompile(`(?i)(?:^|;)\s*` + regexp.QuoteMeta(name) + `\s*:\s*([^;]*?)\s*(?:;|$)`)
+	m := re.FindStringSubmatchIndex(style)
+	if m == nil {
+		return 0, 0, false
+	}
+	return m[2], m[3], true
+}
+
+// svgDecl returns the value of a style declaration.
+func svgDecl(style, name string) (string, bool) {
+	start, end, ok := svgDeclSpan(style, name)
+	return style[start:end], ok
+}
+
+// svgSetDecl sets the value of a style declaration, adding it if needed.
+func svgSetDecl(style, name, value string) string {
+	if start, end, ok := svgDeclSpan(style, name); ok {
+		return style[:start] + value + style[end:]
+	}
+	if s := strings.TrimSpace(style); s != "" && !strings.HasSuffix(s, ";") {
+		style += ";"
+	}
+	return style + name + ":" + value
+}
+
+// parseSVGRGBA splits an rgba() color into an rgb() color and its alpha.
+func parseSVGRGBA(v string) (rgb string, alpha float64, ok bool) {
+	v = strings.TrimSpace(v)
+	if len(v) < 6 || !strings.EqualFold(v[:5], "rgba(") || !strings.HasSuffix(v, ")") {
+		return "", 0, false
+	}
+	parts := strings.Split(v[5:len(v)-1], ",")
+	if len(parts) != 4 {
+		return "", 0, false
+	}
+	for i := range parts {
+		parts[i] = strings.TrimSpace(parts[i])
+	}
+	alpha, err := strconv.ParseFloat(parts[3], 64)
+	if err != nil {
+		return "", 0, false
+	}
+	return "rgb(" + strings.Join(parts[:3], ",") + ")", min(max(alpha, 0), 1), true
+}
+
+// parseSVGOpacity parses an opacity value, treating invalid ones as opaque.
+func parseSVGOpacity(v string) float64 {
+	op, err := strconv.ParseFloat(strings.TrimSpace(v), 64)
+	if err != nil {
+		return 1
+	}
+	return min(max(op, 0), 1)
+}
+
+func formatSVGOpacity(op float64) string {
+	return strconv.FormatFloat(op, 'f', -1, 64)
 }
 
 // normalizeSVGPaths rewrites the path data of an SVG document, see
