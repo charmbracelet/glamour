@@ -298,6 +298,17 @@ func WithRemoteImageNotLoadedNote(note string) TermRendererOption {
 	}
 }
 
+// WithImageCache shares the given image cache with the renderer. Renderers
+// created for the same document, e.g. to re-render it at a new width when
+// the terminal is resized, can share a cache so the document's images aren't
+// read, fetched, decoded, and encoded all over again.
+func WithImageCache(cache *ansi.ImageCache) TermRendererOption {
+	return func(tr *TermRenderer) error {
+		tr.ansiOptions.ImageCache = cache
+		return nil
+	}
+}
+
 // WithOptions sets multiple TermRenderer options within a single TermRendererOption.
 func WithOptions(options ...TermRendererOption) TermRendererOption {
 	return func(tr *TermRenderer) error {
