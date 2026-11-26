@@ -151,20 +151,24 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 			node.FirstChild().FirstChild().Kind() == astext.KindTaskCheckBox {
 			nc := node.FirstChild().FirstChild().(*astext.TaskCheckBox)
 
+			item := &TaskElement{
+				Checked: nc.IsChecked,
+			}
 			return Element{
-				Exiting: post,
-				Renderer: &TaskElement{
-					Checked: nc.IsChecked,
-				},
+				Exiting:  post,
+				Renderer: item,
+				Finisher: item,
 			}
 		}
 
+		item := &ItemElement{
+			IsOrdered:   node.Parent().(*ast.List).IsOrdered(),
+			Enumeration: e,
+		}
 		return Element{
-			Exiting: post,
-			Renderer: &ItemElement{
-				IsOrdered:   node.Parent().(*ast.List).IsOrdered(),
-				Enumeration: e,
-			},
+			Exiting:  post,
+			Renderer: item,
+			Finisher: item,
 		}
 
 	// Text Elements
