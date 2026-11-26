@@ -583,3 +583,75 @@ func TestImageOrderInHTMLBlocks(t *testing.T) {
 		}
 	}
 }
+
+// TestNormalizeSVGColors checks that rgba() fill and stroke colors, which the
+// parser rejects, are rewritten into an rgb() color plus an opacity attribute
+// without touching other attributes.
+func TestNormalizeSVGColors(t *testing.T) {
+	tests := []struct {
+		name string
+		in   string
+		want string
+	}{
+		{
+			name: "transparent fill",
+			in:   `<rect fill="rgba(0,0,0,0)"/>`,
+			want: `<rect fill="rgb(0,0,0)" fill-opacity="0"/>`,
+		},
+		{
+			name: "single quotes and spaces",
+			in:   `<rect fill='rgba(10, 20, 30, 0.5)'/>`,
+			want: `<rect fill="rgb(10,20,30)" fill-opacity="0.5"/>`,
+		},
+		{
+			name: "stroke",
+			in:   `<rect stroke="rgba(1,2,3,.25)"/>`,
+			want: `<rect stroke="rgb(1,2,3)" stroke-opacity=".25"/>`,
+		},
+		{
+			name: "other colors and attributes are kept",
+			in:   `<rect fill="rgb(1,2,3)" fill-opacity="0.5" stroke="#fff" data-fill="rgba(1,2,3,1)"/>`,
+			want: `<rect fill="rgb(1,2,3)" fill-opacity="0.5" stroke="#fff" data-fill="rgba(1,2,3,1)"/>`,
+		},
+		{
+			name: "malformed rgba is kept",
+			in:   `<rect fill="rgba(1,2,3)"/>`,
+			want: `<rect fill="rgba(1,2,3)"/>`,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := string(normalizeSVGColors([]byte(tc.in))); got != tc.want {
+				t.Errorf("normalizeSVGColors(%q) = %q, want %q", tc.in, got, tc.want)
+			}
+		})
+	}
+}
+
+// TestSVGRGBAOverlayRender checks that a document with an rgba() overlay, as
+// badges use for their transparent link areas, is drawn, and that the overlay
+// keeps its transparency.
+func TestSVGRGBAOverlayRender(t *testing.T) {
+	svg := `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="20">` +
+		`<rect width="100" height="20" fill="#555"/>` +
+		`<a href="https://example.com"><rect width="100" height="20" fill="%s"/></a>` +
+		`</svg>`
+
+	pixel := func(overlay string) color.NRGBA {
+		t.Helper()
+		img, err := rasterizeSVGReader(strings.NewReader(strings.Replace(svg, "%s", overlay, 1)), 100, 20)
+		if err != nil {
+			t.Fatalf("rasterizeSVGReader(%q) failed: %v", overlay, err)
+		}
+		return color.NRGBAModel.Convert(img.At(50, 10)).(color.NRGBA)
+	}
+
+	// A transparent overlay leaves the background showing.
+	if got := pixel("rgba(0,0,0,0)"); got.R != 0x55 || got.G != 0x55 || got.B != 0x55 || got.A != 0xff {
+		t.Errorf("pixel under a transparent overlay = %+v, want the #555 background", got)
+	}
+	// An opaque overlay covers it.
+	if got := pixel("rgba(255,0,0,1)"); got.R != 0xff || got.G != 0 || got.B != 0 || got.A != 0xff {
+		t.Errorf("pixel under an opaque overlay = %+v, want red", got)
+	}
+}
