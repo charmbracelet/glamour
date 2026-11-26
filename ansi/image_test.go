@@ -787,7 +787,7 @@ func TestPerRendererImageCaches(t *testing.T) {
 
 	// Every renderer gets its own caches, so switching documents releases
 	// the cached images along with the old renderer.
-	if r1.context.options.caches == r2.context.options.caches {
+	if r1.context.options.ImageCache == r2.context.options.ImageCache {
 		t.Error("expected renderers to have separate image caches")
 	}
 	if out1 != out2 {
@@ -796,7 +796,7 @@ func TestPerRendererImageCaches(t *testing.T) {
 
 	// A nil cache must be safe to use, so hand-made render contexts don't
 	// crash: all methods simply skip the cache.
-	var caches *imageCaches
+	var caches *ImageCache
 	caches.setImage("x", nil)
 	if img, ok := caches.image("x"); ok {
 		t.Errorf("expected no cached image, got %v", img)
@@ -809,9 +809,39 @@ func TestPerRendererImageCaches(t *testing.T) {
 	if _, ok := caches.remoteData("x"); ok {
 		t.Error("expected no cached data")
 	}
-	caches.setSequence(sequenceCacheKey{}, graphicsSequences{})
-	if _, ok := caches.sequence(sequenceCacheKey{}); ok {
+	caches.setSequence(sequenceCacheKey{}, 1, 1, graphicsSequences{})
+	if _, ok := caches.sequence(sequenceCacheKey{}, 1, 1); ok {
 		t.Error("expected no cached sequence")
+	}
+}
+
+func TestSharedImageCache(t *testing.T) {
+	imgPath := filepath.Join(t.TempDir(), "wide.png")
+	// Too large to be transmitted by file path, so it is decoded.
+	writePNG(t, imgPath, image.NewRGBA(image.Rect(0, 0, 4000, 1000)))
+	md := "![](" + imgPath + ")"
+	cache := NewImageCache()
+
+	out1, _ := renderImage(t, Options{ImageProtocol: ImageProtocolKitty, ImageCache: cache, WordWrap: 80}, md)
+
+	// Renderers sharing the cache don't load the image again, even at a
+	// different width, i.e. a different display size.
+	if err := os.Remove(imgPath); err != nil {
+		t.Fatal(err)
+	}
+	out2, _ := renderImage(t, Options{ImageProtocol: ImageProtocolKitty, ImageCache: cache, WordWrap: 40}, md)
+
+	for _, out := range []string{out1, out2} {
+		if !strings.Contains(out, "\x1b_G") {
+			t.Fatalf("expected a kitty graphics sequence, got %q", out)
+		}
+	}
+	if out1 == out2 {
+		t.Error("expected the image to be resized to the new width")
+	}
+	// Only the latest display size of an image is kept.
+	if n := len(cache.sequences); n != 1 {
+		t.Errorf("expected 1 cached sequence, got %d", n)
 	}
 }
 

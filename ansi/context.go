@@ -31,11 +31,12 @@ type RenderContext struct {
 
 // NewRenderContext returns a new RenderContext.
 func NewRenderContext(options Options) RenderContext {
-	if options.caches == nil {
-		// Each renderer gets its own set of image caches, which live and
-		// die with it: applications that render new documents with new
-		// renderers release the cached images along with them.
-		options.caches = newImageCaches()
+	if options.ImageCache == nil {
+		// Unless one is shared, each renderer gets its own image cache,
+		// which lives and dies with it: applications that render new
+		// documents with new renderers release the cached images along
+		// with them.
+		options.ImageCache = NewImageCache()
 	}
 	return RenderContext{
 		options:          options,
@@ -50,8 +51,8 @@ func NewRenderContext(options Options) RenderContext {
 // imageCachesOf returns the renderer's image caches. It is nil only when a
 // RenderContext was constructed directly instead of via NewRenderContext;
 // the cache methods are nil-safe, so images are simply not cached then.
-func (ctx RenderContext) imageCachesOf() *imageCaches {
-	return ctx.options.caches
+func (ctx RenderContext) imageCachesOf() *ImageCache {
+	return ctx.options.ImageCache
 }
 
 // SanitizeHTML sanitizes HTML content.

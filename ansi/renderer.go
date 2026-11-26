@@ -84,10 +84,11 @@ type Options struct {
 	// don't want to claim they were not loaded in between.
 	RemoteImageNotLoadedNote *string
 
-	// caches holds the renderer's image caches. It is set by
-	// NewRenderContext; a nil value means images are loaded without
-	// caching.
-	caches *imageCaches
+	// ImageCache caches the images the renderer loads. Renderers that
+	// render the same document, e.g. at different widths, can share one to
+	// avoid loading its images again. When nil, the renderer gets a cache
+	// of its own.
+	ImageCache *ImageCache
 }
 
 // ANSIRenderer renders markdown content as ANSI escaped sequences.

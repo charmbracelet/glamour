@@ -85,116 +85,128 @@ type imageConfig struct {
 	format string
 }
 
-// imageCaches holds a renderer's image caches: image headers, decoded
-// images, downloaded remote images, and encoded graphics sequences, all
-// keyed by URL. They avoid re-fetching, re-decoding, and re-encoding images
-// on every render, which is important for interactive applications (e.g. a
-// TUI pager) that re-render the same document repeatedly.
+// ImageCache holds image headers, decoded images, downloaded remote images,
+// and encoded graphics sequences, all keyed by URL. It avoids re-fetching,
+// re-decoding, and re-encoding images on every render, which is important
+// for interactive applications (e.g. a TUI pager) that re-render the same
+// document repeatedly.
 //
-// Each renderer has its own caches, so applications that create a new
-// renderer per document release the cached images when the renderer is
-// garbage collected. All methods are safe to call on a nil *imageCaches;
+// By default each renderer has its own cache, which is released along with
+// the renderer. Applications that create a new renderer for every render of
+// the same document, e.g. whenever the terminal is resized, can share one
+// cache between them with [Options.ImageCache], so images aren't loaded
+// again. Only the encoded sequences of an image's latest display size are
+// kept, so resizing doesn't grow the cache. An ImageCache is safe for
+// concurrent use, and all methods are safe to call on a nil *ImageCache;
 // such calls simply skip the cache.
-type imageCaches struct {
-	sync.Mutex
+type ImageCache struct {
+	mu        sync.Mutex
 	configs   map[string]imageConfig
 	images    map[string]image.Image
 	data      map[string][]byte
-	sequences map[sequenceCacheKey]graphicsSequences
+	sequences map[sequenceCacheKey]sizedSequences
 }
 
-// newImageCaches returns an empty set of image caches.
-func newImageCaches() *imageCaches {
-	return &imageCaches{
+// NewImageCache returns an empty image cache.
+func NewImageCache() *ImageCache {
+	return &ImageCache{
 		configs:   make(map[string]imageConfig),
 		images:    make(map[string]image.Image),
 		data:      make(map[string][]byte),
-		sequences: make(map[sequenceCacheKey]graphicsSequences),
+		sequences: make(map[sequenceCacheKey]sizedSequences),
 	}
 }
 
-func (c *imageCaches) config(url string) (imageConfig, bool) {
+func (c *ImageCache) config(url string) (imageConfig, bool) {
 	if c == nil {
 		return imageConfig{}, false
 	}
-	c.Lock()
-	defer c.Unlock()
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	config, ok := c.configs[url]
 	return config, ok
 }
 
-func (c *imageCaches) setConfig(url string, config imageConfig) {
+func (c *ImageCache) setConfig(url string, config imageConfig) {
 	if c == nil {
 		return
 	}
-	c.Lock()
-	defer c.Unlock()
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	c.configs[url] = config
 }
 
-func (c *imageCaches) image(url string) (image.Image, bool) {
+func (c *ImageCache) image(url string) (image.Image, bool) {
 	if c == nil {
 		return nil, false
 	}
-	c.Lock()
-	defer c.Unlock()
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	img, ok := c.images[url]
 	return img, ok
 }
 
-func (c *imageCaches) setImage(url string, img image.Image) {
+func (c *ImageCache) setImage(url string, img image.Image) {
 	if c == nil {
 		return
 	}
-	c.Lock()
-	defer c.Unlock()
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	c.images[url] = img
 }
 
-func (c *imageCaches) remoteData(url string) ([]byte, bool) {
+func (c *ImageCache) remoteData(url string) ([]byte, bool) {
 	if c == nil {
 		return nil, false
 	}
-	c.Lock()
-	defer c.Unlock()
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	data, ok := c.data[url]
 	return data, ok
 }
 
-func (c *imageCaches) setRemoteData(url string, data []byte) {
+func (c *ImageCache) setRemoteData(url string, data []byte) {
 	if c == nil {
 		return
 	}
-	c.Lock()
-	defer c.Unlock()
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	c.data[url] = data
 }
 
-func (c *imageCaches) sequence(key sequenceCacheKey) (graphicsSequences, bool) {
+func (c *ImageCache) sequence(key sequenceCacheKey, cols, rows int) (graphicsSequences, bool) {
 	if c == nil {
 		return graphicsSequences{}, false
 	}
-	c.Lock()
-	defer c.Unlock()
-	seqs, ok := c.sequences[key]
-	return seqs, ok
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	s, ok := c.sequences[key]
+	if !ok || s.cols != cols || s.rows != rows {
+		return graphicsSequences{}, false
+	}
+	return s.seqs, true
 }
 
-func (c *imageCaches) setSequence(key sequenceCacheKey, seqs graphicsSequences) {
+func (c *ImageCache) setSequence(key sequenceCacheKey, cols, rows int, seqs graphicsSequences) {
 	if c == nil {
 		return
 	}
-	c.Lock()
-	defer c.Unlock()
-	c.sequences[key] = seqs
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.sequences[key] = sizedSequences{cols: cols, rows: rows, seqs: seqs}
 }
 
-// sequenceCacheKey uniquely identifies an encoded graphics sequence.
+// sequenceCacheKey identifies the encoded graphics sequences of an image.
 type sequenceCacheKey struct {
 	url      string
 	protocol ImageProtocol
-	cols     int
-	rows     int
+}
+
+// sizedSequences holds the graphics sequences of an image encoded for the
+// given display size.
+type sizedSequences struct {
+	cols, rows int
+	seqs       graphicsSequences
 }
 
 // graphicsSequences holds the graphics protocol sequences produced for a
@@ -374,9 +386,9 @@ func (e *ImageElement) graphicsSequence(ctx RenderContext, url string) (graphics
 	// Images displayed via unicode placeholders take part in the text flow
 	// when they are one cell row tall.
 	inline := ctx.options.ImageProtocol == ImageProtocolKittyPlaceholders && rows == 1
-	key := sequenceCacheKey{url: url, protocol: ctx.options.ImageProtocol, cols: cols, rows: rows}
+	key := sequenceCacheKey{url: url, protocol: ctx.options.ImageProtocol}
 
-	if seqs, ok := ctx.imageCachesOf().sequence(key); ok {
+	if seqs, ok := ctx.imageCachesOf().sequence(key, cols, rows); ok {
 		return seqs, inline, nil
 	}
 
@@ -385,7 +397,7 @@ func (e *ImageElement) graphicsSequence(ctx RenderContext, url string) (graphics
 		return graphicsSequences{}, false, err
 	}
 
-	ctx.imageCachesOf().setSequence(key, seqs)
+	ctx.imageCachesOf().setSequence(key, cols, rows, seqs)
 	return seqs, inline, nil
 }
 
@@ -829,10 +841,8 @@ func loadImage(ctx RenderContext, url string, maxW, maxH int) (image.Image, erro
 		return nil, err
 	}
 
-	if kind != imageSourceLocal {
-		if img, ok := ctx.imageCachesOf().image(url); ok {
-			return img, nil
-		}
+	if img, ok := ctx.imageCachesOf().image(url); ok {
+		return img, nil
 	}
 
 	var buf []byte
@@ -853,6 +863,7 @@ func loadImage(ctx RenderContext, url string, maxW, maxH int) (image.Image, erro
 		if err != nil {
 			return nil, fmt.Errorf("glamour: error decoding image: %w", err)
 		}
+		ctx.imageCachesOf().setImage(url, img)
 		return img, nil
 	case imageSourceData:
 		buf, err = imageData(ctx, url)
@@ -877,9 +888,7 @@ func loadImage(ctx RenderContext, url string, maxW, maxH int) (image.Image, erro
 		return nil, fmt.Errorf("glamour: error decoding image: %w", err)
 	}
 
-	if kind != imageSourceLocal {
-		ctx.imageCachesOf().setImage(url, img)
-	}
+	ctx.imageCachesOf().setImage(url, img)
 	return img, nil
 }
 
