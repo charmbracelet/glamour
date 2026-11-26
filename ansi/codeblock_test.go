@@ -39,7 +39,7 @@ func TestCodeBlockChromaStyleIsPerRender(t *testing.T) {
 	red := chromaTestStyle("#ff0000")
 	green := chromaTestStyle("#00ff00")
 
-	for i, tc := range []struct {
+	for i, tc := range []*struct {
 		name string
 		s    StyleConfig
 		has  string
