@@ -6,7 +6,7 @@ if ! command -v freeze &> /dev/null; then
     exit 1
 fi
 
-defaultStyles=("ascii" "auto" "dark" "dracula" "light" "notty" "pink")
+defaultStyles=("ascii" "auto" "dark" "dracula" "light" "notty" "pink" "rose-pine" "rose-pine-dawn")
 
 for style in "${defaultStyles[@]}"; do
     echo "Generating screenshot for ${style}"

@@ -21,3 +21,11 @@ Pronounced _naughty_.
 ## Tokyo Night
 
 ![Tokyo Night Style](./tokyo-night.png)
+
+## Rosé Pine
+
+![Rosé Pine Style](./rose-pine.png)
+
+## Rosé Pine Dawn
+
+![Rosé Pine Dawn Style](./rose-pine-dawn.png)
