@@ -14,12 +14,7 @@ var (
 	TemplateFuncMap = template.FuncMap{
 		"Left": func(values ...interface{}) string {
 			s := values[0].(string)
-			n := values[1].(int)
-			if n > len(s) {
-				n = len(s)
-			}
-
-			return s[:n]
+			return s[:clamp(values[1].(int), len(s))]
 		},
 		"Matches": func(values ...interface{}) bool {
 			ok, _ := regexp.MatchString(values[1].(string), values[0].(string))
@@ -27,15 +22,12 @@ var (
 		},
 		"Mid": func(values ...interface{}) string {
 			s := values[0].(string)
-			l := values[1].(int)
-			if l > len(s) {
-				l = len(s)
-			}
+			l := clamp(values[1].(int), len(s))
 
 			if len(values) > 2 { //nolint:mnd
-				r := values[2].(int)
-				if r > len(s) {
-					r = len(s)
+				r := clamp(values[2].(int), len(s))
+				if r < l {
+					return ""
 				}
 				return s[l:r]
 			}
@@ -43,15 +35,14 @@ var (
 		},
 		"Right": func(values ...interface{}) string {
 			s := values[0].(string)
-			n := len(s) - values[1].(int)
-			if n < 0 {
-				n = 0
-			}
-
-			return s[n:]
+			return s[len(s)-clamp(values[1].(int), len(s)):]
 		},
 		"Last": func(values ...interface{}) string {
-			return values[0].([]string)[len(values[0].([]string))-1]
+			list := values[0].([]string)
+			if len(list) == 0 {
+				return ""
+			}
+			return list[len(list)-1]
 		},
 		// strings functions
 		"Compare":      strings.Compare, // 1.5+ only
@@ -84,3 +75,9 @@ var (
 		"TrimSuffix":   strings.TrimSuffix,
 	}
 )
+
+// clamp keeps an index i within 0 and n, so slicing a string of length n
+// with it can never panic.
+func clamp(i, n int) int {
+	return max(0, min(i, n))
+}
