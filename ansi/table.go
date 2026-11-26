@@ -187,8 +187,9 @@ func (e *TableCellElement) Render(_ io.Writer, ctx RenderContext) error {
 				return fmt.Errorf("glamour: error rendering: %w", err)
 			}
 			el := &BaseElement{
-				Token: bb.String(),
-				Style: style,
+				Token:    bb.String(),
+				Style:    style,
+				rendered: true,
 			}
 			if err := el.Render(&b, ctx); err != nil {
 				return err

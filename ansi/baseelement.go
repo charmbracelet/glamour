@@ -19,6 +19,10 @@ type BaseElement struct {
 	Prefix string
 	Suffix string
 	Style  StylePrimitive
+
+	// rendered marks a Token that already holds rendered output, so Markdown
+	// escapes in it must not be processed a second time.
+	rendered bool
 }
 
 func formatToken(format string, token string) (string, error) {
@@ -141,7 +145,10 @@ func (e *BaseElement) doRender(w io.Writer, st1, st2 StylePrimitive) error {
 			return err
 		}
 	}
-	_, _ = renderText(w, st2, escapeReplacer.Replace(s))
+	if !e.rendered {
+		s = escapeReplacer.Replace(s)
+	}
+	_, _ = renderText(w, st2, s)
 	return nil
 }
 
