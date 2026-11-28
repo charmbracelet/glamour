@@ -30,20 +30,20 @@ func NewMarginWriter(ctx RenderContext, w io.Writer, rules StyleBlock) *MarginWr
 		margin = *rules.Margin
 	}
 
-	// The styled cell is invariant, so build it once here rather than
-	// rederiving the style on every padding column of every line.
-	padCell := styleText(rules.StylePrimitive, " ")
+	// Cache each fixed token lazily and observe resolved style changes.
+	// Parent lookup stays inside the callback, matching its original lifetime.
+	var padCell styledCellCache
 	pw := NewPaddingWriter(w, int(bs.Width(ctx)), func(_ io.Writer) {
-		_, _ = io.WriteString(w, padCell)
+		_, _ = io.WriteString(w, padCell.text(rules.StylePrimitive, " "))
 	})
 
 	ic := " "
 	if rules.IndentToken != nil {
 		ic = *rules.IndentToken
 	}
-	indentCell := styleText(bs.Parent().Style.StylePrimitive, ic)
+	var indentCell styledCellCache
 	iw := NewIndentWriter(pw, int(indentation+margin), func(_ io.Writer) {
-		_, _ = io.WriteString(w, indentCell)
+		_, _ = io.WriteString(w, indentCell.text(bs.Parent().Style.StylePrimitive, ic))
 	})
 
 	return &MarginWriter{iw: iw}
@@ -236,4 +236,41 @@ func (w *IndentWriter) Close() error {
 	}
 
 	return werr
+}
+
+// A margin owns these caches; public writer callbacks are never cached.
+// Resolve values rather than pointer identities: styles may change between writes.
+// Keep this key in sync with the style fields consumed by styleText.
+type styledCellKey struct {
+	foreground, background string
+	flags                  uint16
+}
+type styledCellCache struct {
+	key   styledCellKey
+	value string
+	ready bool
+}
+
+func (c *styledCellCache) text(rules StylePrimitive, token string) string {
+	key := styledCellKey{}
+	if rules.Color != nil {
+		key.foreground = *rules.Color
+		key.flags |= 1
+	}
+	if rules.BackgroundColor != nil {
+		key.background = *rules.BackgroundColor
+		key.flags |= 2
+	}
+	values := [...]*bool{rules.Upper, rules.Lower, rules.Title, rules.Underline, rules.Bold, rules.Italic, rules.CrossedOut, rules.Inverse, rules.Blink}
+	for i, value := range values {
+		if value != nil && *value {
+			key.flags |= uint16(1) << uint(i+2)
+		}
+	}
+	if !c.ready || key != c.key {
+		c.value = styleText(rules, token)
+		c.key = key
+		c.ready = true
+	}
+	return c.value
 }
